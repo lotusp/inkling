@@ -1,0 +1,2 @@
+# inkling
+AI writing agent
