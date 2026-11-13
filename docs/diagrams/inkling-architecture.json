@@ -1,0 +1,204 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Inkling 拟议架构",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1300,
+      620
+    ]
+  },
+  "components": [
+    {
+      "id": "workbench",
+      "type": "frontend",
+      "label": "写作工作台",
+      "sublabel": "编辑 · 资料 · 修改审阅",
+      "pos": [
+        45,
+        270
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "orchestrator",
+      "type": "backend",
+      "label": "可恢复工作流",
+      "sublabel": "任务状态 · 上下文 · 工具权限",
+      "pos": [
+        375,
+        270
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "release-guard",
+      "type": "security",
+      "label": "发布授权关卡",
+      "sublabel": "核对文章版本与目标平台",
+      "pos": [
+        705,
+        270
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "publish-adapters",
+      "type": "backend",
+      "label": "发布适配器",
+      "sublabel": "Git · WordPress · Ghost · 导出",
+      "pos": [
+        1035,
+        270
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "project-memory",
+      "type": "database",
+      "label": "文章与作者记忆",
+      "sublabel": "来源证据 · 文章版本 · 风格档案",
+      "pos": [
+        375,
+        65
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "writing-skills",
+      "type": "backend",
+      "label": "写作能力模块",
+      "sublabel": "调研 · 大纲 · 写作 · 审校",
+      "pos": [
+        375,
+        475
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "source-tools",
+      "type": "external",
+      "label": "资料检索与采集",
+      "sublabel": "网页 · 文件 · 灵感输入",
+      "pos": [
+        45,
+        475
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "model-gateway",
+      "type": "cloud",
+      "label": "模型网关",
+      "sublabel": "统一调用 · 用量记录 · 模型替换",
+      "pos": [
+        705,
+        475
+      ],
+      "size": [
+        220,
+        80
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "author-task",
+      "from": "workbench",
+      "to": "orchestrator",
+      "label": "提交任务",
+      "variant": "emphasis"
+    },
+    {
+      "id": "release-request",
+      "from": "orchestrator",
+      "to": "release-guard",
+      "label": "发布请求",
+      "variant": "emphasis"
+    },
+    {
+      "id": "authorized-release",
+      "from": "release-guard",
+      "to": "publish-adapters",
+      "label": "授权执行",
+      "variant": "security"
+    },
+    {
+      "id": "persist-state",
+      "from": "orchestrator",
+      "to": "project-memory",
+      "label": "读写记录"
+    },
+    {
+      "id": "invoke-skills",
+      "from": "orchestrator",
+      "to": "writing-skills",
+      "label": "规划调用",
+      "labelAt": [
+        485,
+        412
+      ]
+    },
+    {
+      "id": "retrieve-material",
+      "from": "writing-skills",
+      "to": "source-tools",
+      "label": "检索采集"
+    },
+    {
+      "id": "model-inference",
+      "from": "writing-skills",
+      "to": "model-gateway",
+      "label": "模型推理"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "一个持续的文章项目",
+      "items": [
+        "灵感、来源、论点与草稿保留关联",
+        "可暂停、恢复，并审阅每次修改"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "模块共享可控上下文",
+      "items": [
+        "作者确认过的偏好进入风格档案",
+        "外部网页只作资料，不授予工具权限"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "发布由授权约束",
+      "items": [
+        "公开发布需绑定已确认版本与平台",
+        "凭据仅由适配器读取，不进入模型上下文"
+      ]
+    }
+  ]
+}

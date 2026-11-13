@@ -1,0 +1,212 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Inkling Agent 运行架构",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1360,
+      760
+    ]
+  },
+  "components": [
+    {
+      "id": "session-entry",
+      "type": "frontend",
+      "label": "Web / API / Session",
+      "sublabel": "用户请求 · 文章版本 · 会话身份",
+      "pos": [
+        40,
+        310
+      ],
+      "size": [
+        200,
+        88
+      ]
+    },
+    {
+      "id": "persistent-jobs",
+      "type": "messagebus",
+      "label": "持久 Job 队列",
+      "sublabel": "仅调度 · 租约 · 任务重试",
+      "pos": [
+        310,
+        310
+      ],
+      "size": [
+        200,
+        88
+      ]
+    },
+    {
+      "id": "graph-runtime",
+      "type": "backend",
+      "label": "LangGraph.js Runtime",
+      "sublabel": "唯一工作流与循环编排器",
+      "tag": "Node 常驻 worker",
+      "pos": [
+        580,
+        310
+      ],
+      "size": [
+        200,
+        88
+      ]
+    },
+    {
+      "id": "policy-broker",
+      "type": "security",
+      "label": "Policy Tool Broker",
+      "sublabel": "校验权限 · 参数 · 版本授权",
+      "pos": [
+        850,
+        310
+      ],
+      "size": [
+        200,
+        88
+      ]
+    },
+    {
+      "id": "tool-adapters",
+      "type": "backend",
+      "label": "原生工具与 MCP 适配器",
+      "sublabel": "资料 · 文件 · 发布器",
+      "pos": [
+        1120,
+        310
+      ],
+      "size": [
+        200,
+        88
+      ]
+    },
+    {
+      "id": "context-builder",
+      "type": "backend",
+      "label": "Context Builder",
+      "sublabel": "会话 · 快照 · Memory · Skills",
+      "pos": [
+        580,
+        75
+      ],
+      "size": [
+        200,
+        88
+      ]
+    },
+    {
+      "id": "model-gateway",
+      "type": "cloud",
+      "label": "ModelGateway",
+      "sublabel": "单次模型调用 · 用量记录",
+      "pos": [
+        580,
+        555
+      ],
+      "size": [
+        200,
+        88
+      ]
+    },
+    {
+      "id": "durable-records",
+      "type": "database",
+      "label": "Checkpoint 与业务数据",
+      "sublabel": "图状态 · 文章版本 · 操作日志",
+      "pos": [
+        310,
+        555
+      ],
+      "size": [
+        200,
+        88
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "enqueue-request",
+      "from": "session-entry",
+      "to": "persistent-jobs",
+      "label": "提交任务",
+      "variant": "emphasis"
+    },
+    {
+      "id": "dispatch-job",
+      "from": "persistent-jobs",
+      "to": "graph-runtime",
+      "label": "领取任务",
+      "variant": "emphasis"
+    },
+    {
+      "id": "request-tool",
+      "from": "graph-runtime",
+      "to": "policy-broker",
+      "label": "工具请求",
+      "variant": "emphasis"
+    },
+    {
+      "id": "authorized-execution",
+      "from": "policy-broker",
+      "to": "tool-adapters",
+      "label": "授权执行",
+      "variant": "security"
+    },
+    {
+      "id": "provide-context",
+      "from": "context-builder",
+      "to": "graph-runtime",
+      "label": "组装上下文",
+      "labelAt": [
+        680,
+        232
+      ]
+    },
+    {
+      "id": "infer-once",
+      "from": "graph-runtime",
+      "to": "model-gateway",
+      "label": "单次推理",
+      "labelAt": [
+        680,
+        473
+      ]
+    },
+    {
+      "id": "persist-run-state",
+      "from": "graph-runtime",
+      "to": "durable-records",
+      "label": "持久化与恢复"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "TypeScript 模块化单体",
+      "items": [
+        "Job 队列负责调度，LangGraph.js 负责工作流与循环",
+        "ModelGateway 只做单次调用，不再套一层 Agent loop"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "上下文与受限子任务",
+      "items": [
+        "Skills 提供方法，不授予权限；MCP 连接工具，不编排循环",
+        "Subagent 作为受限子图：P0 串行，P1 可并行研究",
+        "只返回结构化成果，不直接改稿或发布"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "持久化与公开写入边界",
+      "items": [
+        "Checkpoint、文章版本和操作日志分别管理",
+        "公开写入由版本授权与发布器共同保障",
+        "外部内容不授予权限，平台凭据不进入模型上下文"
+      ]
+    }
+  ]
+}
