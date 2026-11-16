@@ -1,5 +1,7 @@
 # Inkling Agent 框架复评
 
+2026-11-16 适用范围更新：作者已将 MVP 明确为单台 Mac 本地运行。新提案将 Pi AI 加 agent-core 作为优先 POC 路线，接受从已保存业务成果继续中断任务；LangGraph 保留同任务对照。以下排名与恢复要求属于 2026-11-12 的较完整方案背景，当前要求见[本地 MVP](../architecture/local-macos-mvp.md)。尚无实现测试证明任一候选胜出。
+
 核验日期：2026-11-12。本文重新评估此前的 LangGraph.js 建议，补充 Pi 与公开 Agent 产品实现。结论是设计判断，不是性能基准或市场排名；未安装候选依赖，也未执行原型或故障测试。
 
 更广泛的项目筛选、当前技术栈、架构变迁与取舍，见[开源 Agent 架构全景调研](open-source-agent-landscape.md)。该文补充 OpenCode、Hermes、Letta、OpenHands、DeerFlow、Cline 等项目，并区分产品、运行时与应用平台。

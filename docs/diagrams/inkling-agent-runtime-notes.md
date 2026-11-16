@@ -1,5 +1,7 @@
 # Inkling Agent 运行架构图说明
 
+2026-11-16 范围更新：本图保留早期 LangGraph 与完整任务恢复设计，当前本地 MVP 见[单台 Mac 架构提案](../architecture/local-macos-mvp.md)。
+
 该图描述拟议的内部逻辑架构：以 TypeScript 模块化单体实现，常驻 Node worker 领取持久任务，LangGraph.js 统一负责工作流、Agent 循环、暂停和恢复。图中模块不表示需要拆分为独立微服务。
 
 - [交互 HTML](inkling-agent-runtime.html)

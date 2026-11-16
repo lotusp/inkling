@@ -1,5 +1,7 @@
 # Inkling 架构图
 
+范围更新于 2026-11-16。本目录交互图表达早期完整能力与 LangGraph 候选设计，当前单机 MVP 的部署图和实施边界见[本地架构提案](../architecture/local-macos-mvp.md)。
+
 打开 [inkling-architecture.html](inkling-architecture.html) 可查看拟议架构，并使用主题切换、缩放、搜索、关系追踪与导出功能。源文件为 [inkling-architecture.json](inkling-architecture.json)。
 
 图中箭头表示主要调用关系，省略响应回传；写作能力模块和发布授权关卡是逻辑模块，不要求部署为独立服务。文章项目保存来源、版本和作者确认过的风格偏好。只有绑定文章版本和目标平台的有效发布授权才能调用发布适配器，平台凭据不进入模型上下文。Git、WordPress、Ghost 是待选的发布适配器，不表示已全部实现。

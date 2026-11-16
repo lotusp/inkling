@@ -1,8 +1,10 @@
 # Inkling Agent 技术架构与实现设计
 
-范围说明：本文为待验证的架构候选，具体实施顺序以[当前 MVP](../product/thinking-partner-product-design.md)为准；完整发布集成、subagent 等能力不因出现在架构中就进入首版。知识状态见[产品知识库](../README.md)。
+2026-11-16 范围更新：当前实施入口为[单台 Mac 本地架构](local-macos-mvp.md)。该提案采用同进程 API 与任务调度、可由作者继续的中断恢复、Pi 优先 POC 与按需扩展。本文保留早期 LangGraph、分进程 Worker 和完整发布流程的详细设计参考。
 
-Inkling 采用 TypeScript 模块化单体，以 LangGraph.js 统一编排工作流和有边界的模型循环，配合独立的会话、文章版本、长期记忆和工具权限模块。Skills 表达写作方法，MCP 接入外部能力，subagent 在需要时承接可隔离的子任务。公开发布由程序依据具体版本授权执行。
+范围说明：本文为待验证的架构候选，具体范围与实施顺序以[V1 范围设计](../product/v1-scope.md)为准。首版包含一个真实博客的发布与更新；多平台完整集成、subagent 等能力按具体需求评估。知识状态见[产品知识库](../README.md)。
+
+本篇早期候选采用 TypeScript 模块化单体，以 LangGraph.js 统一编排工作流和有边界的模型循环，配合独立的会话、文章版本、长期记忆和工具权限模块。Skills 表达写作方法，MCP 接入外部能力，subagent 在需要时承接可隔离的子任务。公开发布由程序依据具体版本授权执行。
 
 设计日期：2026-11-12。范围为单用户、中文技术写作、个人博客及技术社区；这是待实施的技术方案，仓库当前仍处于设计阶段。本文细化并更新[产品方案](../product/product-design.md)中的技术部分，行业事实见[调研](../research/industry-and-publishing.md)。
 

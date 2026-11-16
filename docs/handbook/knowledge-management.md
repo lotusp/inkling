@@ -1,6 +1,6 @@
 # Inkling 知识组织与维护规则
 
-状态：当前文档工作约定。更新日期：2026-11-13。
+状态：当前文档工作约定。更新日期：2026-11-16。
 
 目标是让后续参与者能回答五个问题：产品为什么做、为谁做、为什么这样设计、实际怎么运行、有什么证据说明它有效。文档保留当前可用知识与重要判断的来由，聊天和提交历史用于补充过程。
 
@@ -22,12 +22,15 @@ docs/
   product/                     稳定原则、价值、需求和交互规范
     design-philosophy.md
     core-value.md
+    v1-scope.md                当前首版范围、实施顺序与验收
     thinking-partner-product-design.md
     product-design.md          早期综合方案，保留参考
     open-questions.md          有验证入口的开放问题
     features/                  按需创建，每项能力的产品契约
   architecture/                模块、数据、接口与运行机制
-    agent-architecture.md      当前架构候选，尚未实现
+    local-macos-mvp.md         当前单机架构提案，存储与框架待验证
+    agent-architecture.md      早期架构候选，保留参考
+  prototypes/                  交互原型源文件、可打开的预览和检查说明
   decisions/                   产品与技术重大取舍
   engineering/                 按需创建，开发环境、实现约定与贡献流程
   validation/                  按需创建，实验、评测、验收与失败案例
@@ -45,7 +48,7 @@ docs/
 | --- | --- | --- |
 | 外部事实和用户观察 | research 与现有专题调研 | 在 PRD、架构和宣传文案中复制竞品表 |
 | 原则与价值 | product 的基础文档 | 把不同版本的定位分散在每个 README |
-| 用户旅程与范围 | 当前协作设计；后续功能进入 product/features | 在技术方案中另写一套 MVP |
+| 用户旅程与范围 | 旅程由协作设计维护，首版范围由 product/v1-scope.md 维护；功能进入 product/features | 在技术方案中另写一套 MVP |
 | 重大决定与理由 | decisions | 把“考虑过”写成“已决定”，或只留在聊天里 |
 | 计划和已实现的系统结构 | architecture 与现有架构专题，明确状态 | 把候选设计当作实际运行说明 |
 | 接口和数据的实际约束 | 版本化 schema、迁移和代码；文档解释语义并链接 | 手抄易失同步的接口字段和代码 |
