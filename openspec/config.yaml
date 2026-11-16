@@ -1,0 +1,22 @@
+schema: inkling-atdd
+context: |
+  Inkling 是单台 Mac 本地运行的个人中文技术写作协作助手。
+  产品目标见 docs/product/v1-scope.md，开发流程见 docs/engineering/harness.md。
+  同时只推进一个 active change；Living Spec 只记录已完成交付的行为。
+  G1/G2/G3 检查产物与证据，不需要多人签署。继续遵守当前用户授权范围。
+  产物用中文；Requirement / Scenario / SHALL / WHEN / THEN 等解析关键字保留英文。
+  产品模型、存储和运行框架仍待 POC，不因候选架构文档而冻结依赖。
+rules:
+  proposal:
+    - 明确用户结果、非目标、涉及 capability 和影响范围。
+  specs:
+    - Scenario 标题以稳定大写 ID 开头，例如 ARTICLE-SAVE-001。
+    - MODIFIED 必须包含完整更新的 requirement 与保留场景。
+  design:
+    - 遵守 docs/engineering/code-architecture.md；说明边界、失败和恢复。
+  acceptance:
+    - 测试层、夹具、断言与 Red 或 baseline-pass 策略先于实现。
+  tasks:
+    - 按验收场景切片，每项可验证；归档和 Git 合并不是实现 checkbox。
+  verification:
+    - 只填写实际执行证据；未运行、不适用和失败不得写成通过。

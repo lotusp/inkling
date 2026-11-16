@@ -26,14 +26,14 @@ docs/
     thinking-partner-product-design.md
     product-design.md          早期综合方案，保留参考
     open-questions.md          有验证入口的开放问题
-    features/                  按需创建，每项能力的产品契约
+    features/                  按需创建，功能背景与交互说明；行为契约由 OpenSpec 维护
   architecture/                模块、数据、接口与运行机制
     local-macos-mvp.md         当前单机架构提案，存储与框架待验证
     agent-architecture.md      早期架构候选，保留参考
   prototypes/                  交互原型源文件、可打开的预览和检查说明
   decisions/                   产品与技术重大取舍
-  engineering/                 按需创建，开发环境、实现约定与贡献流程
-  validation/                  按需创建，实验、评测、验收与失败案例
+  engineering/                 Harness、开发规则、代码边界与 ATDD
+  validation/                  实验、评测、工具验证与失败案例
   operations/                  按需创建，部署、迁移、备份、恢复与发布
   retrospectives/              按需创建，里程碑与事故复盘
   diagrams/                    图源、导出文件及相关检查记录
@@ -48,11 +48,12 @@ docs/
 | --- | --- | --- |
 | 外部事实和用户观察 | research 与现有专题调研 | 在 PRD、架构和宣传文案中复制竞品表 |
 | 原则与价值 | product 的基础文档 | 把不同版本的定位分散在每个 README |
-| 用户旅程与范围 | 旅程由协作设计维护，首版范围由 product/v1-scope.md 维护；功能进入 product/features | 在技术方案中另写一套 MVP |
+| 用户旅程与范围 | 旅程由协作设计维护，目标范围由 product/v1-scope.md 维护；可执行行为契约进入 OpenSpec | 在技术方案或 features 中复制另一套当前规格 |
+| 当前行为与变更 | 仓库 openspec/specs 是 Living Spec；changes 保存 delta 与随归档保留的过程证据 | 把产品目标提前登记为已交付，或在 docs 复制完整 Living Spec |
 | 重大决定与理由 | decisions | 把“考虑过”写成“已决定”，或只留在聊天里 |
 | 计划和已实现的系统结构 | architecture 与现有架构专题，明确状态 | 把候选设计当作实际运行说明 |
 | 接口和数据的实际约束 | 版本化 schema、迁移和代码；文档解释语义并链接 | 手抄易失同步的接口字段和代码 |
-| 验证证据 | validation | 将测试计划写成测试结论，或仅报告模型主观评分 |
+| 验证证据 | change 级证据与该 change 一起归档；跨 change/工具实验在 docs/validation | 将测试计划写成结论，或在两个目录复制同一证据 |
 | 运行与发布 | operations | 只记录成功启动，不记录升级、失败与恢复 |
 | 经验与后续行动 | retrospectives | 复盘停留在总结，未回写规范和行动 |
 
@@ -96,7 +97,7 @@ docs/
 
 开始功能前，写明关联价值、用户场景、范围与验收。实施时链接相关设计和决策，记录实际偏差。完成时补代码入口、测试结果与限制，并更新知识入口中的成熟度。
 
-交互、接口、数据或运行方式发生变化，在同一次变更中更新对应规范。影响部署的变更补迁移和回退说明；发布后保留版本入口与已知问题。测试执行细节优先链接可重复运行的命令和结果，避免仅写“通过”。
+交互、接口、数据或运行方式发生变化，在同一次 OpenSpec change 中更新对应规范。经 ATDD 验证后归档 delta 到 Living Spec，再连同代码合入主分支，详细流程见[开发 Harness](../engineering/harness.md)。影响部署的变更补迁移和回退说明；发布后保留版本入口与已知问题。测试执行细节优先链接可重复运行的命令和结果，避免仅写“通过”。
 
 里程碑结束时做轻量复盘：原先假设是否成立、发生了什么偏差、哪些设计应保留或修改、谁负责下一步。未发生的工作不用预先制造结论。
 

@@ -9,6 +9,7 @@
 MVP 在单台 Mac 本地运行，内容上云与多端协作按后续阶段推进。
 
 - [产品知识库入口](docs/README.md)：阅读顺序、知识地图、文档状态与开发阶段指引
+- [开发 Harness](docs/engineering/harness.md)：OpenSpec、串行 change、ATDD、开发规范与归档闭环
 - [V1 功能范围与交付设计](docs/product/v1-scope.md)：完整首版的功能、深度、实施批次与验收
 - [交互原型 V2](docs/prototypes/README.md)：正文与 AI Chat 工作台、操作说明与可打开的预览
 - [单台 Mac 本地架构](docs/architecture/local-macos-mvp.md)：当前 MVP 的运行、存储、Agent 与恢复设计

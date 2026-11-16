@@ -1,0 +1,67 @@
+name: inkling-atdd
+version: 1
+description: Inkling 单 change 的规格、ATDD 与验证证据流程
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: 用户结果、范围与 capability 影响
+    template: proposal.md
+    instruction: |
+      阅读 docs/engineering/harness.md 与相关产品设计、Living Spec。
+      明确本 change 的结果、非目标、能力变化和影响；不要创建第二个 active change。
+    requires: []
+  - id: specs
+    generates: "specs/**/*.md"
+    description: 可观察行为的 delta spec
+    template: spec.md
+    instruction: |
+      按 capability 创建 specs/<capability>/spec.md，使用 ADDED/MODIFIED/REMOVED/RENAMED Requirements。
+      Requirement 使用 SHALL；Scenario 使用四级标题，名称以稳定大写 ID 开头，并写 GIVEN/WHEN/THEN。
+      新 capability 包含有实际内容且至少 50 字符的 Purpose。
+      MODIFIED 复制并更新完整 requirement，保留未改变的场景。删除说明 Reason 和 Migration。
+      不把待实现 delta 直接写进 Living Spec。
+    requires: [proposal]
+  - id: design
+    generates: design.md
+    description: 代码边界、契约与失败恢复
+    template: design.md
+    instruction: |
+      遵守 docs/engineering/code-architecture.md，写出实现边界、接口、状态与异常恢复。
+      重大选择链接 ADR；普通实现不新增仪式化决策文档。
+    requires: [specs]
+  - id: acceptance
+    generates: acceptance.md
+    description: 实现前的验收映射与验证计划
+    template: acceptance.md
+    instruction: |
+      遵守 docs/engineering/atdd-and-evidence.md。
+      用表格第一列记录稳定场景 ID，明确测试入口、层次、夹具、断言与验证命令。
+      覆盖正常与风险相关失败路径，明确 Red 或 baseline-pass 策略和必需检查。
+      不要求无意义的单元测试，不把 mock 通过当作真实集成通过。
+    requires: [specs, design]
+  - id: tasks
+    generates: tasks.md
+    description: 按验收切片的实现清单
+    template: tasks.md
+    instruction: |
+      每个切片包含验收测试、实现、验证和必要文档更新，使用 - [ ] 编号 说明。
+      任务引用场景 ID 和完成的可验证结果。
+      archive、Git merge、push 是 Workflow follow-up 普通条目，不是实现 checkbox。
+    requires: [acceptance, design]
+  - id: verification
+    generates: verification.md
+    description: 实际执行与代码审阅结果
+    template: verification.md
+    instruction: |
+      实现后记录真实命令、退出码、测试输入、Red/Green 或 baseline-pass、审阅发现和限制。
+      生成 evidence.json 与精简 evidence/ 日志，字段见 docs/engineering/atdd-and-evidence.md。
+      没有证据不填 passed；verification 文件存在不表示通过 G2。
+    requires: [tasks]
+apply:
+  requires: [tasks, acceptance]
+  tracks: tasks.md
+  instruction: |
+    先执行 G1 检查，再按一个验收切片推进 Red → Green → Refactor。
+    修改需求时回写规格与验收；更新 tasks 和恢复提示。
+    实现后执行实际检查、生成 verification 与 evidence，再检查 G2。
+    使用 docs/engineering/harness.md 的 archive 与 merge 顺序，不自动越过用户授权范围。

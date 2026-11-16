@@ -11,6 +11,7 @@
 5. [用户旅程与协作设计](product/thinking-partner-product-design.md)：Design Thinking、As-is、To-be 与交互示例。
 6. [知识组织与维护规则](handbook/knowledge-management.md)：知识如何分类、更新、追溯与沉淀。
 7. [单台 Mac 本地架构](architecture/local-macos-mvp.md)：进程、编辑、Agent 与恢复提案，存储仍待 POC。
+8. [开发 Harness](engineering/harness.md)：串行 change、ATDD、开发规范、证据与 Living Spec 收口。
 
 ## 当前知识地图
 
@@ -26,6 +27,9 @@
 | 本地部署决策 | [DEC-0002](decisions/0002-local-macos-mvp.md) | 单台 Mac 目标已明确，实现选择仍为提案 |
 | 实现架构 | [单台 Mac 本地架构](architecture/local-macos-mvp.md) | 当前 MVP 提案，Pi 优先 POC，尚未冻结、未实现 |
 | 框架选择 | [框架复评](research/framework-evaluation.md) | 需同任务 POC 验证；不是依赖清单 |
+| 开发方法 | [Harness](engineering/harness.md)、[DEC-0003](decisions/0003-openspec-atdd-harness.md) | OpenSpec 与 ATDD 骨架已建立，应用检查将在工程 change 中配置 |
+| 代码规范 | [架构边界](engineering/code-architecture.md)、[日常规范](engineering/development-rules.md) | 新代码应遵循；模块随实现建立 |
+| 验收与证据 | [ATDD 约定](engineering/atdd-and-evidence.md)、[Harness 验证](validation/harness-bootstrap.md) | 已验证流程工具，不代表应用通过验收 |
 | 未决事项 | [开放问题](product/open-questions.md) | 进入对应阶段时验证，不要求一次回答所有问题 |
 
 ## 专题研究与早期方案
@@ -46,7 +50,7 @@
 | 发现需求 | 行业调研、核心价值、真实写作材料 | 观察事实、待验证假设和研究结果 |
 | 设计能力 | 原则、旅程、开放问题 | 功能范围、交互状态、失败路径和验收标准 |
 | 做重大取舍 | 研究与验证证据 | 决策背景、备选、代价与复审条件 |
-| 实施 | 功能规范、架构、已接受决策 | 代码与接口入口、数据变更、实际偏差 |
+| 实施 | 当前 OpenSpec change、Harness、架构、已接受决策 | 代码、测试、实际验证证据与偏差 |
 | 验证 | 功能验收与价值假设 | 方法、版本、结果、失败案例和限制 |
 | 发布维护 | 已验证功能与部署方案 | 发布版本、部署恢复、已知限制和复盘 |
 
@@ -57,4 +61,4 @@
 - [决策记录](templates/decision.md)
 - [验证与实验](templates/validation.md)
 
-当前没有测试结果、上线记录或真实用户访谈结论；未来在对应工作发生时创建，不用空白文档制造完成状态。
+当前有原型交互与 Harness 工具的检查记录，尚无应用功能验收、上线记录或真实用户访谈结论。已交付行为由仓库 `openspec/specs/` 维护；该目录目前没有产品规格，待首个功能 change 验收并归档后形成。
