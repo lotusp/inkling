@@ -1,6 +1,6 @@
 # Inkling 产品知识库
 
-更新日期：2026-11-16。当前阶段：产品探索与设计，应用尚未实现。MVP 目标为单台 Mac 本地运行。此目录保存产品为什么存在、依据什么做决定、计划如何实现，以及实际验证了什么。
+更新日期：2026-11-16。当前阶段：产品设计与本地工程基础实现；正文保存和 AI 协作尚未接入。MVP 目标为单台 Mac 本地运行。此目录保存产品为什么存在、依据什么做决定、计划如何实现，以及实际验证了什么。
 
 ## 从这里开始
 
@@ -27,7 +27,8 @@
 | 本地部署决策 | [DEC-0002](decisions/0002-local-macos-mvp.md) | 单台 Mac 目标已明确，实现选择仍为提案 |
 | 实现架构 | [单台 Mac 本地架构](architecture/local-macos-mvp.md) | 当前 MVP 提案，Pi 优先 POC，尚未冻结、未实现 |
 | 框架选择 | [框架复评](research/framework-evaluation.md) | 需同任务 POC 验证；不是依赖清单 |
-| 开发方法 | [Harness](engineering/harness.md)、[DEC-0003](decisions/0003-openspec-atdd-harness.md) | OpenSpec 与 ATDD 骨架已建立，应用检查将在工程 change 中配置 |
+| 本地工程 | [运行与检查](engineering/local-development.md) | 本机服务、临时编辑、真实工程检查；数据与 AI 待接入 |
+| 开发方法 | [Harness](engineering/harness.md)、[DEC-0003](decisions/0003-openspec-atdd-harness.md) | OpenSpec、ATDD 与首批应用检查已建立 |
 | 代码规范 | [架构边界](engineering/code-architecture.md)、[日常规范](engineering/development-rules.md) | 新代码应遵循；模块随实现建立 |
 | 验收与证据 | [ATDD 约定](engineering/atdd-and-evidence.md)、[Harness 验证](validation/harness-bootstrap.md) | 已验证流程工具，不代表应用通过验收 |
 | 未决事项 | [开放问题](product/open-questions.md) | 进入对应阶段时验证，不要求一次回答所有问题 |
@@ -61,4 +62,4 @@
 - [决策记录](templates/decision.md)
 - [验证与实验](templates/validation.md)
 
-当前有原型交互与 Harness 工具的检查记录，尚无应用功能验收、上线记录或真实用户访谈结论。已交付行为由仓库 `openspec/specs/` 维护；该目录目前没有产品规格，待首个功能 change 验收并归档后形成。
+当前有原型、Harness 与本地工作台的检查记录，尚无正式上线或真实用户访谈结论。已交付行为由仓库 `openspec/specs/` 维护；实施中的契约与证据在对应 `openspec/changes/` 目录。

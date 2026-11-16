@@ -1,0 +1,338 @@
+{
+  "schemaVersion": 1,
+  "changeId": "bootstrap-local-workbench",
+  "result": "passed",
+  "subject": [
+    {
+      "path": ".dependency-cruiser.cjs",
+      "sha256": "a17031116b6cdac9e3b32d5d94cfc4bf6e0ce32f9aa9943951ff551dd7381033"
+    },
+    {
+      "path": ".github/workflows/checks.yml",
+      "sha256": "295dd165256ac0ac03b0485ac8019176313231a73986706900e178660193cb45"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "fee11063ddab13aafc5cf1a973e8b6d0b87da7b5891d950c6be4d14f1b8da5ea"
+    },
+    {
+      "path": ".node-version",
+      "sha256": "4c42fb8d6334c5cdcac68b93f96c581fb83b1f58cda898cff115e5e941ef717d"
+    },
+    {
+      "path": ".npmrc",
+      "sha256": "3b88d1057add6f92ec23dc22dd017e312ded13a042deb0ba6f08bad85d936456"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "007fe7dd96d8a59587987ff482185263b7ebece0aafbe5b497631f4a29daf244"
+    },
+    {
+      "path": "README.md",
+      "sha256": "7e2ccf712dec98ec4a256e624f3778aacb9b7dbd6a9be4905678a489bcde8ad2"
+    },
+    {
+      "path": "apps/server/package.json",
+      "sha256": "aed079bbf5e890c48a4bb2f3bcd9da7ccac0e44e03e3884b3390ff5e67b81b66"
+    },
+    {
+      "path": "apps/server/src/main.ts",
+      "sha256": "b6eb503abac8f89f53f284b9345a4fd2cecd5f028aae04ed987c26e7a60cfdc4"
+    },
+    {
+      "path": "apps/server/src/server.ts",
+      "sha256": "27ac760ea2420769f1f0073ae56608a656e3c2c3ecf59b08215d2fd37446f54a"
+    },
+    {
+      "path": "apps/web/index.html",
+      "sha256": "062fc0651408d1b8927c6a82b32d4784c619b2180c6a79a7108f259f870810a6"
+    },
+    {
+      "path": "apps/web/package.json",
+      "sha256": "abc40af3112dd507983fffbdf01848b97d27b608a1db144c37823ae3b9dffa58"
+    },
+    {
+      "path": "apps/web/src/App.tsx",
+      "sha256": "454619c580bc168e9f58e7096a3c7095ce684f5be37d4675430a63c99d39aaa6"
+    },
+    {
+      "path": "apps/web/src/main.tsx",
+      "sha256": "77bbc4b34984da1528ce4e31123c0a7ab0d262ef01e427f80c1f9d3e97a2874f"
+    },
+    {
+      "path": "apps/web/src/styles.css",
+      "sha256": "ee99d992d305259d0a3488b85cef369e9a3cedb0cefae676bb4fff1797dc8b59"
+    },
+    {
+      "path": "apps/web/src/use-health.ts",
+      "sha256": "63c5fb5964c470b6d3847893f8b52c5469c0dc7cc978272d20620ab26bbe7116"
+    },
+    {
+      "path": "apps/web/vite.config.ts",
+      "sha256": "1354a1adc934ce5c1dbb18af3fc6756029c9c595106c92fadef6e3d87bab92fc"
+    },
+    {
+      "path": "docs/README.md",
+      "sha256": "b3236ef8f16e27041b25aaef1c52f8a183cb41638c451617dec3e746bd0ebf11"
+    },
+    {
+      "path": "docs/architecture/local-macos-mvp.md",
+      "sha256": "c44f04ec7d30a871ad7eb59ab0a4b3d11e6d460eef856b66334f5f9fcb80ebd4"
+    },
+    {
+      "path": "docs/engineering/atdd-and-evidence.md",
+      "sha256": "3d16973f6ddd99b50a148e31ea717341535ad697837badb51c6ec20193a11957"
+    },
+    {
+      "path": "docs/engineering/code-architecture.md",
+      "sha256": "829b22d60e794618a0a95b3a31757a06be936cb4d9584aac5f770c4ac644eb44"
+    },
+    {
+      "path": "docs/engineering/development-rules.md",
+      "sha256": "301ef2ed13cacab517ec7326e78deb0a8a63ceefc6bb189299e079a4759c6e2f"
+    },
+    {
+      "path": "docs/engineering/harness.md",
+      "sha256": "7cfdabec100a58917d9d0f1f4ea2b67e8d69e4df75cc562365899084fe4578ce"
+    },
+    {
+      "path": "docs/engineering/local-development.md",
+      "sha256": "f3385e19172d38819fddc49a81ba222f8e9f6b6d5a73d0c2635a018926440af5"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "a5e47c65b3a3b26627746c7fee2b14990347912b7ef1a81bfcc0ef4dc370a373"
+    },
+    {
+      "path": "@change/.openspec.yaml",
+      "sha256": "c2bb431aa55054aacccab1ed5377c26e7e42a37d7cdd430cd31dba95cc638848"
+    },
+    {
+      "path": "@change/acceptance.md",
+      "sha256": "521f63183cad4094af60bd2520edfc4fafc3cfd5eacf0393ff348e611872b7d9"
+    },
+    {
+      "path": "@change/design.md",
+      "sha256": "0ccf49286c3c4121c5ba7aa59dbb52471dc9a7e7a65ff77ecf16affdbcb5aa4b"
+    },
+    {
+      "path": "@change/proposal.md",
+      "sha256": "efe50e399ed4ddeb965c22d5fd505e3acae6c64bf5bc58320227bf0c435950ca"
+    },
+    {
+      "path": "@change/specs/development-checks/spec.md",
+      "sha256": "ee47e8e922c4993af61dbdd1b47966a8753977e9ae7a4db28cd79de98232a738"
+    },
+    {
+      "path": "@change/specs/local-workbench/spec.md",
+      "sha256": "d2fc46aee322c57b70ebe67c8189b9cd91449a8b629e8ea9f65011241064e850"
+    },
+    {
+      "path": "@change/tasks.md",
+      "sha256": "cb11a21876c79f042f23a8ea3fa15239e50f1ab7909bc1e3d36b7880f073c121"
+    },
+    {
+      "path": "openspec/config.yaml",
+      "sha256": "7d56f21a999821dc2faa275c1a5585940d2d29aa5bba27bba1a0570382783fac"
+    },
+    {
+      "path": "openspec/schemas/inkling-atdd/schema.yaml",
+      "sha256": "02250a841c764ec5593136a2bbeed68df9bbda3cd4191838a3931a358ed02ac6"
+    },
+    {
+      "path": "openspec/schemas/inkling-atdd/templates/acceptance.md",
+      "sha256": "ebd532f17c66047048144a3eaf3719a5c66f0a44479ef8b5a5c4fd9842454b43"
+    },
+    {
+      "path": "openspec/schemas/inkling-atdd/templates/design.md",
+      "sha256": "0845951a7404e6fc15f6156f12f838c7a0af3372ca45321f413e9c762e7f7a8c"
+    },
+    {
+      "path": "openspec/schemas/inkling-atdd/templates/proposal.md",
+      "sha256": "f950e9112386b944e533f63e2cf9c52eb9970581bf1c18b6e185403d9b2f587f"
+    },
+    {
+      "path": "openspec/schemas/inkling-atdd/templates/spec.md",
+      "sha256": "8bb6fd3bfcc3819d9e33664e85f69d4a380064208e08ccd29f87a55733d04a07"
+    },
+    {
+      "path": "openspec/schemas/inkling-atdd/templates/tasks.md",
+      "sha256": "927056f7ce26a6ab42829a3e2f210cf3eae22a4387c5e3fc9eb0296d36a2a895"
+    },
+    {
+      "path": "package.json",
+      "sha256": "56bfeec378a75c34f412f8ffef85121605cb65a19e7ff7ba93e56062d3889cc1"
+    },
+    {
+      "path": "packages/contracts/package.json",
+      "sha256": "54b3813bd5b7e87c4d4093d3ad16b2d9761027e0e9c32fdc38a1b4a7ced036e2"
+    },
+    {
+      "path": "packages/contracts/src/index.ts",
+      "sha256": "c292312e723c4d5c586c4a1dd3b04342f4a79bd6ba35a2ca1acb421718d657f5"
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "d87453a0c65bc526118f21e39035d7e2c5fe7f77392e4ab186537181033b7038"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "8f7292fc827bc444cbb5c67ce7c91d5bb58c27a21bbc230e0000ddd161163ce5"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "sha256": "e817d3f04af264843545f902cadbe52ad664713d1667679cf87bd6423c1c9aed"
+    },
+    {
+      "path": "prettier.config.mjs",
+      "sha256": "e53575a85d7fbd98ed66f66916a830dda58518b7f7b6a314347264cc3697dff0"
+    },
+    {
+      "path": "scripts/build-server.mjs",
+      "sha256": "64f11548cfa7ee6db68855589d28425ed2dd5fc94077feb8c4408a6cc3cc9abd"
+    },
+    {
+      "path": "scripts/harness/check.mjs",
+      "sha256": "1f0f1f12c558705770e9dae4866dfea3419ce36b9c74722ebbaecb75c150c7d5"
+    },
+    {
+      "path": "scripts/harness/check.test.mjs",
+      "sha256": "04052492263fff7b1dcbaa5b245a5abcb274fba7973c5f286d214196747a2e64"
+    },
+    {
+      "path": "scripts/harness/docs-check.mjs",
+      "sha256": "e33956f2e514521059960fdf4273f30dd2237c064172cfde4bfb73a87a7fef30"
+    },
+    {
+      "path": "scripts/harness/openspec-smoke.mjs",
+      "sha256": "2a297e6dd1e0681a4180e589eeb9166ff314206ed869e1c8ffb348b1b2cabc4d"
+    },
+    {
+      "path": "tests/api/server.test.ts",
+      "sha256": "610d497cf975cdd96ba4de6d19b7f58be308b12f307cc6506edcdf436ced41c5"
+    },
+    {
+      "path": "tests/architecture/boundaries.test.ts",
+      "sha256": "63cde4141c5c6a5c318bdd9d3c156c7edbb643fd3956536f666f50613aa58ba5"
+    },
+    {
+      "path": "tests/e2e/workbench.spec.ts",
+      "sha256": "a88064e01a42878e820dec2ab9be809aa1141df30c335c66c4e88e91583f0e87"
+    },
+    {
+      "path": "tests/process/lifecycle.test.ts",
+      "sha256": "6577cff505fad06d49b5a60c1252ef9b514fba4cfece3344e276ade3b21ef75b"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "25cb17c60a5592ff586c67f9b5a11a7395200292f1ce05b9f12438b9656c1bd6"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "678f4b23813ae3e075d313231345dd1082f958d4ed05bfd95628b1fba67f0bc1"
+    }
+  ],
+  "checks": [
+    {
+      "id": "install",
+      "command": "corepack pnpm install --frozen-lockfile --offline",
+      "status": "passed",
+      "exitCode": 0,
+      "log": "evidence/install.log"
+    },
+    {
+      "id": "verify",
+      "command": "corepack pnpm verify",
+      "status": "passed",
+      "exitCode": 0,
+      "log": "evidence/verify.log"
+    },
+    {
+      "id": "e2e",
+      "command": "corepack pnpm test:e2e",
+      "status": "passed",
+      "exitCode": 0,
+      "log": "evidence/e2e.log"
+    },
+    {
+      "id": "visual-review",
+      "command": "Manual inspection of desktop and 375px Playwright screenshots",
+      "status": "passed",
+      "exitCode": 0,
+      "log": "evidence/visual-review.log"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "WORKBENCH-START-001",
+      "status": "passed",
+      "checkIds": [
+        "verify",
+        "e2e"
+      ]
+    },
+    {
+      "id": "WORKBENCH-PORT-002",
+      "status": "passed",
+      "checkIds": [
+        "verify"
+      ]
+    },
+    {
+      "id": "WORKBENCH-STOP-003",
+      "status": "passed",
+      "checkIds": [
+        "verify"
+      ]
+    },
+    {
+      "id": "WORKBENCH-EDIT-004",
+      "status": "passed",
+      "checkIds": [
+        "verify",
+        "e2e",
+        "visual-review"
+      ]
+    },
+    {
+      "id": "WORKBENCH-CHAT-005",
+      "status": "passed",
+      "checkIds": [
+        "verify",
+        "e2e"
+      ]
+    },
+    {
+      "id": "WORKBENCH-HEALTH-006",
+      "status": "passed",
+      "checkIds": [
+        "verify",
+        "e2e"
+      ]
+    },
+    {
+      "id": "WORKBENCH-HOST-007",
+      "status": "passed",
+      "checkIds": [
+        "verify"
+      ]
+    },
+    {
+      "id": "DEVELOPMENT-CHECK-001",
+      "status": "passed",
+      "checkIds": [
+        "install",
+        "verify",
+        "e2e",
+        "visual-review"
+      ]
+    },
+    {
+      "id": "DEVELOPMENT-BOUNDARY-002",
+      "status": "passed",
+      "checkIds": [
+        "verify"
+      ]
+    }
+  ]
+}

@@ -35,7 +35,7 @@ Harness 由六部分组成：规则、上下文入口、OpenSpec 产物依赖、
 | 已完成变更历史 | `openspec/changes/archive/<date>-<change-id>/` |
 | 技术重大取舍 | `docs/decisions/`；架构说明引用决策与已实现规格 |
 
-现有产品文档是目标与提案，不批量转换成“已实现”的 Living Spec。首次建设 Harness 是一次引导配置，尚未创建产品 change，也没有预写产品规格。后续 Harness 自身的行为变化也走 change；文字修正可以用轻量路径。
+现有产品文档是目标与提案，不批量转换成“已实现”的 Living Spec。首次建设 Harness 是一次引导配置，没有预写产品规格；后续已交付行为通过各自的 change 进入 Living Spec。后续 Harness 自身的行为变化也走 change；文字修正可以用轻量路径。
 
 每个正常行为 change 包含：
 
@@ -117,7 +117,7 @@ node scripts/harness/docs-check.mjs
 
 上述命令中 `<...>` 为参数占位。归档命令在 G2 之后使用：`--yes` 会跳过交互确认，**不是门禁**。禁止通过 `--no-validate` 绕过失败。正常行为 change 不使用 `--skip-specs`。CLI 没有替我们执行 Git merge。
 
-Harness 自身的回归命令为 `node --test scripts/harness/check.test.mjs` 和 `OPENSPEC_TELEMETRY=0 node scripts/harness/openspec-smoke.mjs`；后者只在临时目录验证真实 CLI，不创建本项目 change。初始化结果见[验证记录](../validation/harness-bootstrap.md)。当前未安装 Git hooks，检查需按流程显式执行；第一条工程 change 再接入 CI 必需检查。
+Harness 自身的回归命令为 `node --test scripts/harness/check.test.mjs` 和 `OPENSPEC_TELEMETRY=0 node scripts/harness/openspec-smoke.mjs`；后者只在临时目录验证真实 CLI，不创建本项目 change。初始化结果见[验证记录](../validation/harness-bootstrap.md)。当前未安装 Git hooks，检查需按流程显式执行；bootstrap-local-workbench 已接入 CI 必需检查。
 
 无行为改变的文字/配置修正允许轻量路径：明确原因、影响与验证，省略无意义的 Red；不创建虚构验收。仅此类 change 可按 CLI 的 `skip_specs: true` 机制处理，并在 proposal 与验证报告说明。当前 `inkling-atdd` schema/checker 面向有行为契约的 change；纯文字更正直接按本段评审提交，不创建占位 delta 来取悦工具。
 
@@ -149,6 +149,6 @@ Harness 自身的回归命令为 `node --test scripts/harness/check.test.mjs` �
 
 ## 已有能力与后续补齐
 
-本次交付规则、schema、模板、四个本地 skill 和结构检查脚本。正式 TypeScript 编译、lint、import 边界、API/E2E 测试与 CI 尚无应用可运行，应在第一条工程 change 中配置为真实命令；不预先添加空测试或恒定成功的 CI。G2 对任何已声明必需但缺失的检查均阻断。
+本次交付规则、schema、模板、四个本地 skill 和结构检查脚本。bootstrap-local-workbench 已建立 TypeScript、lint、依赖边界、API/进程/E2E 测试与 CI，实际命令见[本地运行](local-development.md)；远端 CI 结果仍按实际执行情况记录。G2 对任何已声明必需但缺失的检查均阻断。
 
 官方依据：[OpenSpec CLI](https://openspec.dev/docs/cli) 的 archive、validate 与 schema 说明；本次命令兼容性以本机 `openspec --help` 和实际夹具验证为准。[OpenSpec 项目](https://github.com/Fission-AI/OpenSpec) 提供跨工具的规格与变更工作方式，Inkling 的串行与 ATDD 约束属于本项目约定。

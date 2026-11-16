@@ -1,0 +1,50 @@
+{
+  "name": "inkling",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.34.9",
+  "engines": {
+    "node": ">=22.22.2 <23"
+  },
+  "scripts": {
+    "dev": "concurrently -k --names server,web \"PORT=4318 tsx watch apps/server/src/main.ts\" \"vite --config apps/web/vite.config.ts\"",
+    "build": "vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs",
+    "start": "pnpm build && node apps/server/dist/main.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint apps packages tests --max-warnings 0",
+    "format:check": "prettier --check apps packages tests scripts/build-server.mjs '*.json' '*config.*' '.dependency-cruiser.cjs' '.github/workflows/checks.yml' pnpm-workspace.yaml",
+    "format": "prettier --write apps packages tests scripts/build-server.mjs '*.json' '*config.*' '.dependency-cruiser.cjs' '.github/workflows/checks.yml' pnpm-workspace.yaml",
+    "check:architecture": "depcruise apps packages --config .dependency-cruiser.cjs --output-type err-long",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:harness": "node --test scripts/harness/check.test.mjs",
+    "check:docs": "node scripts/harness/docs-check.mjs",
+    "check:specs": "OPENSPEC_TELEMETRY=0 openspec validate --all --strict --no-interactive && OPENSPEC_TELEMETRY=0 openspec validate --archived --strict --no-interactive && node scripts/harness/check.mjs",
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm check:architecture && pnpm build && pnpm test && pnpm test:harness && pnpm check:docs && pnpm check:specs"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@fission-ai/openspec": "1.16.1",
+    "@playwright/test": "1.65.1",
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "concurrently": "10.0.7",
+    "dependency-cruiser": "18.7.2",
+    "esbuild": "0.28.2",
+    "eslint": "10.15.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "prettier": "3.10.1",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.2",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

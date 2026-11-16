@@ -1,0 +1,5 @@
+2026-11-16 visual inspection of Playwright screenshots
+Desktop: 1280 px; editor, toolbar, disabled Chat, save boundary and connected service are visible; no overlap or clipping observed.
+Narrow screen: 375 px; document and Chat stack; toolbar and notice fit; no horizontal overflow.
+Screenshots: workbench-desktop.png, workbench-mobile.png
+Result: passed. Native macOS IME candidate window not exercised.

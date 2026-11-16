@@ -1,0 +1,10 @@
+{
+  "name": "@inkling/server",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@inkling/contracts": "workspace:*",
+    "fastify": "5.12.8",
+    "@fastify/static": "10.1.11"
+  }
+}

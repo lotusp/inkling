@@ -1,0 +1,53 @@
+
+ RUN  v5.1.0 <repo>
+
+ ❯ tests/api/server.test.ts (3 tests | 2 failed) 63ms
+   ❯ local service (3)
+     × WORKBENCH-START-001 returns the health contract 60ms
+     × WORKBENCH-HOST-007 rejects a nonlocal host 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/server.test.ts > local service > WORKBENCH-START-001 returns the health contract
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/server.test.ts:10:31
+      8|  it('WORKBENCH-START-001 returns the health contract',async()=>{
+      9|   const response=await make().inject({method:'GET',url:'/api/health'});
+     10|   expect(response.statusCode).toBe(200);
+       |                               ^
+     11|   expect(HealthResponse.parse(response.json())).toEqual({status:'ok',a…
+     12|  });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/api/server.test.ts > local service > WORKBENCH-HOST-007 rejects a nonlocal host
+AssertionError: expected 404 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 404
+
+ ❯ tests/api/server.test.ts:15:31
+     13|  it('WORKBENCH-HOST-007 rejects a nonlocal host',async()=>{
+     14|   const response=await make().inject({method:'GET',url:'/api/health',h…
+     15|   expect(response.statusCode).toBe(403);
+       |                               ^
+     16|  });
+     17|  it('WORKBENCH-HOST-007 keeps unknown APIs as JSON 404',async()=>{
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  15:44:10
+   Duration  277ms (import 54%, tests 33%, transform 12%, worker 1%)
