@@ -139,13 +139,9 @@ Harness 自身的回归命令为 `node --test scripts/harness/check.test.mjs` �
 
 ## 建议的首批 change
 
-此表是候选顺序，不是已创建的 changes。每个 change 都形成可运行且可验收的切片，完成后再细化下一项。
+完整候选清单集中维护在 [V1 Change 路线图](v1-change-roadmap.md)：建议 17 条，含已完成的 `bootstrap-local-workbench`。下一条为 `persist-article-revisions`，先确定正文和存储权威，完成保存、冲突提示、版本恢复。随后补文章管理、技术编辑器和模型运行基础，再接文章 Chat 与候选修改。
 
-1. `bootstrap-local-workbench`：锁定开发依赖、建立模块与检查命令，一条命令启动空白编辑器及服务健康检查。
-2. `persist-article-revisions`：文件与 SQLite POC 后确定权威格式，完成保存、冲突提示、版本恢复的第一条闭环。
-3. `discuss-article-context`：真实模型适配、文章/选区上下文、会话、取消和预算。
-4. `review-and-apply-proposals`：候选修改、差异、基线检查、接受与撤回。
-5. 后续按[V1 批次](../product/v1-scope.md#同一版本内的实施顺序)逐项细化资料研究、风格记忆和博客交付。
+路线图不是已创建的 changes。每条形成可运行且可验收的切片，完成后再细化下一项；范围覆盖仍以 [V1 功能清单](../product/v1-scope.md)为准。
 
 ## 已有能力与后续补齐
 
