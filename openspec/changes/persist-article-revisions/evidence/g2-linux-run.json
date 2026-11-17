@@ -1,0 +1,115 @@
+{
+  "conclusion": "success",
+  "headSha": "1442baef9abc1dbca80b5afc4feca8e8d6fe1e1a",
+  "jobs": [
+    {
+      "completedAt": "2026-11-17T06:06:11Z",
+      "conclusion": "success",
+      "databaseId": 133854209700,
+      "name": "verify",
+      "startedAt": "2026-11-17T06:03:37Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-11-17T06:03:39Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-11-17T06:03:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-17T06:03:39Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "startedAt": "2026-11-17T06:03:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-17T06:03:43Z",
+          "conclusion": "success",
+          "name": "Run pnpm/action-setup@v6",
+          "number": 3,
+          "startedAt": "2026-11-17T06:03:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-17T06:03:47Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@v7",
+          "number": 4,
+          "startedAt": "2026-11-17T06:03:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-17T06:03:53Z",
+          "conclusion": "success",
+          "name": "Run pnpm install --frozen-lockfile",
+          "number": 5,
+          "startedAt": "2026-11-17T06:03:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-17T06:04:09Z",
+          "conclusion": "success",
+          "name": "Run pnpm exec playwright install --with-deps chromium",
+          "number": 6,
+          "startedAt": "2026-11-17T06:03:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-17T06:04:29Z",
+          "conclusion": "success",
+          "name": "Run pnpm verify",
+          "number": 7,
+          "startedAt": "2026-11-17T06:04:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-17T06:06:07Z",
+          "conclusion": "success",
+          "name": "Run pnpm test:e2e",
+          "number": 8,
+          "startedAt": "2026-11-17T06:04:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-17T06:06:09Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@v7",
+          "number": 14,
+          "startedAt": "2026-11-17T06:06:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-17T06:06:09Z",
+          "conclusion": "success",
+          "name": "Post Run pnpm/action-setup@v6",
+          "number": 15,
+          "startedAt": "2026-11-17T06:06:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-17T06:06:09Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 16,
+          "startedAt": "2026-11-17T06:06:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-17T06:06:09Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "startedAt": "2026-11-17T06:06:09Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/lotusp/inkling/actions/runs/44028413229/job/133854209700"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/lotusp/inkling/actions/runs/44028413229"
+}

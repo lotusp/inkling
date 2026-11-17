@@ -50,10 +50,12 @@
 
 - 5.3：建立 test:storage-performance，中文段落/混合格式/标题/列表/代码构成精确 60 KiB 与 2 MiB 样本，每组预热 2 次、连续测量 30 次。现有实现 baseline-pass：API p95 分别 12.08 / 171.68 ms，普通稿服务端事件循环 p95 10.82 ms，均满足预设门槛；最大稿事件循环 p95 94.18 ms，仅作观测，不套用普通稿门槛。约 69 MB 历史重新打开及 hash 扫描 883.54 ms，不推广到容量上限。完整 verify 通过（61 项应用/架构 + 10 项 Harness），59 项 E2E 全部通过；首次全检发现两处格式问题，修正后完整重跑通过。日志 storage-performance.log、storage-performance-initial.log、storage-final-checks.log、storage-all-green.log；方法和限制见 docs/validation/article-storage-performance.md。未调整 durability 或放宽门槛，测试使用临时目录，不影响个人工作空间。
 
+- 6.1：独立 git archive 目录验证已提交版本 1442bae，Mac 锁定安装、verify（61 项应用 + 10 项 Harness）与 59 项 E2E 全通过；真实 GitHub Ubuntu 26.04.1 x64 CI 运行 44028413229 同样全部通过，better-sqlite3 13.2.0 原生安装成功。性能沿用未变化实现的 5.3 实测；已复看桌面/窄屏交互截图，手工 IME 沿用用户反馈。完整说明和日志见 evidence/g2-platform-validation.md、g2-mac-*.log、g2-linux-ci.log、g2-linux-run.json。用户未提交的品牌修改排除在本次被测对象外。
+
 ## 当前边界
 
-3.1–4.3 已完成：在线自动保存、浏览器草稿恢复/重连核对、救援下载、冲突比较/显式合并、确认放弃副本，以及版本历史/命名/比较/恢复已实现。服务停止期间刷新不能打开页面，重启后可恢复；救援 JSON 当前无导入界面。Linux 原生驱动安装未验证；真实 IME 已由用户手工确认通过。本机依赖安装成功；pnpm 原生驱动需要允许构建且可能使用 Xcode Command Line Tools。
+3.1–4.3 已完成：在线自动保存、浏览器草稿恢复/重连核对、救援下载、冲突比较/显式合并、确认放弃副本，以及版本历史/命名/比较/恢复已实现。服务停止期间刷新不能打开页面，重启后可恢复；救援 JSON 当前无导入界面。Linux 原生驱动安装和完整功能 CI 已通过；真实 IME 已由用户手工确认通过。本机依赖安装成功；pnpm 原生驱动需要允许构建且可能使用 Xcode Command Line Tools。
 
 ## 下一步
 
-5.1–5.3 已完成，下一步为 6.1–6.2：核对 Linux CI 原生驱动安装/功能测试，完成 23 场景和被测文件覆盖自检，再生成 verification/evidence.json 并执行 G2 校验。2.3b 已有用户手工通过反馈，自动组合事件与手工验收分别留证。当前自动检查通过不表示完整 change 的 G2 完成；未 archive、merge 或 push。
+6.1 已完成，下一步为 6.2：完成 23 场景和被测文件覆盖自检，再生成 verification/evidence.json 并执行 G2 校验。2.3b 已有用户手工通过反馈，自动组合事件与手工验收分别留证。当前自动检查通过不表示完整 change 的 G2 完成；未 archive、merge 或 push。
