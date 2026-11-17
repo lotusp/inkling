@@ -51,4 +51,4 @@ G2：`corepack pnpm install --frozen-lockfile`、`corepack pnpm verify`、`corep
 - 限额和时间可注入，用少量数据证明策略；正式默认参数另外断言。Readonly 使用真实只读 SQLite；ENOSPC 可注入 SQLite 错误而不填满用户磁盘，日志明确区别。
 - SIGKILL 测试验证进程崩溃。真实断电/物理磁盘故障不在可自动声明范围。HTTP 响应延迟/丢失是在真实提交后截断，不让假响应代替数据库。
 - schema 最大样本、全部现有 node/mark 组合、纯格式差异、复制标签页 clientId 冲突、两份离线副本和旧 mutation 返回都必须列入测试数据。
-- 相对日志进入 change/evidence，G2 evidence.json 指纹覆盖正式代码/配置/驱动锁文件与 delta；当前仅写 design-evidence.json，不报告产品 passed。
+- 相对日志进入 change/evidence，G2 evidence.json 指纹覆盖正式代码/配置/驱动锁文件与 delta；设计 POC 保留 design-evidence.json；产品 G2 结果单独写入 change 根目录的 evidence.json 与 verification.md。

@@ -42,7 +42,7 @@
 ## 6. G2 交付证据
 
 - [x] 6.1 确认 Vitest 发现新增 unit/integration 测试，CI 安装锁定原生驱动；执行 verify、E2E、性能与手工 IME/视觉检查，失败或未执行不记通过。
-- [ ] 6.2 自检 23 个场景、错误/恢复交互及依赖边界，记录真实 verification/evidence.json，更新实际运行说明与相关知识入口；通过 G2 结构与规格检查。
+- [x] 6.2 自检 23 个场景、错误/恢复交互及依赖边界，记录真实 verification/evidence.json，更新实际运行说明与相关知识入口；通过 G2 结构与规格检查。
 
 ## Workflow follow-up
 

@@ -136,3 +136,9 @@ PORT=4327 node apps/server/dist/main.js --workspace "$(mktemp -d "${TMPDIR:-/tmp
 工作空间打开时逐版校验已有正文，发现内容损坏会隔离该文章。可以在“稿件需要检查”面板列出旧版本并下载经校验的 JSON；不会自动替换正文。结构性数据库损坏时服务拒绝启动，保留原文件，不保证所有损坏情况都能救援。下载文件当前没有导入界面，不能当作完整工作空间备份。
 
 性能命令使用测试数据和临时目录，结束自动清理，不访问默认个人稿件。默认不在普通 verify 中运行目标 Mac 的耗时门槛；运行结果与限制见[存储性能记录](../validation/article-storage-performance.md)。
+
+## C02 验收基线
+
+2026-11-17，已提交版本在 Mac 独立目录及 GitHub Ubuntu CI 均通过锁定依赖安装、61 项应用测试、10 项 Harness 检查和 59 项 Chromium E2E。Linux 已验证 better-sqlite3 13.2.0 原生安装；默认产品数据目录仍面向 Mac，不表示支持 Linux 桌面产品。性能与真实输入法结论保留各自环境边界。
+
+完整场景、代码自检、文件指纹及限制见[本轮验收报告](../../openspec/changes/persist-article-revisions/verification.md)。验收针对已提交版本；存在未提交改动时，不能把该报告直接作为这些新改动的证据。G2 通过不等同于规格归档或 Git 合并。

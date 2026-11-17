@@ -1,6 +1,6 @@
 # 实施进度
 
-更新：2026-11-17。当前 change：persist-article-revisions。G1 已通过，G2 尚未完成。
+更新：2026-11-17。当前 change：persist-article-revisions。G1、G2 已通过；G3 尚未执行。
 
 ## 已完成步骤
 
@@ -52,10 +52,12 @@
 
 - 6.1：独立 git archive 目录验证已提交版本 1442bae，Mac 锁定安装、verify（61 项应用 + 10 项 Harness）与 59 项 E2E 全通过；真实 GitHub Ubuntu 26.04.1 x64 CI 运行 44028413229 同样全部通过，better-sqlite3 13.2.0 原生安装成功。性能沿用未变化实现的 5.3 实测；已复看桌面/窄屏交互截图，手工 IME 沿用用户反馈。完整说明和日志见 evidence/g2-platform-validation.md、g2-mac-*.log、g2-linux-ci.log、g2-linux-run.json。用户未提交的品牌修改排除在本次被测对象外。
 
+- 6.2：23 个场景、4 份 delta 与实现/测试逐项自检，未发现阻断项；生成 verification.md、evidence.json 和完整产品/测试/配置指纹，核对与主分支差异无遗漏。独立目录的 G2 结构、strict 规格和文档检查通过；知识索引与本地运行说明同步。代码保持 1442bae 被测基线不变，用户未提交品牌修改不在本次 G2 对象内；详见 evidence/g2-subject-coverage.log、g2-gates.log。6.1 日志行尾空格在后续独立修正提交中清理。
+
 ## 当前边界
 
 3.1–4.3 已完成：在线自动保存、浏览器草稿恢复/重连核对、救援下载、冲突比较/显式合并、确认放弃副本，以及版本历史/命名/比较/恢复已实现。服务停止期间刷新不能打开页面，重启后可恢复；救援 JSON 当前无导入界面。Linux 原生驱动安装和完整功能 CI 已通过；真实 IME 已由用户手工确认通过。本机依赖安装成功；pnpm 原生驱动需要允许构建且可能使用 Xcode Command Line Tools。
 
 ## 下一步
 
-6.1 已完成，下一步为 6.2：完成 23 场景和被测文件覆盖自检，再生成 verification/evidence.json 并执行 G2 校验。2.3b 已有用户手工通过反馈，自动组合事件与手工验收分别留证。当前自动检查通过不表示完整 change 的 G2 完成；未 archive、merge 或 push。
+G2 已完成，已无待处理实现任务。下一步按授权在 change 分支 archive，核对 3 个新增 capability 和 local-workbench 改名/修改的 Living Spec 效果，再 Git merge 与 G3 验证；当前未 archive 或 merge。产品基线已推送以运行 Linux CI，后续验收文档提交仍以实际 Git 状态为准。未提交品牌修改保留在原工作区，不能视为已被本次指纹验收。

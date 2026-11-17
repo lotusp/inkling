@@ -1,0 +1,22 @@
+Subject: committed code baseline 1442bae plus G2 documentation
+Root: isolated verification directory; user working-tree changes excluded
+Commands: Harness verify, check:docs, check:specs
+Exit: 0 for all commands
+
+Artifact structure checks passed. This does not prove test quality, spec semantics, or Git merge completion.
+
+> inkling@0.1.0 check:docs <verification-root>
+> node scripts/harness/docs-check.mjs
+
+Checked 70 Markdown files; 0 local path / directory errors. Anchor contents and external URLs are not checked.
+
+> inkling@0.1.0 check:specs <verification-root>
+> OPENSPEC_TELEMETRY=0 openspec validate --all --strict --no-interactive && OPENSPEC_TELEMETRY=0 openspec validate --archived --strict --no-interactive && node scripts/harness/check.mjs
+
+✓ spec/development-checks
+✓ spec/local-workbench
+✓ change/persist-article-revisions
+Totals: 3 passed, 0 failed (3 items)
+✓ change/2026-11-16-bootstrap-local-workbench
+Totals: 1 passed, 0 failed (1 items)
+Single-active-change structure check passed.

@@ -1,0 +1,92 @@
+Subject baseline: 1442baef9abc1dbca80b5afc4feca8e8d6fe1e1a
+Scope: committed product/config/tests; user working-tree branding changes excluded
+Method: git ls-files inventory; git diff <merge-base>...HEAD; SHA-256 of clean verification snapshot; compare each tested file byte-for-byte with HEAD
+Exit: 0
+Merge base: 92764a89e0e920e9782dbdde3087f940a96bf678
+Runtime/test/config/skill subjects: 107
+Delta subjects: 4
+Acceptance rows: 23
+Unknown/missing test paths: 0
+Changed runtime/test/config paths omitted: 0
+
+Self-review: transactions/CAS/replay; draft durability and ownership; restore confirmation; schema/hash isolation; API authentication/path limits; resource limits; test-only injection boundaries; no blocking finding. See verification.md for limits.
+
+Covered changed inputs:
+AGENTS.md
+apps/server/package.json
+apps/server/src/access.ts
+apps/server/src/local-access.ts
+apps/server/src/main.ts
+apps/server/src/server.ts
+apps/web/index.html
+apps/web/public/inkling-mark.svg
+apps/web/src/App.tsx
+apps/web/src/ConflictPanel.tsx
+apps/web/src/DamagedArticlePanel.tsx
+apps/web/src/DocumentComparison.tsx
+apps/web/src/HistoryCapacity.tsx
+apps/web/src/RecoveryPanel.tsx
+apps/web/src/RevisionComparison.tsx
+apps/web/src/VersionPanel.tsx
+apps/web/src/access.ts
+apps/web/src/api.ts
+apps/web/src/conflict.ts
+apps/web/src/document-diff.ts
+apps/web/src/draft-rescue.ts
+apps/web/src/draft-store.ts
+apps/web/src/styles.css
+apps/web/src/use-article.ts
+openspec/config.yaml
+package.json
+packages/adapters/package.json
+packages/adapters/src/articles.ts
+packages/adapters/src/index.ts
+packages/adapters/src/workspace.ts
+packages/contracts/src/article.ts
+packages/contracts/src/index.ts
+packages/contracts/src/revision.ts
+packages/core/package.json
+packages/core/src/application/articles.ts
+packages/core/src/domain/article.ts
+packages/core/src/index.ts
+playwright.config.ts
+pnpm-lock.yaml
+pnpm-workspace.yaml
+scripts/build-server.mjs
+tests/api/article-persistence.test.ts
+tests/api/article-revisions.test.ts
+tests/api/workspace-access.test.ts
+tests/e2e/article-conflict.spec.ts
+tests/e2e/article-corruption.spec.ts
+tests/e2e/article-discard.spec.ts
+tests/e2e/article-formats.spec.ts
+tests/e2e/article-ime-races.spec.ts
+tests/e2e/article-quota.spec.ts
+tests/e2e/article-recovery-failures.spec.ts
+tests/e2e/article-recovery.spec.ts
+tests/e2e/article-restore.spec.ts
+tests/e2e/article-save-races.spec.ts
+tests/e2e/article-save.spec.ts
+tests/e2e/article-storage-faults.spec.ts
+tests/e2e/article-versions.spec.ts
+tests/e2e/build.ts
+tests/e2e/fixtures.ts
+tests/e2e/workbench.spec.ts
+tests/e2e/workspace-access.spec.ts
+tests/fixtures/article-crash-child.ts
+tests/fixtures/article-document.ts
+tests/fixtures/storage-server.ts
+tests/fixtures/storage.ts
+tests/integration/article-corruption.test.ts
+tests/integration/article-faults.test.ts
+tests/integration/article-quota.test.ts
+tests/integration/article-revisions.test.ts
+tests/integration/article-store.test.ts
+tests/performance/storage-performance.ts
+tests/performance/storage-server.ts
+tests/process/article-crash.test.ts
+tests/process/lifecycle.test.ts
+tests/process/workspace-access.test.ts
+tests/unit/article-document.test.ts
+tests/unit/document-diff.test.ts
+vitest.config.ts
