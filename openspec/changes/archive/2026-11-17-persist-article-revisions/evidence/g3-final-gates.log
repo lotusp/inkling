@@ -1,0 +1,5 @@
+Merge: 774ff4ee3f755ba21d805b9b6710978a1db2ce47
+Command: openspec list --json; Harness --stage archived
+Exit: 0
+Active changes: 0
+Artifact structure checks passed. This does not prove test quality, spec semantics, or Git merge completion.

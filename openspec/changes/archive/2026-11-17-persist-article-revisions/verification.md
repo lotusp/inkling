@@ -2,7 +2,7 @@
 
 ## Scope and baseline
 
-日期：2026-11-17。Change：persist-article-revisions。结论：**G2 通过，具备归档与合入条件；G3 未执行。** 本报告为同一开发助手的代码/规格自检，无独立评审或多人签署。
+日期：2026-11-17。Change：persist-article-revisions。结论：**G2、G3 均通过，已归档并合入 master。** 本报告为同一开发助手的代码/规格自检，无独立评审或多人签署。
 
 产品代码基线为 `1442baef9abc1dbca80b5afc4feca8e8d6fe1e1a`。后续本轮提交只增加验收证据、知识说明及过程状态，未改变被测产品/测试/依赖/CI 配置。Mac 使用 git archive 导出的独立目录；Linux 使用相同 SHA 的真实 GitHub Actions。工作区另有未提交品牌修改，不包含在本报告的通过结论中。
 
@@ -52,7 +52,7 @@
 - SQLite 使用同步执行。最大稿事件循环 p95 94.18 ms，普通稿门槛不适用于最大稿；约 69 MB 历史启动校验 883.54 ms，未测满 256 MiB，不做跨设备或并发性能承诺。
 - 不保证物理断电/介质损坏救援；发现损坏不会自动回退或替换权威数据。
 - 构建有约 764 kB 的前端 bundle 提示，无构建失败；代码拆包留在后续编辑器/功能扩展工作，不作为本 change 的额外范围。
-- 未归档 delta、未合并主分支；这两步属于 G3。待合入分支若新增代码或合并冲突修正，需重跑受影响检查并更新指纹。
+- 已归档并合入主分支。后续新增代码或合并冲突修正仍需重跑受影响检查并更新指纹，不能沿用本次结论覆盖新改动。
 
 ## Progress and recovery
 
@@ -62,4 +62,10 @@
 
 ## Closure
 
-G2：通过。2026-11-17 已通过正式 OpenSpec archive 合并 delta，8 条新增需求、1 条改名/修改和原有 6 个未变场景已核对；归档记录见 evidence/g3-archive.log、g3-living-spec.log、g3-archive-checks.log。知识索引、架构、ADR 与运行说明已同步；Git merge 和 G3 最终验证尚待执行。
+2026-11-17：G3 通过。正式 OpenSpec archive 将 change 移至本目录，新增 article-persistence、article-revisions、local-workspace-access，并将 local-workbench 的临时编辑改为可恢复编辑。8 条新增需求、1 条改名/修改及 23 个 change 场景逐项匹配；其余 4 条既有需求、6 个既有场景不变，development-checks 不变。日志见 [归档](evidence/g3-archive.log)、[语义核对](evidence/g3-living-spec.log)、[结构检查](evidence/g3-archive-checks.log)。
+
+归档提交 `dcb4105`，知识同步提交 `7d0ea0e`；合入 master 的 merge commit 为 `774ff4ee3f755ba21d805b9b6710978a1db2ce47`，无冲突。合并后在独立目录执行 frozen-lockfile 安装、完整 verify（61 应用 + 10 Harness）及 59 项 E2E，全部退出 0；[安装](evidence/g3-install.log)、[检查](evidence/g3-verify.log)、[E2E](evidence/g3-e2e.log)、[最终结构与空 active 列表](evidence/g3-final-gates.log)均已留证。
+
+实际产品/测试/依赖/CI 输入与已通过 Linux CI 的 1442bae 逐字节不变。性能和真实 IME 沿用 G2 的对应环境证据；没有为文档归档重复制造验收。新增 G3 元数据和 Living Spec 摘要见 [交付证据](evidence/g3-delivery.json)。最终推送后的 GitHub Actions 状态以最终提交 SHA 的运行及交付回复为准，不在此编造尚未发生的远端结果。
+
+知识索引、架构、ADR、路线图和本地运行说明已同步，当前 active change 为零。未提交品牌修改留在原工作区，并逐文件确认未改变，不在此 G3 验收范围。没有自动创建下一条 change；下一候选为 C03 manage-article-library。

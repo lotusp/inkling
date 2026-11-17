@@ -66,4 +66,4 @@
 
 当前有原型、Harness 与本地工作台的检查记录，尚无正式上线或真实用户访谈结论。已交付行为由仓库 `openspec/specs/` 维护；实施中的契约与证据在对应 `openspec/changes/` 目录。
 
-当前 C02 的存储故障与容量边界已有自动验收，目标 Mac 的测量结果见[存储性能验证](validation/article-storage-performance.md)。真实中文输入法已由用户手工确认通过；Linux CI 与 G2 验收已通过，见[验收报告](../openspec/changes/archive/2026-11-17-persist-article-revisions/verification.md)。该 change 已归档，正在完成主分支合入与 G3 收口。
+当前 C02 的存储故障与容量边界已有自动验收，目标 Mac 的测量结果见[存储性能验证](validation/article-storage-performance.md)。真实中文输入法已由用户手工确认通过；Linux CI 与 G2 验收已通过，见[验收报告](../openspec/changes/archive/2026-11-17-persist-article-revisions/verification.md)。该 change 已归档并合入主分支，G3 验证通过；当前没有 active change。

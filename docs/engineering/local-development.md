@@ -142,3 +142,5 @@ PORT=4327 node apps/server/dist/main.js --workspace "$(mktemp -d "${TMPDIR:-/tmp
 2026-11-17，已提交版本在 Mac 独立目录及 GitHub Ubuntu CI 均通过锁定依赖安装、61 项应用测试、10 项 Harness 检查和 59 项 Chromium E2E。Linux 已验证 better-sqlite3 13.2.0 原生安装；默认产品数据目录仍面向 Mac，不表示支持 Linux 桌面产品。性能与真实输入法结论保留各自环境边界。
 
 完整场景、代码自检、文件指纹及限制见[本轮验收报告](../../openspec/changes/archive/2026-11-17-persist-article-revisions/verification.md)。验收针对已提交版本；存在未提交改动时，不能把该报告直接作为这些新改动的证据。G2 通过不等同于规格归档或 Git 合并。
+
+C02 已于 2026-11-17 归档并合入 master（774ff4e），合入版本的完整本地检查通过；Living Spec 为当前行为依据，归档验收报告保留逐步证据与限制。

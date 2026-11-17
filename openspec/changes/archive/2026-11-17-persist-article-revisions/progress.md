@@ -1,6 +1,6 @@
 # 实施进度
 
-更新：2026-11-17。当前 change：persist-article-revisions。G1、G2 已通过；G3 尚未执行。
+更新：2026-11-17。当前 change：persist-article-revisions。G1、G2、G3 已通过；已归档并合入 master。
 
 ## 已完成步骤
 
@@ -58,6 +58,6 @@
 
 3.1–4.3 已完成：在线自动保存、浏览器草稿恢复/重连核对、救援下载、冲突比较/显式合并、确认放弃副本，以及版本历史/命名/比较/恢复已实现。服务停止期间刷新不能打开页面，重启后可恢复；救援 JSON 当前无导入界面。Linux 原生驱动安装和完整功能 CI 已通过；真实 IME 已由用户手工确认通过。本机依赖安装成功；pnpm 原生驱动需要允许构建且可能使用 Xcode Command Line Tools。
 
-## 下一步
+## 收口与下一步
 
-G2 已完成，已无待处理实现任务。下一步按授权在 change 分支 archive，核对 3 个新增 capability 和 local-workbench 改名/修改的 Living Spec 效果，再 Git merge 与 G3 验证；当前未 archive 或 merge。产品基线已推送以运行 Linux CI，后续验收文档提交仍以实际 Git 状态为准。未提交品牌修改保留在原工作区，不能视为已被本次指纹验收。
+2026-11-17：正式 archive、Living Spec 语义核对、知识同步及 master 合并已完成；merge commit 774ff4e。合入版本在独立目录的安装、verify、59 项 E2E 与 archived 指纹检查通过，active change 为零；完整证据见 verification.md 的 Closure。品牌修改保留，不属于本次交付。后续候选为 C03 manage-article-library，本轮未创建；最终推送与远端 CI 结果见交付回复。

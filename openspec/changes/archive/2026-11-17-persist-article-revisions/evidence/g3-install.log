@@ -1,0 +1,38 @@
+Merge: 774ff4ee3f755ba21d805b9b6710978a1db2ce47
+Command: corepack pnpm install --frozen-lockfile
+Exit: 0
+
+Scope: all 6 workspace projects
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +400
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 400, reused 400, downloaded 0, added 210
+Progress: resolved 400, reused 400, downloaded 0, added 399
+Progress: resolved 400, reused 400, downloaded 0, added 400, done
+
+devDependencies:
++ @eslint/js 10.0.1
++ @fission-ai/openspec 1.16.1
++ @inkling/adapters 0.1.0 <- packages/adapters
++ @inkling/contracts <- packages/contracts
++ @inkling/core 0.1.0 <- packages/core
++ @playwright/test 1.65.1
++ @types/better-sqlite3 9.6.0
++ @types/node 22.20.5
++ @types/react 19.3.0
++ @types/react-dom 19.3.0
++ @vitejs/plugin-react 6.3.0
++ concurrently 10.0.7
++ dependency-cruiser 18.7.2
++ esbuild 0.28.2
++ eslint 10.15.0
++ eslint-plugin-react-hooks 7.1.1
++ prettier 3.10.1
++ tsx 4.23.15
++ typescript 6.0.3
++ typescript-eslint 8.72.2
++ vite 8.3.8
++ vitest 5.1.0
+
+Done in 2.8s using pnpm v10.34.9

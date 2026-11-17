@@ -2,7 +2,7 @@
 
 ## Context and boundaries
 
-状态：C02 实施中，已按用户后续授权接入产品；实际完成情况见 progress.md，POC 不代替产品验收。决策见 [DEC-0004](../../../../docs/decisions/0004-article-storage-and-revisions.md)，实验见 [POC 记录](../../../../docs/validation/article-storage-poc.md)。
+状态：C02 已实现、验收、归档并合入 master；实际完成情况见 progress.md，POC 不代替产品验收。决策见 [DEC-0004](../../../../docs/decisions/0004-article-storage-and-revisions.md)，实验见 [POC 记录](../../../../docs/validation/article-storage-poc.md)。
 
 | 模块 | 本次职责 |
 | --- | --- |

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "changeId": "persist-article-revisions",
+  "stage": "G3",
+  "result": "passed",
+  "mergeCommit": "774ff4ee3f755ba21d805b9b6710978a1db2ce47",
+  "mergeParents": [
+    "92764a89e0e920e9782dbdde3087f940a96bf678",
+    "7d0ea0ed691aa74829f66b3255d3ed4fa95b7934"
+  ],
+  "archive": "2026-11-17-persist-article-revisions",
+  "activeChanges": 0,
+  "unchangedProductBaseline": "1442baef9abc1dbca80b5afc4feca8e8d6fe1e1a",
+  "checks": [
+    {
+      "command": "corepack pnpm install --frozen-lockfile",
+      "exitCode": 0,
+      "log": "g3-install.log"
+    },
+    {
+      "command": "corepack pnpm verify",
+      "exitCode": 0,
+      "log": "g3-verify.log"
+    },
+    {
+      "command": "corepack pnpm test:e2e",
+      "exitCode": 0,
+      "log": "g3-e2e.log"
+    }
+  ],
+  "livingSpecs": [
+    {
+      "path": "openspec/specs/article-persistence/spec.md",
+      "sha256": "d0bfad3c996dc8dcd52b882b07bc8a4da023b89adf7a7e9185507f5917720a67"
+    },
+    {
+      "path": "openspec/specs/article-revisions/spec.md",
+      "sha256": "ab77502d235c5dd16b0315bf9a5cc7d6ac1063abe48bd410518448ab2b6ca734"
+    },
+    {
+      "path": "openspec/specs/development-checks/spec.md",
+      "sha256": "fb6afc9232be86d06d2e7844c5a022987fc1387bf275e49b5be493a6e3bee8a6"
+    },
+    {
+      "path": "openspec/specs/local-workbench/spec.md",
+      "sha256": "35da91e00375130cf07857b620c4cdb414b9ea8dbca2bd397d88d1acf0167d1c"
+    },
+    {
+      "path": "openspec/specs/local-workspace-access/spec.md",
+      "sha256": "0eb2a0e5ba3a96812c21e187a6fff3699d7d16f7c2e7f4755924f9dec2971954"
+    }
+  ],
+  "limits": [
+    "Local merged validation completed; final push CI status belongs to final commit run.",
+    "Uncommitted branding changes excluded and preserved."
+  ]
+}
