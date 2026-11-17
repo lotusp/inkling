@@ -69,7 +69,7 @@ Source: gh run view 44028413229 --log (selected steps, ANSI/paths normalized)
 [Run pnpm install --frozen-lockfile] .../node_modules/better-sqlite3 install: make: Leaving directory '<repo>/node_modules/.pnpm/better-sqlite3@13.2.0/node_modules/better-sqlite3/build'
 [Run pnpm install --frozen-lockfile] .../node_modules/better-sqlite3 install: gyp info ok
 [Run pnpm install --frozen-lockfile] .../node_modules/better-sqlite3 install: Done
-[Run pnpm install --frozen-lockfile] 
+[Run pnpm install --frozen-lockfile]
 [Run pnpm install --frozen-lockfile] devDependencies:
 [Run pnpm install --frozen-lockfile] + @eslint/js 10.0.1
 [Run pnpm install --frozen-lockfile] + @fission-ai/openspec 1.16.1
@@ -93,41 +93,41 @@ Source: gh run view 44028413229 --log (selected steps, ANSI/paths normalized)
 [Run pnpm install --frozen-lockfile] + typescript-eslint 8.72.2
 [Run pnpm install --frozen-lockfile] + vite 8.3.8
 [Run pnpm install --frozen-lockfile] + vitest 5.1.0
-[Run pnpm install --frozen-lockfile] 
+[Run pnpm install --frozen-lockfile]
 [Run pnpm install --frozen-lockfile] Done in 5.8s using pnpm v10.34.9
 [Run pnpm verify] ^[[36;1mpnpm verify^[[0m
 [Run pnpm verify] OPENSPEC_TELEMETRY: 0
 [Run pnpm verify] OPENSPEC_NO_UPDATE_CHECK: 1
 [Run pnpm verify] PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] > inkling@0.1.0 verify <repo>
 [Run pnpm verify] > pnpm format:check && pnpm lint && pnpm typecheck && pnpm check:architecture && pnpm build && pnpm test && pnpm test:harness && pnpm check:docs && pnpm check:specs
-[Run pnpm verify] 
-[Run pnpm verify] 
+[Run pnpm verify]
+[Run pnpm verify]
 [Run pnpm verify] > inkling@0.1.0 format:check <repo>
 [Run pnpm verify] > prettier --check apps packages tests scripts/build-server.mjs '*.json' '*config.*' '.dependency-cruiser.cjs' '.github/workflows/checks.yml' pnpm-workspace.yaml
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] Checking formatting...
 [Run pnpm verify] All matched files use Prettier code style!
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] > inkling@0.1.0 lint <repo>
 [Run pnpm verify] > eslint apps packages tests --max-warnings 0
-[Run pnpm verify] 
-[Run pnpm verify] 
+[Run pnpm verify]
+[Run pnpm verify]
 [Run pnpm verify] > inkling@0.1.0 typecheck <repo>
 [Run pnpm verify] > tsc --noEmit
-[Run pnpm verify] 
-[Run pnpm verify] 
+[Run pnpm verify]
+[Run pnpm verify]
 [Run pnpm verify] > inkling@0.1.0 check:architecture <repo>
 [Run pnpm verify] > depcruise apps packages --config .dependency-cruiser.cjs --output-type err-long
-[Run pnpm verify] 
-[Run pnpm verify] 
+[Run pnpm verify]
+[Run pnpm verify]
 [Run pnpm verify] ✔ no dependency violations found (44 modules, 99 dependencies cruised)
-[Run pnpm verify] 
-[Run pnpm verify] 
+[Run pnpm verify]
+[Run pnpm verify]
 [Run pnpm verify] > inkling@0.1.0 build <repo>
 [Run pnpm verify] > vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] ^[[36mvite v8.3.8 ^[[32mbuilding client environment for production...^[[36m^[[39m
 [Run pnpm verify] transforming...
 [Run pnpm verify] ✓ 2250 modules transformed.
@@ -136,20 +136,20 @@ Source: gh run view 44028413229 --log (selected steps, ANSI/paths normalized)
 [Run pnpm verify] apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
 [Run pnpm verify] apps/web/dist/assets/index-DBgZudlB.css    8.58 kB │ gzip:   2.56 kB
 [Run pnpm verify] apps/web/dist/assets/index-CvYBhOmx.js   764.19 kB │ gzip: 237.99 kB
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] ^[[33m[plugin builtin:vite-reporter]
 [Run pnpm verify] (!) Some chunks are larger than 500 kB after minification. Consider:
 [Run pnpm verify] - Using dynamic import() to code-split the application
 [Run pnpm verify] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 [Run pnpm verify] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.^[[39m
 [Run pnpm verify] ^[[32m✓ built in 326ms^[[39m
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] > inkling@0.1.0 test <repo>
 [Run pnpm verify] > vitest run
-[Run pnpm verify] 
-[Run pnpm verify] 
+[Run pnpm verify]
+[Run pnpm verify]
 [Run pnpm verify] ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv5.1.0 ^[[39m^[[90m<repo>^[[39m
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] ^[[32m✓^[[39m tests/api/article-revisions.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 3152^[[2mms^[[22m^[[39m
 [Run pnpm verify] ^[[33m^[[2m✓^[[22m^[[39m REVISION-HISTORY-001 lists filtered history and stable pages; names replay without changing content^[[33m 1461^[[2mms^[[22m^[[39m
 [Run pnpm verify] ^[[33m^[[2m✓^[[22m^[[39m WORKSPACE-PATH-005 revision reads and names reject foreign IDs, invalid bounds and unauthorized writes^[[33m 586^[[2mms^[[22m^[[39m
@@ -186,16 +186,16 @@ Source: gh run view 44028413229 --log (selected steps, ANSI/paths normalized)
 [Run pnpm verify] ^[[32m✓^[[39m tests/unit/article-document.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 98^[[2mms^[[22m^[[39m
 [Run pnpm verify] ^[[32m✓^[[39m tests/unit/document-diff.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 23^[[2mms^[[22m^[[39m
 [Run pnpm verify] ^[[32m✓^[[39m tests/api/server.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 57^[[2mms^[[22m^[[39m
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] ^[[2m Test Files ^[[22m ^[[1m^[[32m15 passed^[[39m^[[22m^[[90m (15)^[[39m
 [Run pnpm verify] ^[[2m      Tests ^[[22m ^[[1m^[[32m61 passed^[[39m^[[22m^[[90m (61)^[[39m
 [Run pnpm verify] ^[[2m   Start at ^[[22m 06:04:19
 [Run pnpm verify] ^[[2m   Duration ^[[22m 8.73s^[[2m (tests 92%, import 6%, transform 2%)^[[22m
-[Run pnpm verify] 
-[Run pnpm verify] 
+[Run pnpm verify]
+[Run pnpm verify]
 [Run pnpm verify] > inkling@0.1.0 test:harness <repo>
 [Run pnpm verify] > node --test scripts/harness/check.test.mjs
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] TAP version 13
 [Run pnpm verify] # Subtest: HARNESS-001 blocks two active changes
 [Run pnpm verify] ok 1 - HARNESS-001 blocks two active changes
@@ -266,15 +266,15 @@ Source: gh run view 44028413229 --log (selected steps, ANSI/paths normalized)
 [Run pnpm verify] # skipped 0
 [Run pnpm verify] # todo 0
 [Run pnpm verify] # duration_ms 80.485161
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] > inkling@0.1.0 check:docs <repo>
 [Run pnpm verify] > node scripts/harness/docs-check.mjs
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] Checked 68 Markdown files; 0 local path / directory errors. Anchor contents and external URLs are not checked.
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] > inkling@0.1.0 check:specs <repo>
 [Run pnpm verify] > OPENSPEC_TELEMETRY=0 openspec validate --all --strict --no-interactive && OPENSPEC_TELEMETRY=0 openspec validate --archived --strict --no-interactive && node scripts/harness/check.mjs
-[Run pnpm verify] 
+[Run pnpm verify]
 [Run pnpm verify] ✓ spec/development-checks
 [Run pnpm verify] ✓ spec/local-workbench
 [Run pnpm verify] ✓ change/persist-article-revisions
@@ -286,14 +286,14 @@ Source: gh run view 44028413229 --log (selected steps, ANSI/paths normalized)
 [Run pnpm test:e2e] OPENSPEC_TELEMETRY: 0
 [Run pnpm test:e2e] OPENSPEC_NO_UPDATE_CHECK: 1
 [Run pnpm test:e2e] PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
-[Run pnpm test:e2e] 
+[Run pnpm test:e2e]
 [Run pnpm test:e2e] > inkling@0.1.0 test:e2e <repo>
 [Run pnpm test:e2e] > playwright test
-[Run pnpm test:e2e] 
-[Run pnpm test:e2e] 
+[Run pnpm test:e2e]
+[Run pnpm test:e2e]
 [Run pnpm test:e2e] > inkling@0.1.0 build <repo>
 [Run pnpm test:e2e] > vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
-[Run pnpm test:e2e] 
+[Run pnpm test:e2e]
 [Run pnpm test:e2e] ^[[36mvite v8.3.8 ^[[32mbuilding client environment for production...^[[36m^[[39m
 [Run pnpm test:e2e] transforming...
 [Run pnpm test:e2e] ✓ 2250 modules transformed.
@@ -302,16 +302,16 @@ Source: gh run view 44028413229 --log (selected steps, ANSI/paths normalized)
 [Run pnpm test:e2e] apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
 [Run pnpm test:e2e] apps/web/dist/assets/index-DBgZudlB.css    8.58 kB │ gzip:   2.56 kB
 [Run pnpm test:e2e] apps/web/dist/assets/index-CvYBhOmx.js   764.19 kB │ gzip: 237.99 kB
-[Run pnpm test:e2e] 
+[Run pnpm test:e2e]
 [Run pnpm test:e2e] ^[[33m[plugin builtin:vite-reporter]
 [Run pnpm test:e2e] (!) Some chunks are larger than 500 kB after minification. Consider:
 [Run pnpm test:e2e] - Using dynamic import() to code-split the application
 [Run pnpm test:e2e] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 [Run pnpm test:e2e] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.^[[39m
 [Run pnpm test:e2e] ^[[32m✓ built in 307ms^[[39m
-[Run pnpm test:e2e] 
+[Run pnpm test:e2e]
 [Run pnpm test:e2e] Running 59 tests using 2 workers
-[Run pnpm test:e2e] 
+[Run pnpm test:e2e]
 [Run pnpm test:e2e] ✓   1 [chromium] › tests/e2e/article-conflict.spec.ts:23:1 › ARTICLE-CONFLICT-006 cannot replace the editor if preserving its draft fails (4.4s)
 [Run pnpm test:e2e] ✓   2 [chromium] › tests/e2e/article-conflict.spec.ts:4:1 › ARTICLE-CONFLICT-006 choosing the server version retains the conflicted local draft (4.6s)
 [Run pnpm test:e2e] ✓   3 [chromium] › tests/e2e/article-conflict.spec.ts:48:1 › ARTICLE-CONFLICT-006 editing or composing invalidates a prepared merge (4.5s)
@@ -371,5 +371,5 @@ Source: gh run view 44028413229 --log (selected steps, ANSI/paths normalized)
 [Run pnpm test:e2e] ✓  57 [chromium] › tests/e2e/workbench.spec.ts:85:1 › WORKBENCH-EDIT-004 fits narrow screens (1.2s)
 [Run pnpm test:e2e] ✓  58 [chromium] › tests/e2e/workbench.spec.ts:100:1 › WORKBENCH-EDIT-004 supports lists and code blocks (1.3s)
 [Run pnpm test:e2e] ✓  59 [chromium] › tests/e2e/workspace-access.spec.ts:5:1 › WORKSPACE-AUTH-003 connects from local link and removes its credential (787ms)
-[Run pnpm test:e2e] 
+[Run pnpm test:e2e]
 [Run pnpm test:e2e] 59 passed (1.6m)
