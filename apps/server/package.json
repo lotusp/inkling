@@ -5,6 +5,8 @@
   "dependencies": {
     "@inkling/contracts": "workspace:*",
     "fastify": "5.12.8",
-    "@fastify/static": "10.1.11"
+    "@fastify/static": "10.1.11",
+    "@inkling/adapters": "workspace:*",
+    "better-sqlite3": "13.2.0"
   }
 }

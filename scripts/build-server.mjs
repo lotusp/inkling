@@ -7,5 +7,5 @@ await build({
   format: 'esm',
   target: 'node22',
   sourcemap: true,
-  external: ['fastify', '@fastify/static'],
+  external: ['fastify', '@fastify/static', 'better-sqlite3'],
 });
