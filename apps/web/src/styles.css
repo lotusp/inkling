@@ -288,6 +288,55 @@ svg {
 .draft-preview {
   white-space: pre-wrap;
 }
+.conflict-actions {
+  margin: 16px 0;
+}
+.conflict-panel {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid #c3b794;
+  border-radius: 12px;
+  background: #faf9f4;
+  overflow-wrap: anywhere;
+}
+.conflict-panel h2 {
+  font-size: 18px;
+}
+.conflict-panel p,
+.difference-summary {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.comparison-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+.comparison-columns section {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 8px;
+}
+.comparison-columns h3 {
+  font-size: 14px;
+  color: #6a725f;
+}
+.comparison-columns pre {
+  white-space: pre-wrap;
+  background: #f0f3ec;
+  padding: 8px;
+}
+.preview-link {
+  text-decoration: underline;
+  color: #466046;
+}
+@media (max-width: 760px) {
+  .comparison-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .recovery-card button + button {
   margin-left: 8px;
 }

@@ -20,6 +20,7 @@ import { useHealth } from './use-health';
 import { useAccess } from './access';
 import { useArticle } from './use-article';
 import { RecoveryPanel } from './RecoveryPanel';
+import { ConflictPanel } from './ConflictPanel';
 import './styles.css';
 
 export function App() {
@@ -177,6 +178,25 @@ export function App() {
                 </div>
               )}
             </div>
+            {article.hasConflict && (
+              <div className="conflict-actions">
+                <button
+                  disabled={article.conflictBusy}
+                  onClick={() => void article.compare()}
+                >
+                  {article.conflictBusy ? '正在核对冲突…' : '查看冲突'}
+                </button>
+                {article.conflictMessage && (
+                  <p role="alert">{article.conflictMessage}</p>
+                )}
+              </div>
+            )}
+            {article.comparison && article.document && (
+              <ConflictPanel
+                local={article.document}
+                server={article.comparison}
+              />
+            )}
             <div className="document-meta">
               <span>{format?.length ?? 0} 字</span>
               <span>中文写作</span>

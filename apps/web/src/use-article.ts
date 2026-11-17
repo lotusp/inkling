@@ -10,6 +10,7 @@ import {
 import { api, ApiError } from './api';
 import { connectWorkspace } from './access';
 import { downloadRescue } from './draft-rescue';
+import { inspectConflict } from './conflict';
 import {
   listDrafts,
   ownDraftClient,
@@ -39,6 +40,9 @@ export function useArticle(
   >('idle');
   const [recoveries, setRecoveries] = useState<RecoveryChoice[]>([]);
   const [recovering, setRecovering] = useState(false);
+  const [comparison, setComparison] = useState<ArticleSnapshot | null>(null);
+  const [conflictBusy, setConflictBusy] = useState(false);
+  const [conflictMessage, setConflictMessage] = useState('');
   const identity = useRef<{ workspaceId: string; clientId: string } | null>(
     null,
   );
@@ -104,6 +108,7 @@ export function useArticle(
     (article: ArticleSnapshot) => {
       valid.current = true;
       conflicted.current = false;
+      setComparison(null);
       head.current = article;
       latest.current = article.document;
       editSeq.current = 0;
@@ -319,6 +324,47 @@ export function useArticle(
       setEditVersion((value) => value + 1);
     }
   }, [editor, display, persist]);
+  const compare = useCallback(async () => {
+    if (
+      busy.current ||
+      !head.current ||
+      !conflicted.current ||
+      composing.current ||
+      editor?.view.composing
+    )
+      return;
+    busy.current = true;
+    setConflictBusy(true);
+    setConflictMessage('');
+    setComparison(null);
+    try {
+      const pending = inFlight.current;
+      const { server, applied } = await inspectConflict(
+        head.current.articleId,
+        pending,
+      );
+      if (pending && applied) {
+        head.current = {
+          ...head.current,
+          headRevisionId: applied.appliedRevisionId,
+          headSeq: applied.appliedSeq,
+          contentHash: applied.contentHash,
+          document: pending.command.document,
+        };
+        savedSeq.current = pending.seq;
+      }
+      inFlight.current = null;
+      setComparison(server);
+      await persist();
+    } catch (error) {
+      setConflictMessage(
+        error instanceof Error ? error.message : '无法核对冲突，请稍后重试。',
+      );
+    } finally {
+      busy.current = false;
+      setConflictBusy(false);
+    }
+  }, [editor, persist]);
   const recover = useCallback(
     async (choice: RecoveryChoice) => {
       if (
@@ -568,6 +614,12 @@ export function useArticle(
     recover,
     keepServer,
     download,
+    compare,
+    comparison,
+    conflictBusy,
+    conflictMessage,
+    hasConflict: conflicted.current,
+    document: latest.current,
     editable: snapshot !== null && recoveries.length === 0 && !recovering,
     dirty: status !== 'clean' && status !== 'empty' && status !== 'loading',
   };
