@@ -295,9 +295,12 @@ export class SqliteArticles implements ArticleRepository {
   list(query: ArticleListQuery): ArticleListPage {
     const values = this.db
       .prepare(
-        "SELECT article_id,title,state,metadata_version,created_at,updated_at,(SELECT json_group_array(tag) FROM article_tags WHERE article_tags.article_id=article_library.article_id) tags_json FROM article_library WHERE state='active' AND (? IS NULL OR created_at < ? OR (created_at = ? AND article_id < ?)) ORDER BY created_at DESC,article_id DESC LIMIT ?",
+        "SELECT article_id,title,state,metadata_version,created_at,updated_at,(SELECT json_group_array(tag) FROM article_tags WHERE article_tags.article_id=article_library.article_id) tags_json FROM article_library WHERE state='active' AND instr(lower(title),lower(?))>0 AND (?='' OR EXISTS(SELECT 1 FROM article_tags WHERE article_tags.article_id=article_library.article_id AND tag=?)) AND (? IS NULL OR created_at < ? OR (created_at = ? AND article_id < ?)) ORDER BY created_at DESC,article_id DESC LIMIT ?",
       )
       .all(
+        query.q,
+        query.tag,
+        query.tag,
         query.beforeCreatedAt ?? null,
         query.beforeCreatedAt ?? null,
         query.beforeCreatedAt ?? null,

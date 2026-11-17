@@ -4,8 +4,33 @@ export const CreateArticleCommand = z
   .object({ mutationId: Id, title: ArticleTitle.default('') })
   .strict();
 export type CreateArticleCommand = z.infer<typeof CreateArticleCommand>;
+export const ArticleTag = z
+  .string()
+  .transform((value) => value.trim().normalize('NFC'))
+  .refine(
+    (value) =>
+      [...value].length >= 1 &&
+      [...value].length <= 30 &&
+      !/[\r\n\u2028\u2029]/u.test(value),
+    '标签需要 1–30 个字符且不能包含换行',
+  );
+export const ArticleSearchFilters = z
+  .object({
+    q: z
+      .string()
+      .refine((value) => [...value].length <= 100, '标题查找最多 100 个字符')
+      .default(''),
+    tag: z
+      .string()
+      .transform((value) => value.trim().normalize('NFC'))
+      .pipe(z.union([z.literal(''), ArticleTag]))
+      .default(''),
+  })
+  .strict();
+export type ArticleSearchFilters = z.infer<typeof ArticleSearchFilters>;
 export const ArticleListQuery = z
   .object({
+    ...ArticleSearchFilters.shape,
     limit: z.coerce.number().int().min(1).max(100).default(20),
     beforeCreatedAt: z.coerce
       .number()
@@ -22,16 +47,6 @@ export const ArticleListQuery = z
     '分页游标需要同时提供时间与文章标识',
   );
 export type ArticleListQuery = z.infer<typeof ArticleListQuery>;
-export const ArticleTag = z
-  .string()
-  .transform((value) => value.trim().normalize('NFC'))
-  .refine(
-    (value) =>
-      [...value].length >= 1 &&
-      [...value].length <= 30 &&
-      !/[\r\n\u2028\u2029]/u.test(value),
-    '标签需要 1–30 个字符且不能包含换行',
-  );
 export const ArticleTags = z
   .array(ArticleTag)
   .transform((tags) => [...new Set(tags)].sort())

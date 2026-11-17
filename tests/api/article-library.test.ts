@@ -5,7 +5,11 @@ import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { SqliteWorkspace, SqliteArticles } from '@inkling/adapters';
 import { ArticleService } from '@inkling/core';
-import { ArticleSnapshot, SaveResult } from '@inkling/contracts';
+import {
+  ArticleSnapshot,
+  SaveResult,
+  ArticleListPage,
+} from '@inkling/contracts';
 import { createServer } from '../../apps/server/src/server';
 import { openFixtureStorage } from '../fixtures/storage';
 const cleanup: (() => Promise<void>)[] = [];
@@ -707,4 +711,145 @@ it('LIBRARY-TAGS-007 rejects embedded line separators so labels round trip throu
     tags: [],
     metadataVersion: 1,
   });
+});
+it('LIBRARY-FIND-008 combines literal title fragments and exact normalized tags without changing documents', async () => {
+  const f = await setup();
+  const a = await f.create('SQLite 100%_\\ 技术'),
+    b = await f.create('sqlite 100abc 技术'),
+    c = await f.create("SQL 引号'技术");
+  for (const [article, tags] of [
+    [a.article, ['数据库', 'é']],
+    [b.article, ['数据库扩展']],
+    [c.article, ['数据库', 'API']],
+  ] as const)
+    f.service.updateMetadata(article.articleId, {
+      mutationId: randomUUID(),
+      baseMetadataVersion: 1,
+      tags: [...tags],
+    });
+  const list = async (q: string, tag = '') => {
+    const result = await f.app.inject({
+      url: '/api/articles?' + new URLSearchParams({ q, tag }),
+      headers: f.headers,
+    });
+    expect(result.statusCode, result.body).toBe(200);
+    return result
+      .json<{ items: { articleId: string }[] }>()
+      .items.map((item) => item.articleId);
+  };
+  expect(await list('sQlItE')).toEqual(
+    [a.article.articleId, b.article.articleId].sort().reverse(),
+  );
+  expect(await list('%_\\')).toEqual([a.article.articleId]);
+  expect(await list("'技术")).toEqual([c.article.articleId]);
+  expect(await list('技术', ' 数据库 ')).toEqual(
+    [a.article.articleId, c.article.articleId].sort().reverse(),
+  );
+  expect(await list('sqlite', '数据库')).toEqual([a.article.articleId]);
+  expect(await list('', 'e\u0301')).toEqual([a.article.articleId]);
+  expect(await list('', 'api')).toEqual([]);
+  expect(await list('', 'API')).toEqual([c.article.articleId]);
+  expect(await list('不存在')).toEqual([]);
+  const before = f.service.read(a.article.articleId);
+  f.service.save(a.article.articleId, {
+    mutationId: randomUUID(),
+    baseRevisionId: before.headRevisionId,
+    document: {
+      ...before.document,
+      doc: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: '只在正文出现的词' }],
+          },
+        ],
+      },
+    },
+  });
+  expect(await list('只在正文出现的词')).toEqual([]);
+  const after = f.service.read(a.article.articleId);
+  await list('技术');
+  expect(f.service.read(a.article.articleId)).toEqual(after);
+  expect(f.service.workspace().currentArticleId).toBe(c.article.articleId);
+});
+it('LIBRARY-FIND-008 filtered pagination is stable and excludes inactive articles', async () => {
+  const f = await setup();
+  const ids: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    const { article } = await f.create(i < 6 ? '匹配标题' : '无关');
+    f.service.updateMetadata(article.articleId, {
+      mutationId: randomUUID(),
+      baseMetadataVersion: 1,
+      tags: i % 2 === 0 ? ['目标'] : ['其他'],
+    });
+    if (i < 6 && i % 2 === 0) ids.push(article.articleId);
+  }
+  const archived = await f.create('匹配标题');
+  f.service.updateMetadata(archived.article.articleId, {
+    mutationId: randomUUID(),
+    baseMetadataVersion: 1,
+    tags: ['目标'],
+  });
+  f.db
+    .prepare("UPDATE article_library SET state='archived' WHERE article_id=?")
+    .run(archived.article.articleId);
+  const found: string[] = [];
+  let cursor: { createdAt: number; articleId: string } | null = null;
+  for (let n = 0; n < 3; n++) {
+    const params = new URLSearchParams({ q: '匹配', tag: '目标', limit: '1' });
+    if (cursor) {
+      params.set('beforeCreatedAt', String(cursor.createdAt));
+      params.set('beforeId', cursor.articleId);
+    }
+    const response = await f.app.inject({
+      url: '/api/articles?' + params,
+      headers: f.headers,
+    });
+    expect(response.statusCode).toBe(200);
+    const result = ArticleListPage.parse(response.json());
+    found.push(...result.items.map((item) => item.articleId));
+    cursor = result.nextCursor;
+    expect(result.items).toHaveLength(1);
+  }
+  expect(cursor).toBeNull();
+  expect(found).toEqual(ids.sort().reverse());
+});
+it('LIBRARY-FIND-008 validates query bounds and treats wildcard-like input literally', async () => {
+  const f = await setup();
+  await f.create('😀'.repeat(100));
+  await f.create('% _ \\');
+  for (const query of [
+    { q: '😀'.repeat(101), tag: '' },
+    { q: '', tag: 'x'.repeat(31) },
+    { q: '', tag: '两个\n标签' },
+  ])
+    expect(
+      (
+        await f.app.inject({
+          url: '/api/articles?' + new URLSearchParams(query),
+          headers: f.headers,
+        })
+      ).statusCode,
+    ).toBe(422);
+  const good = await f.app.inject({
+    url: '/api/articles?' + new URLSearchParams({ q: '😀'.repeat(100) }),
+    headers: f.headers,
+  });
+  expect(good.statusCode).toBe(200);
+  expect(good.json<{ items: unknown[] }>().items).toHaveLength(1);
+  const empty = await f.app.inject({
+    url: '/api/articles?q=&tag=',
+    headers: f.headers,
+  });
+  expect(empty.statusCode).toBe(200);
+  expect(empty.json<{ items: unknown[] }>().items).toHaveLength(2);
+  expect(
+    (
+      await f.app.inject({
+        url: '/api/articles?q=x&tag=x',
+        headers: { host: f.headers.host },
+      })
+    ).statusCode,
+  ).toBe(401);
 });
