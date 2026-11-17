@@ -1,5 +1,5 @@
 // Fault controls exist only in this isolated test entry point, never in production routes.
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { parseArgs } from 'node:util';
 import { resolve } from 'node:path';
 import { ArticleService } from '@inkling/core';
@@ -16,6 +16,22 @@ if (mode === 'full')
     `max_page_count=${Number(db.pragma('page_count', { simple: true })) + 1}`,
   );
 const service = new ArticleService(new SqliteArticles(db, seed.workspaceId));
+if (mode === 'corrupt') {
+  const first = service.save(seed.article.articleId, {
+    mutationId: randomUUID(),
+    baseRevisionId: seed.article.headRevisionId,
+    document: { ...seed.article.document, title: '可以救援的旧稿' },
+  });
+  const second = service.save(seed.article.articleId, {
+    mutationId: randomUUID(),
+    baseRevisionId: first.appliedRevisionId,
+    document: { ...seed.article.document, title: '损坏的当前稿' },
+  });
+  db.prepare('UPDATE article_revisions SET content_hash=? WHERE id=?').run(
+    'bad',
+    second.appliedRevisionId,
+  );
+}
 const access = {
   origin: 'http://127.0.0.1:0',
   workspaceId: seed.workspaceId,

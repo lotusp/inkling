@@ -1,0 +1,12 @@
+
+> inkling@0.1.0 test <repo>
+> vitest run tests/integration/article-corruption.test.ts tests/integration/article-faults.test.ts tests/process/article-crash.test.ts
+
+
+ RUN  v5.1.0 <repo>
+
+
+ Test Files  3 passed (3)
+      Tests  13 passed (13)
+   Start at  13:31:30
+   Duration  2.17s (tests 61%, import 25%, transform 14%)

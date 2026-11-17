@@ -45,11 +45,64 @@ export function migrateArticles(db: Database.Database) {
   }).immediate();
 }
 export class SqliteArticles implements ArticleRepository {
+  private readonly damaged = new Set<string>();
   constructor(
     private readonly db: Database.Database,
     private readonly workspaceId: string,
     private readonly now: () => number = Date.now,
-  ) {}
+  ) {
+    // Validate existing history once at startup; quarantine is derived again on reopen.
+    for (const value of this.db
+      .prepare(
+        'SELECT article_id,document_json,content_hash FROM article_revisions',
+      )
+      .iterate()) {
+      const r = row(value),
+        id = string(r.article_id);
+      try {
+        this.checkedDocument(id, r.document_json, r.content_hash);
+      } catch (error) {
+        if (!(
+          error instanceof ArticleError && error.code === 'STORAGE_CORRUPT'
+        ))
+          throw error;
+      }
+    }
+  }
+  private assertHealthy(articleId: string) {
+    if (this.damaged.has(articleId))
+      throw new ArticleError(
+        'STORAGE_CORRUPT',
+        500,
+        '文章历史存在损坏，已停止写入；请下载经校验的旧版本。',
+      );
+  }
+  private checkedDocument(
+    articleId: string,
+    json: unknown,
+    expectedHash: unknown,
+  ): ArticleDocument {
+    let document: ArticleDocument;
+    try {
+      document = ArticleDocument.parse(JSON.parse(string(json)));
+    } catch {
+      this.damaged.add(articleId);
+      throw new ArticleError(
+        'STORAGE_CORRUPT',
+        500,
+        '正文格式损坏，已停止写入。',
+      );
+    }
+    if (hash(document) !== expectedHash) {
+      this.damaged.add(articleId);
+      throw new ArticleError(
+        'STORAGE_CORRUPT',
+        500,
+        '正文校验失败，已停止写入。',
+      );
+    }
+    return document;
+  }
   workspace(): WorkspaceInfo {
     const r = row(
       this.db
@@ -164,6 +217,7 @@ export class SqliteArticles implements ArticleRepository {
       .immediate();
   }
   read(articleId: string): ArticleSnapshot {
+    this.assertHealthy(articleId);
     const r = row(
       this.db
         .prepare(
@@ -171,24 +225,11 @@ export class SqliteArticles implements ArticleRepository {
         )
         .get(articleId),
     );
-    let document: ArticleDocument;
-    try {
-      document = ArticleDocument.parse(JSON.parse(string(r.document_json)));
-    } catch (error) {
-      throw new ArticleError(
-        'STORAGE_CORRUPT',
-        500,
-        '正文格式损坏，已停止写入。',
-        undefined,
-        { cause: error },
-      );
-    }
-    if (hash(document) !== r.content_hash)
-      throw new ArticleError(
-        'STORAGE_CORRUPT',
-        500,
-        '正文校验失败，请保留数据并恢复。',
-      );
+    const document = this.checkedDocument(
+      articleId,
+      r.document_json,
+      r.content_hash,
+    );
     return {
       articleId: string(r.id),
       headRevisionId: string(r.head_revision_id),
@@ -215,7 +256,7 @@ export class SqliteArticles implements ArticleRepository {
     });
   }
   revisions(articleId: string, query: RevisionQuery): RevisionPage {
-    this.read(articleId);
+    row(this.db.prepare('SELECT id FROM articles WHERE id=?').get(articleId));
     const rows = this.db
       .prepare(
         `SELECT r.*,m.name,m.automatic_at,a.head_revision_id FROM article_revisions r JOIN articles a ON a.id=r.article_id LEFT JOIN revision_markers m ON m.revision_id=r.id WHERE r.article_id=? AND r.seq<? AND (? OR m.automatic_at IS NOT NULL OR m.name IS NOT NULL) ORDER BY r.seq DESC LIMIT ?`,
@@ -241,18 +282,11 @@ export class SqliteArticles implements ArticleRepository {
         )
         .get(articleId, revisionId),
     );
-    let document: ArticleDocument;
-    try {
-      document = ArticleDocument.parse(JSON.parse(string(r.document_json)));
-    } catch {
-      throw new ArticleError(
-        'STORAGE_CORRUPT',
-        500,
-        '历史正文格式损坏，已停止读取。',
-      );
-    }
-    if (hash(document) !== r.content_hash)
-      throw new ArticleError('STORAGE_CORRUPT', 500, '历史正文校验失败。');
+    const document = this.checkedDocument(
+      articleId,
+      r.document_json,
+      r.content_hash,
+    );
     return {
       ...this.revisionInfo(r),
       document,

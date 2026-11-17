@@ -44,6 +44,18 @@ export function createServer(
     if (
       error instanceof Error &&
       'code' in error &&
+      ['SQLITE_CORRUPT', 'SQLITE_NOTADB'].includes(String(error.code))
+    )
+      return reply
+        .code(500)
+        .send({
+          code: 'STORAGE_CORRUPT',
+          message: '数据库损坏，已停止操作。请保留原文件并检查可救援版本。',
+          retryable: false,
+        });
+    if (
+      error instanceof Error &&
+      'code' in error &&
       String(error.code).startsWith('SQLITE_')
     )
       return reply.code(error.code === 'SQLITE_FULL' ? 507 : 503).send({

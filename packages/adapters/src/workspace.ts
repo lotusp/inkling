@@ -157,6 +157,16 @@ export class SqliteWorkspace {
       if (
         error instanceof Error &&
         'code' in error &&
+        ['SQLITE_CORRUPT', 'SQLITE_NOTADB'].includes(String(error.code))
+      )
+        throw new WorkspaceError(
+          'WORKSPACE_CORRUPT',
+          '数据库完整性检查失败，原文件已保留。',
+          { cause: error },
+        );
+      if (
+        error instanceof Error &&
+        'code' in error &&
         error.code === 'SQLITE_BUSY'
       )
         throw new WorkspaceError(

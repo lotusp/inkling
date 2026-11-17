@@ -41,6 +41,8 @@ export function useArticle(
     'loading' | 'empty' | 'clean' | 'dirty' | 'saving' | 'error' | 'conflict'
   >('loading');
   const [message, setMessage] = useState('');
+  const [damagedArticleId, setDamagedArticleId] = useState<string | null>(null);
+  const loadingArticleId = useRef<string | null>(null);
   const [editVersion, setEditVersion] = useState(0);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [backup, setBackup] = useState<
@@ -166,6 +168,7 @@ export function useArticle(
           setBackup('unavailable');
         }
         if (workspace.currentArticleId) {
+          loadingArticleId.current = workspace.currentArticleId;
           const article = ArticleSnapshot.parse(
             await api('/api/articles/' + workspace.currentArticleId),
           );
@@ -189,6 +192,8 @@ export function useArticle(
       } catch (error) {
         if (active) {
           setStatus('error');
+          if (error instanceof ApiError && error.code === 'STORAGE_CORRUPT')
+            setDamagedArticleId(loadingArticleId.current);
           setMessage(error instanceof Error ? error.message : '无法加载稿件。');
         }
       }
@@ -362,6 +367,8 @@ export function useArticle(
       await persist();
       return result;
     } catch (error) {
+      if (error instanceof ApiError && error.code === 'STORAGE_CORRUPT')
+        setDamagedArticleId(article.articleId);
       if (pending) pending.reconcile = true;
       conflicted.current =
         error instanceof ApiError && error.code === 'REVISION_CONFLICT';
@@ -876,6 +883,7 @@ export function useArticle(
   }, [save]);
   return {
     snapshot,
+    damagedArticleId,
     flushForVersion,
     reviewRestore,
     confirmRestore,

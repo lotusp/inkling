@@ -1,0 +1,54 @@
+
+> inkling@0.1.0 test <repo>
+> vitest run tests/integration/article-corruption.test.ts
+
+
+ RUN  v5.1.0 <repo>
+
+ ❯ tests/integration/article-corruption.test.ts (3 tests | 2 failed) 154ms
+   × ARTICLE-CORRUPT-012 damaged head refuses writes but verified older revisions remain discoverable 64ms
+   × ARTICLE-CORRUPT-012 discovering damaged older content quarantines writes without blocking healthy exports 58ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/article-corruption.test.ts > ARTICLE-CORRUPT-012 damaged head refuses writes but verified older revisions remain discoverable
+Error: 正文校验失败，请保留数据并恢复。
+ ❯ SqliteArticles.read packages/adapters/src/articles.ts:187:13
+    185|     }
+    186|     if (hash(document) !== r.content_hash)
+    187|       throw new ArticleError(
+       |             ^
+    188|         'STORAGE_CORRUPT',
+    189|         500,
+ ❯ SqliteArticles.revisions packages/adapters/src/articles.ts:218:10
+ ❯ ArticleService.revisions packages/core/src/application/articles.ts:48:28
+ ❯ tests/integration/article-corruption.test.ts:14:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/article-corruption.test.ts > ARTICLE-CORRUPT-012 discovering damaged older content quarantines writes without blocking healthy exports
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/integration/article-corruption.test.ts:24:158
+     22|   db.prepare('UPDATE article_revisions SET content_hash=? WHERE id=?')…
+     23|   expect(()=>service.revision(article.articleId,article.headRevisionId…
+     24|   expect(()=>service.save(article.articleId,{mutationId:randomUUID(),b…
+       |                                                                                                                                                              ^
+     25|   expect(service.revision(article.articleId,saved.appliedRevisionId).d…
+     26| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  13:28:42
+   Duration  371ms (tests 57%, import 26%, transform 16%, worker 1%)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -44,6 +44,8 @@
 
 - 5.1：9 项真实存储/进程验收与 2 项故障 UI 验收 baseline-pass，类型/lint/依赖边界通过。只读使用 SQLite readonly 连接；容量耗尽使用真实 max_page_count 引发 SQLITE_FULL（不是填满 macOS 磁盘）；临时 SQL trigger 注入异常和检查点，外部 SIGKILL 覆盖 revision/head/mutation/COMMIT 后四个阶段。错误后同一请求可重试，未提交时三表不留半状态，提交后重试只返回原结果。测试入口独立于生产，无新增 HTTP 故障开关，临时空间清理；日志 storage-fault-baseline.log、storage-fault-ui-baseline.log。
 
+- 5.2a：有效 Red 暴露损坏 head 无法列旧版本，以及发现旧版损坏后仍可写；已增加文章只读隔离与逐版校验下载。启动逐条扫描历史正文/hash，重开仍隔离受损文章；健康旧版可读取，未替换当前稿；坏库头原字节保留。13 项损坏/故障/进程回归及 1 项真实损坏库 UI 验收通过，类型/lint 通过；桌面/375px 救援截图已查看。日志 corruption-red/green.log、corruption-ui-red/green.log。
+
 ## 当前边界
 
 3.1–4.3 已完成：在线自动保存、浏览器草稿恢复/重连核对、救援下载、冲突比较/显式合并、确认放弃副本，以及版本历史/命名/比较/恢复已实现。服务停止期间刷新不能打开页面，重启后可恢复；救援 JSON 当前无导入界面。Linux 原生驱动安装未验证；真实 IME 已由用户手工确认通过。本机依赖安装成功；pnpm 原生驱动需要允许构建且可能使用 Xcode Command Line Tools。

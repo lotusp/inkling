@@ -1,0 +1,67 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-corruption.spec.ts
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2248 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-Aloy4iO7.css    8.57 kB │ gzip:   2.57 kB
+apps/web/dist/assets/index-Lw1s-zgQ.js   761.44 kB │ gzip: 237.15 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 400ms
+
+Running 1 test using 1 worker
+
+(node:73262) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-corruption.spec.ts:4:1 › ARTICLE-CORRUPT-012 offers only verified old revision downloads while the damaged current draft stays blocked (6.6s)
+
+
+  1) [chromium] › tests/e2e/article-corruption.spec.ts:4:1 › ARTICLE-CORRUPT-012 offers only verified old revision downloads while the damaged current draft stays blocked
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('region', { name: '损坏稿件救援' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('region', { name: '损坏稿件救援' }) with timeout 5000ms
+      - waiting for getByRole('region', { name: '损坏稿件救援' })
+
+
+      4 | test('ARTICLE-CORRUPT-012 offers only verified old revision downloads while the damaged current draft stays blocked',async({page})=>{
+      5 |   const panel=page.getByRole('region',{name:'损坏稿件救援'});
+    > 6 |   await expect(panel).toBeVisible();
+        |                       ^
+      7 |   const editor=page.getByRole('textbox',{name:'文章正文',exact:true});await expect(editor).not.toBeEditable();
+      8 |   await panel.getByRole('button',{name:'查看可救援版本',exact:true}).click();
+      9 |   await panel.getByRole('button',{name:'下载版本 #3',exact:true}).click();
+        at <repo>/tests/e2e/article-corruption.spec.ts:6:23
+
+    Error Context: test-results/article-corruption-ARTICLE-15af2-current-draft-stays-blocked-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-corruption-ARTICLE-15af2-current-draft-stays-blocked-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-corruption-ARTICLE-15af2-current-draft-stays-blocked-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/article-corruption.spec.ts:4:1 › ARTICLE-CORRUPT-012 offers only verified old revision downloads while the damaged current draft stays blocked
+ ELIFECYCLE  Command failed with exit code 1.

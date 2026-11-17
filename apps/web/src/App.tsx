@@ -21,6 +21,7 @@ import { useArticle } from './use-article';
 import { RecoveryPanel } from './RecoveryPanel';
 import { ConflictPanel } from './ConflictPanel';
 import { VersionPanel } from './VersionPanel';
+import { DamagedArticlePanel } from './DamagedArticlePanel';
 import './styles.css';
 
 export function App() {
@@ -171,6 +172,9 @@ export function App() {
               disabled={!article.editable}
               maxLength={400}
             />
+            {article.damagedArticleId && (
+              <DamagedArticlePanel articleId={article.damagedArticleId} />
+            )}
             <RecoveryPanel
               choices={article.recoveries}
               busy={article.recovering}
