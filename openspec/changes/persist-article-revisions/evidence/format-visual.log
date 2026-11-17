@@ -1,0 +1,40 @@
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2238 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.46 kB │ gzip:   0.32 kB
+apps/web/dist/assets/index-BpODJJpH.css    5.95 kB │ gzip:   2.00 kB
+apps/web/dist/assets/index-CZA1B7f7.js   731.36 kB │ gzip: 228.49 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 308ms
+
+Running 8 tests using 4 workers
+
+(node:96646) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:96647) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:96648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:96649) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [chromium] › tests/e2e/workbench.spec.ts:35:1 › WORKBENCH-EDIT-004 composition events do not submit or reset text (1.6s)
+  ✓  2 [chromium] › tests/e2e/workbench.spec.ts:2:1 › WORKBENCH-START-001 opens the workbench with real service status (1.6s)
+  ✓  1 [chromium] › tests/e2e/workbench.spec.ts:47:1 › WORKBENCH-CHAT-005 focus mode keeps text and never enables AI sending (1.7s)
+  ✓  7 [chromium] › tests/e2e/workbench.spec.ts:85:1 › WORKBENCH-EDIT-004 fits narrow screens (867ms)
+  ✓  5 [chromium] › tests/e2e/workbench.spec.ts:67:3 › WORKBENCH-HEALTH-006 handles network failure and retry without losing draft (971ms)
+  ✓  6 [chromium] › tests/e2e/workbench.spec.ts:67:3 › WORKBENCH-HEALTH-006 handles invalid failure and retry without losing draft (994ms)
+  ✓  8 [chromium] › tests/e2e/workbench.spec.ts:100:1 › WORKBENCH-EDIT-004 supports lists and code blocks (738ms)
+  ✓  4 [chromium] › tests/e2e/workbench.spec.ts:14:1 › WORKBENCH-EDIT-004 edits Chinese text and basic formatting and preserves it after reload (3.3s)
+
+  8 passed (5.8s)

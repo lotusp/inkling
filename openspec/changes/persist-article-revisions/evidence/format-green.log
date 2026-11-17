@@ -1,0 +1,53 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2238 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.46 kB │ gzip:   0.32 kB
+apps/web/dist/assets/index-M4OF6dzJ.css    5.89 kB │ gzip:   1.99 kB
+apps/web/dist/assets/index-CpQvHtK4.js   731.22 kB │ gzip: 228.47 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 257ms
+
+Running 17 tests using 4 workers
+
+(node:95985) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:95982) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:95984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:95983) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   2 [chromium] › tests/e2e/article-formats.spec.ts:102:1 › WORKBENCH-EDIT-004 title composition defers saves until composition ends (1.5s)
+  ✓   4 [chromium] › tests/e2e/article-save-races.spec.ts:4:1 › ARTICLE-RACE-005 reconciliation preserves newer local input and blocks overwrite (2.7s)
+  ✓   3 [chromium] › tests/e2e/article-formats.spec.ts:5:1 › ARTICLE-SCHEMA-011 every supported format survives editor load and another save (2.9s)
+  ✓   1 [chromium] › tests/e2e/article-formats.spec.ts:56:1 › ARTICLE-SCHEMA-011 an overlong title cannot be acknowledged by an older save (4.0s)
+  ✓   6 [chromium] › tests/e2e/article-save-races.spec.ts:105:1 › ARTICLE-RETRY-003 lost response reconciles a newer remote head before claiming clean (1.9s)
+  ✓   5 [chromium] › tests/e2e/article-save-races.spec.ts:72:1 › ARTICLE-RACE-005 late acknowledgement never replaces newer local input (3.3s)
+  ✓   7 [chromium] › tests/e2e/article-save-races.spec.ts:165:1 › ARTICLE-RETRY-003 failed mutation lookup keeps the request unresolved (2.0s)
+  ✓   9 [chromium] › tests/e2e/workbench.spec.ts:2:1 › WORKBENCH-START-001 opens the workbench with real service status (772ms)
+  ✓  11 [chromium] › tests/e2e/workbench.spec.ts:35:1 › WORKBENCH-EDIT-004 composition events do not submit or reset text (761ms)
+  ✓   8 [chromium] › tests/e2e/article-save.spec.ts:5:1 › ARTICLE-SAVE-002 Chinese draft is saved and reopened with formatting (2.1s)
+  ✓  12 [chromium] › tests/e2e/workbench.spec.ts:47:1 › WORKBENCH-CHAT-005 focus mode keeps text and never enables AI sending (818ms)
+  ✓  13 [chromium] › tests/e2e/workbench.spec.ts:67:3 › WORKBENCH-HEALTH-006 handles network failure and retry without losing draft (757ms)
+  ✓  10 [chromium] › tests/e2e/workbench.spec.ts:14:1 › WORKBENCH-EDIT-004 edits Chinese text and basic formatting and preserves it after reload (2.3s)
+  ✓  15 [chromium] › tests/e2e/workbench.spec.ts:85:1 › WORKBENCH-EDIT-004 fits narrow screens (917ms)
+  ✓  14 [chromium] › tests/e2e/workbench.spec.ts:67:3 › WORKBENCH-HEALTH-006 handles invalid failure and retry without losing draft (1.0s)
+  ✓  16 [chromium] › tests/e2e/workbench.spec.ts:100:1 › WORKBENCH-EDIT-004 supports lists and code blocks (1.0s)
+  ✓  17 [chromium] › tests/e2e/workspace-access.spec.ts:5:1 › WORKSPACE-AUTH-003 connects from local link and removes its credential (715ms)
+
+  17 passed (10.1s)

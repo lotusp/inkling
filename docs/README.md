@@ -1,6 +1,6 @@
 # Inkling 产品知识库
 
-更新日期：2026-11-16。当前阶段：产品设计与本地工程基础实现；正文保存和 AI 协作尚未接入。MVP 目标为单台 Mac 本地运行。此目录保存产品为什么存在、依据什么做决定、计划如何实现，以及实际验证了什么。
+更新日期：2026-11-17。当前阶段：C02 正文持久化实施中，已有在线自动保存与重开；离线恢复、版本 UI 与 AI 协作尚未完成。MVP 目标为单台 Mac 本地运行。此目录保存产品为什么存在、依据什么做决定、计划如何实现，以及实际验证了什么。
 
 ## 从这里开始
 
@@ -10,7 +10,7 @@
 4. [V1 功能范围与交付设计](product/v1-scope.md)：完整首版的十二项能力、交互、实施批次和验收。
 5. [用户旅程与协作设计](product/thinking-partner-product-design.md)：Design Thinking、As-is、To-be 与交互示例。
 6. [知识组织与维护规则](handbook/knowledge-management.md)：知识如何分类、更新、追溯与沉淀。
-7. [单台 Mac 本地架构](architecture/local-macos-mvp.md)：进程、编辑、Agent 与恢复提案；文章存储设计已选定，待实现。
+7. [单台 Mac 本地架构](architecture/local-macos-mvp.md)：进程、编辑、Agent 与恢复提案；文章存储设计已选定，分步骤实施。
 8. [开发 Harness](engineering/harness.md)：串行 change、ATDD、开发规范、证据与 Living Spec 收口。
 
 ## 当前知识地图
@@ -26,11 +26,11 @@
 | 产品定位决策 | [DEC-0001](decisions/0001-thinking-partner-positioning.md) | 记录作者明确提出的方向与范围 |
 | 本地部署决策 | [DEC-0002](decisions/0002-local-macos-mvp.md) | 单台 Mac 目标已明确，实现选择仍为提案 |
 | 实现架构 | [单台 Mac 本地架构](architecture/local-macos-mvp.md) | 当前 MVP 提案，Pi 优先 POC，尚未冻结、未实现 |
-| 文章保存设计 | [DEC-0004](decisions/0004-article-storage-and-revisions.md)、[存储 POC](validation/article-storage-poc.md) | JSON 正文 + SQLite 设计选定，产品尚未接入 |
+| 文章保存设计 | [DEC-0004](decisions/0004-article-storage-and-revisions.md)、[存储 POC](validation/article-storage-poc.md) | JSON 正文 + SQLite 已接入开发分支；完整 change 尚未通过 G2 |
 | 框架选择 | [框架复评](research/framework-evaluation.md) | 需同任务 POC 验证；不是依赖清单 |
-| 本地工程 | [运行与检查](engineering/local-development.md) | 本机服务、临时编辑、真实工程检查；数据与 AI 待接入 |
+| 本地工程 | [运行与检查](engineering/local-development.md) | 本机服务、持久编辑、真实工程检查；离线恢复与 AI 待接入 |
 | 开发方法 | [Harness](engineering/harness.md)、[DEC-0003](decisions/0003-openspec-atdd-harness.md) | OpenSpec、ATDD 与首批应用检查已建立 |
-| V1 Change 路线图 | [Change 拆分与依赖](engineering/v1-change-roadmap.md) | 建议 17 条，bootstrap 已完成，文章持久化处于详细设计阶段 |
+| V1 Change 路线图 | [Change 拆分与依赖](engineering/v1-change-roadmap.md) | 建议 17 条，bootstrap 已完成，文章持久化正在分步骤实现 |
 | 代码规范 | [架构边界](engineering/code-architecture.md)、[日常规范](engineering/development-rules.md) | 新代码应遵循；模块随实现建立 |
 | 验收与证据 | [ATDD 约定](engineering/atdd-and-evidence.md)、[Harness 验证](validation/harness-bootstrap.md) | 已验证流程工具，不代表应用通过验收 |
 | 未决事项 | [开放问题](product/open-questions.md) | 进入对应阶段时验证，不要求一次回答所有问题 |

@@ -121,6 +121,7 @@ export function validDocumentNode(value: unknown): value is DocumentNode {
         )
           return false;
         seen.add(mark.type);
+        if (mark.type === 'code' && node.marks.length !== 1) return false;
         if (mark.attrs !== undefined && !record(mark.attrs)) return false;
         const a = mark.attrs ?? {};
         if (!record(a)) return false;

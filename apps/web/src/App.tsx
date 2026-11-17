@@ -156,6 +156,8 @@ export function App() {
               placeholder="给这个想法一个标题"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
+              onCompositionStart={article.compositionStart}
+              onCompositionEnd={article.compositionEnd}
               disabled={!article.snapshot}
               maxLength={400}
             />
@@ -171,8 +173,16 @@ export function App() {
               <span>{format?.length ?? 0} 字</span>
               <span>中文写作</span>
             </div>
-            <div className="save-notice">
-              <CircleAlert size={15} aria-hidden="true" />
+            <div
+              className={`save-notice ${article.status === 'clean' ? 'is-saved' : ''}`}
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {article.status === 'clean' ? (
+                <CircleCheck size={15} aria-hidden="true" />
+              ) : (
+                <CircleAlert size={15} aria-hidden="true" />
+              )}
               <span>
                 {article.status === 'clean'
                   ? '已保存'

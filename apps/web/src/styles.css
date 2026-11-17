@@ -246,6 +246,10 @@ svg {
   display: flex;
   gap: 7px;
   align-items: center;
+  flex-wrap: wrap;
+}
+.save-notice.is-saved {
+  color: #466046;
 }
 .chat-pane {
   border-left: 1px solid var(--line);

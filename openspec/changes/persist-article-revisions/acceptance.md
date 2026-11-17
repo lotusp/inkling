@@ -16,7 +16,7 @@
 | ARTICLE-IDB-008 | 浏览器副本失效 | UI | tests/e2e/article-recovery.spec.ts | 通过 adapter 故障点返回 IDB 配额/不可用 | 提示失败、可下载内存救援稿，不声称已保存副本 |
 | ARTICLE-WRITE-009 | 数据库写失败 | 集成 + UI | tests/integration/article-store.test.ts；tests/e2e/article-save.spec.ts | 只读 SQLite 连接、SQLITE_FULL 故障注入、合法权限失败夹具 | 事务前后状态一致；显示失败并保留输入 |
 | ARTICLE-CRASH-010 | 事务中断 | 进程 | tests/process/article-crash.test.ts | 隔离 workspace，提交各边界进程 SIGKILL | 重开 head/revision/mutation 一致，提交后可查询去重 |
-| ARTICLE-SCHEMA-011 | 结构与容量校验 | 契约 + API | tests/api/article-persistence.test.ts | 未知版本/attrs/节点、恶意协议、最大深度/字节 | 已支持格式通过，非法输入拒绝且不改原稿 |
+| ARTICLE-SCHEMA-011 | 结构与容量校验 | 契约 + API | tests/unit/article-document.test.ts；tests/api/article-persistence.test.ts；tests/e2e/article-formats.spec.ts | 未知版本/attrs/节点、恶意协议、最大深度/字节 | 已支持格式通过，非法输入拒绝且不改原稿 |
 | ARTICLE-CORRUPT-012 | 损坏处理 | 集成 + 进程 | tests/integration/article-store.test.ts；tests/process/article-crash.test.ts | 内容 hash 错、数据库头损坏的独立副本 | 写入阻断，不自动重建或回退；有效旧版可救援 |
 | ARTICLE-QUOTA-013 | 历史容量 | 集成 + UI | tests/integration/article-store.test.ts；tests/e2e/article-versions.spec.ts | 可注入的小容量测试策略，默认值另核对 | 到阈值提示，到上限拒绝增正文，无自动删除 |
 | REVISION-HISTORY-001 | 命名与自动恢复点 | 单元 + API + UI | tests/integration/article-revisions.test.ts；tests/e2e/article-versions.spec.ts | 可控 clock，初始/首次保存/5分钟/命名 | 恢复点策略正确，分页与命名去重，不改变正文 |
@@ -28,7 +28,7 @@
 | WORKSPACE-AUTH-003 | 本机接入与重新认证 | API + UI + 进程 | tests/api/workspace-access.test.ts；tests/process/workspace-access.test.ts | 有效/过期/重复 token、重启、local:access | 一次交换、cookie、fragment 清除；重新接入不丢 IDB |
 | WORKSPACE-CSRF-004 | 跨源防护 | API + UI | tests/api/workspace-access.test.ts；tests/e2e/workspace-access.spec.ts | 攻击源页面、missing/null Origin、错误 CSRF | 敏感读写被拒绝，合法本机和开发代理通过 |
 | WORKSPACE-PATH-005 | 路径与资源边界 | API | tests/api/workspace-access.test.ts | 路径穿越、跨文章 revision、恶意链接 | 拒绝越界，无外部文件变化或脚本执行 |
-| WORKBENCH-EDIT-004 | 原编辑器持久化回归 | UI + 手工 IME | tests/e2e/workbench.spec.ts；macOS 中文输入法检查 | 当前所有按钮、中文候选、刷新 | 格式功能保留，刷新由清空变为恢复，不抢输入焦点 |
+| WORKBENCH-EDIT-004 | 原编辑器持久化回归 | UI + 手工 IME | tests/e2e/workbench.spec.ts；tests/e2e/article-formats.spec.ts；macOS 中文输入法检查 | 当前所有按钮、中文候选、刷新 | 格式功能保留，刷新由清空变为恢复，不抢输入焦点 |
 
 ## Red and baseline
 

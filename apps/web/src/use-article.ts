@@ -22,6 +22,15 @@ export function useArticle(
   const [editVersion, setEditVersion] = useState(0);
   const valid = useRef(true);
   const conflicted = useRef(false);
+  const composing = useRef(false);
+  const compositionStart = useCallback(() => {
+    composing.current = true;
+    setStatus((previous) => (previous === 'clean' ? 'dirty' : previous));
+  }, []);
+  const compositionEnd = useCallback(() => {
+    composing.current = false;
+    setEditVersion((version) => version + 1);
+  }, []);
   const head = useRef<ArticleSnapshot | null>(null),
     latest = useRef<ArticleDocument | null>(null),
     editSeq = useRef(0),
@@ -105,10 +114,14 @@ export function useArticle(
       !head.current ||
       !latest.current ||
       !valid.current ||
+      composing.current ||
       editor?.view.composing
     )
       return;
-    if (editSeq.current === savedSeq.current && !inFlight.current) return;
+    if (editSeq.current === savedSeq.current && !inFlight.current) {
+      setStatus('clean');
+      return;
+    }
     const article = head.current;
     if (!inFlight.current)
       inFlight.current = {
@@ -160,7 +173,12 @@ export function useArticle(
       if (next.headRevisionId !== result.appliedRevisionId) {
         inFlight.current = null;
         savedSeq.current = pending.seq;
-        if (editSeq.current === pending.seq && valid.current) {
+        if (
+          editSeq.current === pending.seq &&
+          valid.current &&
+          !composing.current &&
+          !editor?.view.composing
+        ) {
           display(next);
         } else {
           conflicted.current = true;
@@ -175,10 +193,15 @@ export function useArticle(
       setSnapshot(next);
       savedSeq.current = pending.seq;
       inFlight.current = null;
-      setMessage('');
       if (!valid.current) {
         setStatus('error');
-      } else if (editSeq.current === pending.seq) {
+        setMessage('正文结构或标题长度不符合保存要求。');
+      } else if (
+        editSeq.current === pending.seq &&
+        !composing.current &&
+        !editor?.view.composing
+      ) {
+        setMessage('');
         setStatus('clean');
         dirtySince.current = null;
       } else setStatus('dirty');
@@ -226,14 +249,15 @@ export function useArticle(
   useEffect(() => {
     if (!editor) return;
     editor.on('update', changed);
-    const end = () => setEditVersion((x) => x + 1);
     const element = editor.view.dom;
-    element.addEventListener('compositionend', end);
+    element.addEventListener('compositionstart', compositionStart);
+    element.addEventListener('compositionend', compositionEnd);
     return () => {
       editor.off('update', changed);
-      element.removeEventListener('compositionend', end);
+      element.removeEventListener('compositionstart', compositionStart);
+      element.removeEventListener('compositionend', compositionEnd);
     };
-  }, [editor, changed]);
+  }, [editor, changed, compositionStart, compositionEnd]);
   useEffect(() => {
     changed();
   }, [title, changed]);
@@ -268,6 +292,8 @@ export function useArticle(
     message,
     create,
     save,
+    compositionStart,
+    compositionEnd,
     dirty: status !== 'clean' && status !== 'empty' && status !== 'loading',
   };
 }

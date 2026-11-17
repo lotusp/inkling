@@ -46,7 +46,7 @@ type ArticleDocumentV1 = {
 };
 ```
 
-title 最多 200 个 Unicode code points（与 UI 保持一致，不对用户标题隐式 trim）；doc 必须以 doc 节点为根，采用当前允许的 paragraph/heading(level 2/3)/text/bulletList/orderedList/listItem/codeBlock/blockquote/hardBreak/horizontalRule 及现有 marks 白名单。严格校验父子结构、attrs、marks、链接协议；不存在的节点与属性一律拒绝，不默默丢掉。plain text 保留原始换行与 Unicode，不做改变作者文本的归一化。canonical JSON 对对象键稳定排序、数组顺序不变；hash=SHA-256(canonical UTF-8 document)。完整请求 hash 另外包含操作、文章、base revision 和载荷。
+title 最多 200 个 Unicode code points（与 UI 保持一致，不对用户标题隐式 trim）；doc 必须以 doc 节点为根，采用当前允许的 paragraph/heading(level 2/3)/text/bulletList/orderedList/listItem/codeBlock/blockquote/hardBreak/horizontalRule 及现有 marks 白名单。严格校验父子结构、attrs、marks、链接协议；行内 code 与其他 marks 互斥，遵循当前编辑器 schema；不存在的节点与属性一律拒绝，不默默丢掉。plain text 保留原始换行与 Unicode，不做改变作者文本的归一化。canonical JSON 对对象键稳定排序、数组顺序不变；hash=SHA-256(canonical UTF-8 document)。完整请求 hash 另外包含操作、文章、base revision 和载荷。
 
 C02 不引入段落稳定 ID。整稿 CAS 已能保证保存安全；C07 若需要段落锚点，采用显式正文 schema 迁移，旧修订仍保留其原格式，不能悄悄重写历史。
 

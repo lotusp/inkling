@@ -12,7 +12,8 @@
 
 - [x] 2.1 先覆盖 ARTICLE-CREATE-001、ARTICLE-SAVE-002、ARTICLE-SCHEMA-011 与 WORKBENCH-EDIT-004；建立严格正文 schema、初始化当前稿、保存 API 和编辑器加载/状态，记录刷新由清空转为恢复的 Red → Green。
 - [x] 2.2 实现 ARTICLE-RETRY-003、ARTICLE-KEY-004、ARTICLE-RACE-005：原子修订/head/mutation、no-op 去重、串行保存；验证响应丢失、head 推进后旧请求重放及保存期间继续输入。
-- [ ] 2.3 运行现有格式/Chat/健康回归，补全当前 node/mark 组合、标题 Unicode 限制和中文输入法手工检查；同步保存状态文档。
+- [x] 2.3a 运行现有格式/Chat/健康回归，补全当前 node/mark 组合、标题 Unicode 限制和组合事件自动检查；同步保存状态文档。
+- [ ] 2.3b 在 macOS 真实中文输入法候选窗下完成手工检查；与 3.3、6.1 的恢复/冲突交互联验，自动化不得代替。
 
 ## 3. 离线输入与冲突处理
 
