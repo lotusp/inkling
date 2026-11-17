@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { Id, ArticleTitle } from './article';
+export const ArticleState = z.enum(['active', 'archived', 'trashed']);
+export type ArticleState = z.infer<typeof ArticleState>;
 export const CreateArticleCommand = z
   .object({ mutationId: Id, title: ArticleTitle.default('') })
   .strict();
@@ -31,6 +33,7 @@ export type ArticleSearchFilters = z.infer<typeof ArticleSearchFilters>;
 export const ArticleListQuery = z
   .object({
     ...ArticleSearchFilters.shape,
+    state: ArticleState.default('active'),
     limit: z.coerce.number().int().min(1).max(100).default(20),
     beforeCreatedAt: z.coerce
       .number()
@@ -54,7 +57,7 @@ export const ArticleTags = z
 export const ArticleListItem = z.object({
   articleId: Id,
   title: ArticleTitle,
-  state: z.enum(['active', 'archived', 'trashed']),
+  state: ArticleState,
   metadataVersion: z.number().int().positive(),
   tags: ArticleTags,
   createdAt: z.number().int().nonnegative(),
@@ -93,3 +96,21 @@ export const UpdateArticleMetadataResult = z.object({
 export type UpdateArticleMetadataResult = z.infer<
   typeof UpdateArticleMetadataResult
 >;
+
+export const ArticleLifecycleCommand = z
+  .object({
+    mutationId: Id,
+    baseMetadataVersion: z
+      .number()
+      .int()
+      .positive()
+      .max(Number.MAX_SAFE_INTEGER),
+    action: z.enum(['archive', 'unarchive', 'trash', 'restore']),
+  })
+  .strict();
+export type ArticleLifecycleCommand = z.infer<typeof ArticleLifecycleCommand>;
+export const ArticleLifecycleResult = z.object({
+  mutationId: Id,
+  metadata: ArticleListItem,
+});
+export type ArticleLifecycleResult = z.infer<typeof ArticleLifecycleResult>;

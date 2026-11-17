@@ -313,12 +313,14 @@ it('LIBRARY-OPEN-004 opening an article is atomic and replay cannot rewind the l
     f.db.prepare('SELECT COUNT(*) n FROM article_revisions').get(),
   ).toEqual({ n: 2 });
 });
-it('LIBRARY-OPEN-004 refuses unknown or inactive articles without moving the current pointer', async () => {
+it('LIBRARY-OPEN-004 refuses unknown or trashed articles without moving the current pointer', async () => {
   const f = await setup(),
     a = await f.create('A'),
     b = await f.create('B');
   f.db
-    .prepare("UPDATE article_library SET state='archived' WHERE article_id=?")
+    .prepare(
+      "UPDATE article_library SET state='trashed',previous_state='active' WHERE article_id=?",
+    )
     .run(a.article.articleId);
   expect(
     (
@@ -852,4 +854,516 @@ it('LIBRARY-FIND-008 validates query bounds and treats wildcard-like input liter
       })
     ).statusCode,
   ).toBe(401);
+});
+
+type LibraryFixture = Awaited<ReturnType<typeof setup>>;
+function lifecycle(
+  f: LibraryFixture,
+  articleId: string,
+  action: string,
+  baseMetadataVersion = f.service.metadata(articleId).metadataVersion,
+  mutationId = randomUUID(),
+) {
+  return f.app.inject({
+    method: 'POST',
+    url: `/api/articles/${articleId}/lifecycle`,
+    headers: f.headers,
+    payload: { mutationId, baseMetadataVersion, action },
+  });
+}
+function retainedContent(f: LibraryFixture) {
+  return [
+    'articles',
+    'article_revisions',
+    'revision_markers',
+    'article_tags',
+  ].map((table) => f.db.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all());
+}
+it('LIBRARY-ARCHIVE-009 archive is read-only, retains history and permits committed replays; unarchive permits new saves', async () => {
+  const f = await setup(),
+    { article } = await f.create('归档内容');
+  const id = article.articleId;
+  const save = {
+    mutationId: randomUUID(),
+    baseRevisionId: article.headRevisionId,
+    document: { ...article.document, title: '真实历史' },
+  };
+  const saved = f.service.save(id, save);
+  const restore = {
+    mutationId: randomUUID(),
+    baseRevisionId: saved.appliedRevisionId,
+    sourceRevisionId: article.headRevisionId,
+  };
+  const restored = f.service.restore(id, restore);
+  const name = { mutationId: randomUUID(), name: '初稿' };
+  const named = f.service.name(id, article.headRevisionId, name);
+  const tags = {
+    mutationId: randomUUID(),
+    baseMetadataVersion: 1,
+    tags: ['技术'],
+  };
+  const tagged = f.service.updateMetadata(id, tags);
+  const original = retainedContent(f);
+  const archived = await lifecycle(f, id, 'archive');
+  expect(archived.statusCode, archived.body).toBe(200);
+  expect(archived.json()).toMatchObject({
+    metadata: { state: 'archived', metadataVersion: 3, tags: ['技术'] },
+  });
+  expect(f.service.workspace().currentArticleId).toBeNull();
+  for (const suffix of [
+    '',
+    '/revisions',
+    `/revisions/${article.headRevisionId}`,
+  ]) {
+    const read = await f.app.inject({
+      url: `/api/articles/${id}${suffix}`,
+      headers: f.headers,
+    });
+    expect(read.statusCode, read.body).toBe(200);
+  }
+  const writes = [
+    {
+      method: 'PUT' as const,
+      suffix: '/content',
+      payload: {
+        ...save,
+        baseRevisionId: restored.appliedRevisionId,
+        mutationId: randomUUID(),
+      },
+    },
+    {
+      method: 'POST' as const,
+      suffix: '/restore',
+      payload: {
+        ...restore,
+        baseRevisionId: restored.appliedRevisionId,
+        mutationId: randomUUID(),
+      },
+    },
+    {
+      method: 'PUT' as const,
+      suffix: `/revisions/${article.headRevisionId}/name`,
+      payload: { ...name, mutationId: randomUUID() },
+    },
+    {
+      method: 'PUT' as const,
+      suffix: '/metadata',
+      payload: { ...tags, baseMetadataVersion: 3, mutationId: randomUUID() },
+    },
+  ];
+  for (const write of writes) {
+    const response = await f.app.inject({
+      method: write.method,
+      url: `/api/articles/${id}${write.suffix}`,
+      headers: f.headers,
+      payload: write.payload,
+    });
+    expect(response.statusCode).toBe(409);
+    expect(response.json()).toMatchObject({
+      code: 'ARTICLE_NOT_ACTIVE',
+    });
+    expect(() => f.service.mutation(write.payload.mutationId)).toThrow();
+  }
+  expect(f.service.save(id, save)).toEqual(saved);
+  expect(f.service.restore(id, restore)).toEqual(restored);
+  expect(f.service.name(id, article.headRevisionId, name)).toEqual(named);
+  expect(f.service.updateMetadata(id, tags)).toEqual(tagged);
+  expect(retainedContent(f)).toEqual(original);
+  expect((await lifecycle(f, id, 'unarchive')).statusCode).toBe(200);
+  expect(
+    f.service.save(id, {
+      ...save,
+      mutationId: randomUUID(),
+      baseRevisionId: restored.appliedRevisionId,
+    }).changed,
+  ).toBe(true);
+});
+it.each(['active', 'archived'])(
+  'LIBRARY-TRASH-010/RESTORE-011 trash retains %s content and restore returns to its origin without replay side effects',
+  async (origin) => {
+    const f = await setup(),
+      { article, command: created } = await f.create('回收稿');
+    const id = article.articleId;
+    const savedCommand = {
+      mutationId: randomUUID(),
+      baseRevisionId: article.headRevisionId,
+      document: { ...article.document, title: '保留正文' },
+    };
+    const saved = f.service.save(id, savedCommand);
+    f.service.updateMetadata(id, {
+      mutationId: randomUUID(),
+      baseMetadataVersion: 1,
+      tags: ['保留标签'],
+    });
+    f.service.name(id, article.headRevisionId, {
+      mutationId: randomUUID(),
+      name: '保留名称',
+    });
+    if (origin === 'archived')
+      expect((await lifecycle(f, id, 'archive')).statusCode).toBe(200);
+    const original = retainedContent(f),
+      version = f.service.metadata(id).metadataVersion;
+    const trashId = randomUUID();
+    const trashed = await lifecycle(f, id, 'trash', version, trashId);
+    expect(trashed.statusCode, trashed.body).toBe(200);
+    expect(trashed.json()).toMatchObject({
+      metadata: { state: 'trashed', metadataVersion: version + 1 },
+    });
+    expect(
+      f.db
+        .prepare(
+          'SELECT previous_state FROM article_library WHERE article_id=?',
+        )
+        .get(id),
+    ).toEqual({ previous_state: origin });
+    expect(f.service.workspace().currentArticleId).toBeNull();
+    for (const suffix of [
+      '',
+      '/revisions',
+      `/revisions/${article.headRevisionId}`,
+    ]) {
+      const read = await f.app.inject({
+        url: `/api/articles/${id}${suffix}`,
+        headers: f.headers,
+      });
+      expect(read.statusCode).toBe(409);
+      expect(read.json()).toMatchObject({ code: 'ARTICLE_TRASHED' });
+    }
+    expect(
+      (
+        await f.app.inject({
+          url: `/api/articles/${id}/metadata`,
+          headers: f.headers,
+        })
+      ).statusCode,
+    ).toBe(200);
+    const refusedSave = await f.app.inject({
+      method: 'PUT',
+      url: `/api/articles/${id}/content`,
+      headers: f.headers,
+      payload: {
+        ...savedCommand,
+        mutationId: randomUUID(),
+        baseRevisionId: saved.appliedRevisionId,
+      },
+    });
+    expect(refusedSave.json()).toMatchObject({
+      code: 'ARTICLE_NOT_ACTIVE',
+    });
+    expect(f.service.save(id, savedCommand)).toEqual(saved);
+    expect(f.service.create(created)).toEqual(article);
+    const restoreId = randomUUID();
+    const restored = await lifecycle(f, id, 'restore', version + 1, restoreId);
+    expect(restored.statusCode, restored.body).toBe(200);
+    expect(restored.json()).toMatchObject({
+      metadata: {
+        state: origin,
+        metadataVersion: version + 2,
+        tags: ['保留标签'],
+      },
+    });
+    expect(
+      f.db
+        .prepare(
+          'SELECT previous_state FROM article_library WHERE article_id=?',
+        )
+        .get(id),
+    ).toEqual({ previous_state: null });
+    expect(retainedContent(f)).toEqual(original);
+    const other = await f.create('后来选中的稿');
+    const beforeReplay = retainedContent(f);
+    expect((await lifecycle(f, id, 'trash', version, trashId)).json()).toEqual(
+      trashed.json(),
+    );
+    expect(
+      (await lifecycle(f, id, 'restore', version + 1, restoreId)).json(),
+    ).toEqual(restored.json());
+    expect(f.service.workspace().currentArticleId).toBe(
+      other.article.articleId,
+    );
+    expect(f.service.metadata(id).state).toBe(origin);
+    expect(retainedContent(f)).toEqual(beforeReplay);
+    // The original article's retained rows survive; only the explicit second create adds rows.
+    for (let i = 0; i < original.length; i++)
+      expect(beforeReplay[i]).toEqual(expect.arrayContaining(original[i]!));
+    expect(f.service.read(id).headRevisionId).toBe(saved.appliedRevisionId);
+  },
+);
+it('LIBRARY-TRASH-010 rejects stale metadata confirmations, invalid transitions and reused keys', async () => {
+  const f = await setup(),
+    { article } = await f.create('竞争');
+  const id = article.articleId;
+  f.service.updateMetadata(id, {
+    mutationId: randomUUID(),
+    baseMetadataVersion: 1,
+    tags: ['新标签'],
+  });
+  const staleId = randomUUID();
+  const stale = await lifecycle(f, id, 'trash', 1, staleId);
+  expect(stale.statusCode).toBe(409);
+  expect(stale.json()).toMatchObject({ code: 'METADATA_CONFLICT' });
+  expect(() => f.service.mutation(staleId)).toThrow();
+  for (const action of ['unarchive', 'restore']) {
+    const invalid = await lifecycle(f, id, action);
+    expect(invalid.statusCode).toBe(409);
+    expect(invalid.json()).toMatchObject({
+      code: 'INVALID_LIFECYCLE_TRANSITION',
+    });
+  }
+  const mutationId = randomUUID();
+  expect((await lifecycle(f, id, 'archive', 2, mutationId)).statusCode).toBe(
+    200,
+  );
+  expect((await lifecycle(f, id, 'trash', 2)).json()).toMatchObject({
+    code: 'METADATA_CONFLICT',
+  });
+  for (const action of ['archive', 'restore'])
+    expect((await lifecycle(f, id, action)).json()).toMatchObject({
+      code: 'INVALID_LIFECYCLE_TRANSITION',
+    });
+  for (const [target, action, base] of [
+    [id, 'trash', 2],
+    [id, 'archive', 3],
+    [(await f.create()).article.articleId, 'archive', 2],
+  ] as const) {
+    expect(
+      (await lifecycle(f, target, action, base, mutationId)).json(),
+    ).toMatchObject({ code: 'IDEMPOTENCY_MISMATCH' });
+  }
+  const crossOperation = await f.app.inject({
+    method: 'POST',
+    url: `/api/articles/${id}/open`,
+    headers: f.headers,
+    payload: { mutationId },
+  });
+  expect(crossOperation.json()).toMatchObject({
+    code: 'IDEMPOTENCY_MISMATCH',
+  });
+  expect(f.service.metadata(id)).toMatchObject({
+    state: 'archived',
+    metadataVersion: 3,
+  });
+  expect((await lifecycle(f, id, 'trash')).statusCode).toBe(200);
+  for (const action of ['archive', 'unarchive', 'trash'])
+    expect((await lifecycle(f, id, action)).json()).toMatchObject({
+      code: 'INVALID_LIFECYCLE_TRANSITION',
+    });
+});
+it('LIBRARY-OPEN-004/ARCHIVE-009 and ARTICLE-CREATE-001 use safe fallback, preserve explicit archive opening and only ensure active drafts', async () => {
+  const f = await setup(),
+    a = (await f.create('A')).article,
+    b = (await f.create('B')).article;
+  f.db
+    .prepare('UPDATE article_library SET updated_at=200 WHERE article_id=?')
+    .run(a.articleId);
+  const c = (await f.create('C')).article;
+  expect((await lifecycle(f, c.articleId, 'archive')).statusCode).toBe(200);
+  expect(
+    f.db.prepare('SELECT current_article_id FROM workspace').get(),
+  ).toEqual({ current_article_id: null });
+  expect(f.service.workspace().currentArticleId).toBe(a.articleId);
+  expect(
+    f.db.prepare('SELECT current_article_id FROM workspace').get(),
+  ).toEqual({ current_article_id: null });
+  const openId = randomUUID();
+  const opened = await f.app.inject({
+    method: 'POST',
+    url: `/api/articles/${c.articleId}/open`,
+    headers: f.headers,
+    payload: { mutationId: openId },
+  });
+  expect(opened.statusCode, opened.body).toBe(200);
+  expect(f.service.workspace().currentArticleId).toBe(c.articleId);
+  expect(f.service.ensure({ mutationId: randomUUID() }).articleId).toBe(
+    a.articleId,
+  );
+  expect(f.service.workspace().currentArticleId).toBe(a.articleId);
+  expect((await lifecycle(f, b.articleId, 'trash')).statusCode).toBe(200);
+  expect(f.service.workspace().currentArticleId).toBe(a.articleId);
+  expect((await lifecycle(f, a.articleId, 'archive')).statusCode).toBe(200);
+  expect(f.service.workspace().currentArticleId).toBeNull();
+  expect(f.db.prepare('SELECT count(*) n FROM articles').get()).toEqual({
+    n: 3,
+  });
+  // Even an explicitly opened archive is not returned by a new ensure request.
+  f.service.open(c.articleId, { mutationId: randomUUID() });
+  const ensureId = randomUUID(),
+    ensured = f.service.ensure({ mutationId: ensureId });
+  expect([a.articleId, b.articleId, c.articleId]).not.toContain(
+    ensured.articleId,
+  );
+  expect(f.service.metadata(ensured.articleId).state).toBe('active');
+  expect(f.service.ensure({ mutationId: ensureId })).toEqual(ensured);
+  expect(f.db.prepare('SELECT count(*) n FROM articles').get()).toEqual({
+    n: 4,
+  });
+  expect(
+    (
+      await f.app.inject({
+        method: 'POST',
+        url: `/api/articles/${c.articleId}/open`,
+        headers: f.headers,
+        payload: { mutationId: openId },
+      })
+    ).json(),
+  ).toEqual(opened.json());
+  expect(f.service.workspace().currentArticleId).toBe(ensured.articleId);
+});
+it('LIBRARY-FIND-008/RESTORE-011 filters each state with literal title, exact tag and stable pagination', async () => {
+  const f = await setup();
+  for (const state of ['active', 'archived', 'trashed']) {
+    const ids: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      const { article } = await f.create('技术%笔记');
+      f.service.updateMetadata(article.articleId, {
+        mutationId: randomUUID(),
+        baseMetadataVersion: 1,
+        tags: ['技术'],
+      });
+      if (state !== 'active')
+        expect(
+          (
+            await lifecycle(
+              f,
+              article.articleId,
+              state === 'archived' ? 'archive' : 'trash',
+            )
+          ).statusCode,
+        ).toBe(200);
+      ids.push(article.articleId);
+    }
+    const base = new URLSearchParams({
+      state,
+      q: '%',
+      tag: '技术',
+      limit: '2',
+    });
+    const first = await f.app.inject({
+      url: '/api/articles?' + base,
+      headers: f.headers,
+    });
+    expect(first.statusCode, first.body).toBe(200);
+    const page = ArticleListPage.parse(first.json());
+    expect(page.items).toHaveLength(2);
+    expect(page.items.every((item) => item.state === state)).toBe(true);
+    base.set('beforeId', page.nextCursor!.articleId);
+    base.set('beforeCreatedAt', String(page.nextCursor!.createdAt));
+    const next = ArticleListPage.parse(
+      (
+        await f.app.inject({ url: '/api/articles?' + base, headers: f.headers })
+      ).json(),
+    );
+    expect(
+      [...page.items, ...next.items].map((item) => item.articleId),
+    ).toEqual(ids.sort().reverse());
+    expect(next.nextCursor).toBeNull();
+  }
+  const defaults = ArticleListPage.parse(
+    (await f.app.inject({ url: '/api/articles', headers: f.headers })).json(),
+  );
+  expect(defaults.items).toHaveLength(3);
+  expect(defaults.items.every((item) => item.state === 'active')).toBe(true);
+});
+it.each(['state', 'pointer', 'mutation'])(
+  'LIBRARY-FAILURE-013 lifecycle %s write failure rolls back state, version, pointer and request; same command retries',
+  async (point) => {
+    const f = await setup(),
+      { article } = await f.create('原稿');
+    const id = article.articleId,
+      mutationId = randomUUID();
+    const before = retainedContent(f),
+      metadata = f.service.metadata(id);
+    const event = {
+      state: 'AFTER UPDATE OF state ON article_library',
+      pointer: 'AFTER UPDATE OF current_article_id ON workspace',
+      mutation: 'AFTER INSERT ON mutations',
+    }[point]!;
+    f.db.exec(
+      `CREATE TEMP TRIGGER fail_lifecycle ${event} BEGIN SELECT RAISE(ABORT,'injected lifecycle failure'); END;`,
+    );
+    const failure = await lifecycle(f, id, 'archive', 1, mutationId);
+    expect(failure.statusCode, failure.body).toBe(503);
+    expect(f.service.metadata(id)).toEqual(metadata);
+    expect(f.service.workspace().currentArticleId).toBe(id);
+    expect(
+      f.db
+        .prepare(
+          'SELECT previous_state FROM article_library WHERE article_id=?',
+        )
+        .get(id),
+    ).toEqual({ previous_state: null });
+    expect(retainedContent(f)).toEqual(before);
+    expect(() => f.service.mutation(mutationId)).toThrow();
+    f.db.exec('DROP TRIGGER fail_lifecycle');
+    expect((await lifecycle(f, id, 'archive', 1, mutationId)).statusCode).toBe(
+      200,
+    );
+    expect(f.service.metadata(id)).toMatchObject({
+      state: 'archived',
+      metadataVersion: 2,
+    });
+  },
+);
+it('LIBRARY-FAILURE-013 lifecycle authenticates and validates before any mutation', async () => {
+  const f = await setup(),
+    { article } = await f.create();
+  const url = `/api/articles/${article.articleId}/lifecycle`;
+  const payload = {
+    mutationId: randomUUID(),
+    baseMetadataVersion: 1,
+    action: 'archive',
+  };
+  for (const [headers, status] of [
+    [{ host: f.headers.host }, 401],
+    [{ ...f.headers, origin: 'https://other.example' }, 403],
+    [{ ...f.headers, 'x-csrf-token': 'invalid' }, 403],
+  ] as const) {
+    expect(
+      (await f.app.inject({ method: 'POST', url, headers, payload }))
+        .statusCode,
+    ).toBe(status);
+  }
+  for (const invalid of [
+    { ...payload, action: 'delete' },
+    { ...payload, baseMetadataVersion: 0 },
+    { ...payload, baseMetadataVersion: 1.5 },
+    { ...payload, baseMetadataVersion: Number.MAX_SAFE_INTEGER + 1 },
+    { ...payload, mutationId: 'bad' },
+    { ...payload, extra: true },
+  ]) {
+    expect(
+      (
+        await f.app.inject({
+          method: 'POST',
+          url,
+          headers: f.headers,
+          payload: invalid,
+        })
+      ).statusCode,
+    ).toBe(422);
+  }
+  expect(
+    (
+      await f.app.inject({
+        method: 'POST',
+        url: '/api/articles/bad/lifecycle',
+        headers: f.headers,
+        payload,
+      })
+    ).statusCode,
+  ).toBe(422);
+  expect((await lifecycle(f, randomUUID(), 'archive', 1)).statusCode).toBe(404);
+  expect(
+    (
+      await f.app.inject({
+        url: '/api/articles?state=deleted',
+        headers: f.headers,
+      })
+    ).statusCode,
+  ).toBe(422);
+  expect(f.service.metadata(article.articleId)).toMatchObject({
+    state: 'active',
+    metadataVersion: 1,
+  });
+  expect(() => f.service.mutation(payload.mutationId)).toThrow();
 });

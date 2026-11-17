@@ -2,6 +2,7 @@ import type Database from 'better-sqlite3';
 import { createHash, randomUUID } from 'node:crypto';
 import {
   ArticleError,
+  transitionArticle,
   canonical,
   DEFAULT_HISTORY_POLICY,
   validateHistoryPolicy,
@@ -11,6 +12,9 @@ import {
 } from '@inkling/core';
 import {
   ArticleDocument,
+  ArticleState,
+  type ArticleLifecycleCommand,
+  ArticleLifecycleResult,
   ArticleListItem,
   type UpdateArticleMetadataCommand,
   UpdateArticleMetadataResult,
@@ -121,17 +125,55 @@ export class SqliteArticles implements ArticleRepository {
     }
     return document;
   }
+  private recentActive(): string | null {
+    const value = this.db
+      .prepare(
+        "SELECT article_id FROM article_library WHERE state='active' ORDER BY updated_at DESC,created_at DESC,article_id DESC LIMIT 1",
+      )
+      .get();
+    return value ? string(row(value).article_id) : null;
+  }
   workspace(): WorkspaceInfo {
-    const r = row(
-      this.db
-        .prepare('SELECT current_article_id FROM workspace WHERE singleton=1')
-        .get(),
-    );
+    const current = this.db
+      .prepare(
+        "SELECT l.article_id FROM workspace w JOIN article_library l ON l.article_id=w.current_article_id WHERE w.singleton=1 AND l.state!='trashed'",
+      )
+      .get();
     return {
       workspaceId: this.workspaceId,
-      currentArticleId:
-        r.current_article_id === null ? null : string(r.current_article_id),
+      currentArticleId: current
+        ? string(row(current).article_id)
+        : this.recentActive(),
     };
+  }
+  private state(articleId: string) {
+    const value = row(
+      this.db
+        .prepare(
+          'SELECT state,previous_state FROM article_library WHERE article_id=?',
+        )
+        .get(articleId),
+    );
+    return {
+      state: ArticleState.parse(value.state),
+      previousState: ArticleState.nullable().parse(value.previous_state),
+    };
+  }
+  private assertActive(articleId: string) {
+    if (this.state(articleId).state !== 'active')
+      throw new ArticleError(
+        'ARTICLE_NOT_ACTIVE',
+        409,
+        '文章当前不可编辑，请保留本地输入并刷新文章库。',
+      );
+  }
+  private assertReadable(articleId: string) {
+    if (this.state(articleId).state === 'trashed')
+      throw new ArticleError(
+        'ARTICLE_TRASHED',
+        409,
+        '文章已在回收站中，请先恢复后再查看正文与历史。',
+      );
   }
   private replay(id: string, requestHash: string): unknown {
     const value = this.db
@@ -181,9 +223,18 @@ export class SqliteArticles implements ArticleRepository {
         const requestHash = hash({ operation: 'create' }),
           old = this.replay(mutationId, requestHash);
         if (old !== undefined) return ArticleSnapshot.parse(old);
-        const current = this.workspace().currentArticleId;
+        const selected = this.workspace().currentArticleId;
+        const current =
+          selected && this.state(selected).state === 'active'
+            ? selected
+            : this.recentActive();
         if (current) {
           const result = this.read(current);
+          this.db
+            .prepare(
+              'UPDATE workspace SET current_article_id=? WHERE singleton=1',
+            )
+            .run(current);
           this.remember(
             mutationId,
             current,
@@ -263,17 +314,6 @@ export class SqliteArticles implements ArticleRepository {
         const requestHash = hash({ operation: 'open', articleId, ...command });
         const old = this.replay(command.mutationId, requestHash);
         if (old !== undefined) return ArticleSnapshot.parse(old);
-        const metadata = row(
-          this.db
-            .prepare('SELECT state FROM article_library WHERE article_id=?')
-            .get(articleId),
-        );
-        if (metadata.state !== 'active')
-          throw new ArticleError(
-            'ARTICLE_NOT_ACTIVE',
-            409,
-            '文章当前不可编辑，请刷新文章库。',
-          );
         const result = this.read(articleId);
         this.db
           .prepare(
@@ -295,9 +335,10 @@ export class SqliteArticles implements ArticleRepository {
   list(query: ArticleListQuery): ArticleListPage {
     const values = this.db
       .prepare(
-        "SELECT article_id,title,state,metadata_version,created_at,updated_at,(SELECT json_group_array(tag) FROM article_tags WHERE article_tags.article_id=article_library.article_id) tags_json FROM article_library WHERE state='active' AND instr(lower(title),lower(?))>0 AND (?='' OR EXISTS(SELECT 1 FROM article_tags WHERE article_tags.article_id=article_library.article_id AND tag=?)) AND (? IS NULL OR created_at < ? OR (created_at = ? AND article_id < ?)) ORDER BY created_at DESC,article_id DESC LIMIT ?",
+        "SELECT article_id,title,state,metadata_version,created_at,updated_at,(SELECT json_group_array(tag) FROM article_tags WHERE article_tags.article_id=article_library.article_id) tags_json FROM article_library WHERE state=? AND instr(lower(title),lower(?))>0 AND (?='' OR EXISTS(SELECT 1 FROM article_tags WHERE article_tags.article_id=article_library.article_id AND tag=?)) AND (? IS NULL OR created_at < ? OR (created_at = ? AND article_id < ?)) ORDER BY created_at DESC,article_id DESC LIMIT ?",
       )
       .all(
+        query.state,
         query.q,
         query.tag,
         query.tag,
@@ -401,7 +442,65 @@ export class SqliteArticles implements ArticleRepository {
       })
       .immediate();
   }
+  lifecycle(
+    articleId: string,
+    command: ArticleLifecycleCommand,
+  ): ArticleLifecycleResult {
+    return this.db
+      .transaction(() => {
+        const requestHash = hash({
+          operation: 'lifecycle',
+          articleId,
+          ...command,
+        });
+        const old = this.replay(command.mutationId, requestHash);
+        if (old !== undefined) return ArticleLifecycleResult.parse(old);
+        const current = this.metadata(articleId);
+        if (current.metadataVersion !== command.baseMetadataVersion)
+          throw new ArticleError(
+            'METADATA_CONFLICT',
+            409,
+            '文章状态或标签已被更新，请查看最新信息后重新确认。',
+          );
+        const next = transitionArticle(
+          current.state,
+          this.state(articleId).previousState,
+          command.action,
+        );
+        this.db
+          .prepare(
+            'UPDATE article_library SET state=?,previous_state=?,metadata_version=metadata_version+1,updated_at=? WHERE article_id=?',
+          )
+          .run(next.state, next.previousState, this.now(), articleId);
+        if (next.state !== 'active')
+          this.db
+            .prepare(
+              'UPDATE workspace SET current_article_id=NULL WHERE singleton=1 AND current_article_id=?',
+            )
+            .run(articleId);
+        const result = {
+          mutationId: command.mutationId,
+          metadata: this.metadata(articleId),
+        };
+        const revision = row(
+          this.db
+            .prepare('SELECT head_revision_id FROM articles WHERE id=?')
+            .get(articleId),
+        );
+        this.remember(
+          command.mutationId,
+          articleId,
+          'lifecycle',
+          requestHash,
+          result,
+          string(revision.head_revision_id),
+        );
+        return result;
+      })
+      .immediate();
+  }
   read(articleId: string): ArticleSnapshot {
+    this.assertReadable(articleId);
     this.assertHealthy(articleId);
     const r = row(
       this.db
@@ -443,7 +542,7 @@ export class SqliteArticles implements ArticleRepository {
     });
   }
   revisions(articleId: string, query: RevisionQuery): RevisionPage {
-    row(this.db.prepare('SELECT id FROM articles WHERE id=?').get(articleId));
+    this.assertReadable(articleId);
     const rows = this.db
       .prepare(
         `SELECT r.id,r.article_id,r.seq,r.parent_revision_id,r.kind,r.restored_from_revision_id,r.created_at,m.name,m.automatic_at,a.head_revision_id FROM article_revisions r JOIN articles a ON a.id=r.article_id LEFT JOIN revision_markers m ON m.revision_id=r.id WHERE r.article_id=? AND r.seq<? AND (? OR m.automatic_at IS NOT NULL OR m.name IS NOT NULL) ORDER BY r.seq DESC LIMIT ?`,
@@ -462,6 +561,7 @@ export class SqliteArticles implements ArticleRepository {
     };
   }
   revision(articleId: string, revisionId: string): RevisionDetail {
+    this.assertReadable(articleId);
     const r = row(
       this.db
         .prepare(
@@ -495,6 +595,7 @@ export class SqliteArticles implements ArticleRepository {
           }),
           old = this.replay(command.mutationId, requestHash);
         if (old !== undefined) return NameRevisionResult.parse(old);
+        this.assertActive(articleId);
         this.read(articleId);
         this.revision(articleId, revisionId);
         const updatedAt = this.now();
@@ -540,6 +641,7 @@ export class SqliteArticles implements ArticleRepository {
         const requestHash = hash({ operation, articleId, ...command }),
           old = this.replay(command.mutationId, requestHash);
         if (old !== undefined) return SaveResult.parse(old);
+        this.assertActive(articleId);
         const current = this.read(articleId);
         if (current.headRevisionId !== command.baseRevisionId)
           throw new ArticleError(

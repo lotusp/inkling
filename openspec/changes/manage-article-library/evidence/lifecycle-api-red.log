@@ -1,0 +1,214 @@
+Command: fnm exec --using 22.22.2 corepack pnpm exec vitest run tests/api/article-library.test.ts
+Exit code: 1
+
+RUN  v5.1.0 <repo>
+
+ ❯ tests/api/article-library.test.ts (26 tests | 10 failed) 1818ms
+   × LIBRARY-ARCHIVE-009 archive is read-only, retains history and permits committed replays; unarchive permits new saves 80ms
+   × LIBRARY-TRASH-010/RESTORE-011 trash retains active content and restore returns to its origin without replay side effects 61ms
+   × LIBRARY-TRASH-010/RESTORE-011 trash retains archived content and restore returns to its origin without replay side effects 63ms
+   × LIBRARY-TRASH-010 rejects stale metadata confirmations, invalid transitions and reused keys 52ms
+   × LIBRARY-OPEN-004/ARCHIVE-009 and ARTICLE-CREATE-001 use safe fallback, preserve explicit archive opening and only ensure active drafts 65ms
+   × LIBRARY-FIND-008/RESTORE-011 filters each state with literal title, exact tag and stable pagination 69ms
+   × LIBRARY-FAILURE-013 lifecycle state write failure rolls back state, version, pointer and request; same command retries 48ms
+   × LIBRARY-FAILURE-013 lifecycle pointer write failure rolls back state, version, pointer and request; same command retries 40ms
+   × LIBRARY-FAILURE-013 lifecycle mutation write failure rolls back state, version, pointer and request; same command retries 43ms
+   × LIBRARY-FAILURE-013 lifecycle authenticates and validates before any mutation 47ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-ARCHIVE-009 archive is read-only, retains history and permits committed replays; unarchive permits new saves
+AssertionError: {"message":"Route POST:/api/articles/e026d312-e7a0-4cc1-b00d-6a3207e5e5f1/lifecycle not found","error":"Not Found","statusCode":404}: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/article-library.test.ts:908:46
+    906|   const original = retainedContent(f);
+    907|   const archived = await lifecycle(f, id, 'archive');
+    908|   expect(archived.statusCode, archived.body).toBe(200);
+       |                                              ^
+    909|   expect(archived.json()).toMatchObject({
+    910|     metadata: { state: 'archived', metadataVersion: 3, tags: ['技术'] },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-TRASH-010/RESTORE-011 trash retains active content and restore returns to its origin without replay side effects
+AssertionError: {"message":"Route POST:/api/articles/fc8737b1-30d8-44e6-9980-bc1d58d3585e/lifecycle not found","error":"Not Found","statusCode":404}: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/article-library.test.ts:1008:46
+    1006|     const trashId = randomUUID();
+    1007|     const trashed = await lifecycle(f, id, 'trash', version, trashId);
+    1008|     expect(trashed.statusCode, trashed.body).toBe(200);
+       |                                              ^
+    1009|     expect(trashed.json()).toMatchObject({
+    1010|       metadata: { state: 'trashed', metadataVersion: version + 1 },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-TRASH-010/RESTORE-011 trash retains archived content and restore returns to its origin without replay side effects
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/article-library.test.ts:1003:62
+    1001|     });
+    1002|     if (origin === 'archived')
+    1003|       expect((await lifecycle(f, id, 'archive')).statusCode).toBe(200);
+       |                                                              ^
+    1004|     const original = retainedContent(f),
+    1005|       version = f.service.metadata(id).metadataVersion;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-TRASH-010 rejects stale metadata confirmations, invalid transitions and reused keys
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ❯ tests/api/article-library.test.ts:1102:28
+    1100|   const staleId = randomUUID();
+    1101|   const stale = await lifecycle(f, id, 'trash', 1, staleId);
+    1102|   expect(stale.statusCode).toBe(409);
+       |                            ^
+    1103|   expect(stale.json()).toMatchObject({ error: { code: 'METADATA_CONFLI…
+    1104|   expect(() => f.service.mutation(staleId)).toThrow();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-OPEN-004/ARCHIVE-009 and ARTICLE-CREATE-001 use safe fallback, preserve explicit archive opening and only ensure active drafts
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/article-library.test.ts:1159:67
+    1157|     .run(a.articleId);
+    1158|   const c = (await f.create('C')).article;
+    1159|   expect((await lifecycle(f, c.articleId, 'archive')).statusCode).toBe…
+       |                                                                   ^
+    1160|   expect(
+    1161|     f.db.prepare('SELECT current_article_id FROM workspace').get(),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-FIND-008/RESTORE-011 filters each state with literal title, exact tag and stable pagination
+AssertionError: {"code":"UNSUPPORTED_DOCUMENT","message":"请求或正文格式不受支持。","retryable":false}: expected 422 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 422
+
+ ❯ tests/api/article-library.test.ts:1244:42
+    1242|       headers: f.headers,
+    1243|     });
+    1244|     expect(first.statusCode, first.body).toBe(200);
+       |                                          ^
+    1245|     const page = ArticleListPage.parse(first.json());
+    1246|     expect(page.items).toHaveLength(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-FAILURE-013 lifecycle state write failure rolls back state, version, pointer and request; same command retries
+AssertionError: {"message":"Route POST:/api/articles/4d29fbd4-c1a7-4d53-9fc0-f35a0d0607bb/lifecycle not found","error":"Not Found","statusCode":404}: expected 404 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 404
+
+ ❯ tests/api/article-library.test.ts:1284:46
+    1282|     );
+    1283|     const failure = await lifecycle(f, id, 'archive', 1, mutationId);
+    1284|     expect(failure.statusCode, failure.body).toBe(503);
+       |                                              ^
+    1285|     expect(f.service.metadata(id)).toEqual(metadata);
+    1286|     expect(f.service.workspace().currentArticleId).toBe(id);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-FAILURE-013 lifecycle pointer write failure rolls back state, version, pointer and request; same command retries
+AssertionError: {"message":"Route POST:/api/articles/d6d59350-ce3a-4ddf-b6f7-2da3daa9d884/lifecycle not found","error":"Not Found","statusCode":404}: expected 404 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 404
+
+ ❯ tests/api/article-library.test.ts:1284:46
+    1282|     );
+    1283|     const failure = await lifecycle(f, id, 'archive', 1, mutationId);
+    1284|     expect(failure.statusCode, failure.body).toBe(503);
+       |                                              ^
+    1285|     expect(f.service.metadata(id)).toEqual(metadata);
+    1286|     expect(f.service.workspace().currentArticleId).toBe(id);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-FAILURE-013 lifecycle mutation write failure rolls back state, version, pointer and request; same command retries
+AssertionError: {"message":"Route POST:/api/articles/baccf072-3150-430a-be50-be6b203395dd/lifecycle not found","error":"Not Found","statusCode":404}: expected 404 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 404
+
+ ❯ tests/api/article-library.test.ts:1284:46
+    1282|     );
+    1283|     const failure = await lifecycle(f, id, 'archive', 1, mutationId);
+    1284|     expect(failure.statusCode, failure.body).toBe(503);
+       |                                              ^
+    1285|     expect(f.service.metadata(id)).toEqual(metadata);
+    1286|     expect(f.service.workspace().currentArticleId).toBe(id);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-FAILURE-013 lifecycle authenticates and validates before any mutation
+AssertionError: expected 404 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 404
+
+ ❯ tests/api/article-library.test.ts:1342:7
+    1340|         })
+    1341|       ).statusCode,
+    1342|     ).toBe(422);
+       |       ^
+    1343|   }
+    1344|   expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 16 passed (26)
+   Start at  23:16:16
+   Duration  2.14s (tests 89%, import 8%, transform 3%)

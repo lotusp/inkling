@@ -103,6 +103,10 @@ export function createServer(
       async (request) =>
         service().updateMetadata(request.params.id, request.body),
     );
+    app.post<{ Params: { id: string } }>(
+      '/api/articles/:id/lifecycle',
+      async (request) => service().lifecycle(request.params.id, request.body),
+    );
     app.get<{ Params: { id: string } }>('/api/articles/:id', async (request) =>
       service().read(request.params.id),
     );

@@ -1,5 +1,7 @@
 import {
   ArticleDocument,
+  ArticleLifecycleCommand,
+  type ArticleLifecycleResult,
   CreateArticleCommand,
   OpenArticleCommand,
   ArticleListQuery,
@@ -31,6 +33,10 @@ export interface ArticleRepository {
     articleId: string,
     command: UpdateArticleMetadataCommand,
   ): UpdateArticleMetadataResult;
+  lifecycle(
+    articleId: string,
+    command: ArticleLifecycleCommand,
+  ): ArticleLifecycleResult;
   read(articleId: string): ArticleSnapshot;
   save(articleId: string, command: SaveArticleCommand): SaveResult;
   restore(articleId: string, command: RestoreRevisionCommand): SaveResult;
@@ -67,6 +73,12 @@ export class ArticleService {
     return this.repository.updateMetadata(
       Id.parse(id),
       UpdateArticleMetadataCommand.parse(input),
+    );
+  }
+  lifecycle(id: unknown, input: unknown) {
+    return this.repository.lifecycle(
+      Id.parse(id),
+      ArticleLifecycleCommand.parse(input),
     );
   }
   read(id: unknown) {

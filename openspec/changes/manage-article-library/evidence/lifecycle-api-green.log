@@ -1,0 +1,10 @@
+Command: fnm exec --using 22.22.2 corepack pnpm exec vitest run tests/api/article-library.test.ts
+Exit code: 0
+
+RUN  v5.1.0 <repo>
+
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  23:17:58
+   Duration  2.36s (tests 90%, import 7%, transform 3%)

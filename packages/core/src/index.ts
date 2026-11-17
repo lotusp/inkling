@@ -6,3 +6,4 @@ export {
   checkHistoryCapacity,
   type HistoryPolicy,
 } from './domain/article';
+export { transitionArticle } from './domain/article-lifecycle';
