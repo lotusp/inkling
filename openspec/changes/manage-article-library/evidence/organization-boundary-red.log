@@ -1,0 +1,122 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-organization.spec.ts --grep 'composition blocks|definitive write rejection' --workers=3 --timeout=10000
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2255 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-BVWxYVoy.css   12.54 kB │ gzip:   3.37 kB
+apps/web/dist/assets/index-36VkXm_8.js   781.65 kB │ gzip: 242.68 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 311ms
+
+Running 3 tests using 3 workers
+
+(node:76885) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:76886) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:76887) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-organization.spec.ts:270:3 › LIBRARY-TAGS-007 文章标签（一行一个） composition blocks submit and closing the organizer (6.7s)
+  ✘  2 [chromium] › tests/e2e/article-organization.spec.ts:270:3 › LIBRARY-TAGS-007 新标题 composition blocks submit and closing the organizer (6.7s)
+  ✘  3 [chromium] › tests/e2e/article-organization.spec.ts:298:1 › LIBRARY-TAGS-007 definitive write rejection unlocks explicit abandonment of tag input (10.1s)
+
+
+  1) [chromium] › tests/e2e/article-organization.spec.ts:270:3 › LIBRARY-TAGS-007 新标题 composition blocks submit and closing the organizer
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('region', { name: '整理文章', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('region', { name: '整理文章', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: '整理文章', exact: true })
+
+
+      289 |     await expect(
+      290 |       page.getByRole('region', { name: '整理文章', exact: true }),
+    > 291 |     ).toBeVisible();
+          |       ^
+      292 |     await input.dispatchEvent('compositionend');
+      293 |     await page.getByRole('button', { name: '关闭整理', exact: true }).click();
+      294 |     await expect(
+        at <repo>/tests/e2e/article-organization.spec.ts:291:7
+
+    Error Context: test-results/article-organization-LIBRA-12ead-t-and-closing-the-organizer-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-organization-LIBRA-12ead-t-and-closing-the-organizer-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-organization-LIBRA-12ead-t-and-closing-the-organizer-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/article-organization.spec.ts:270:3 › LIBRARY-TAGS-007 文章标签（一行一个） composition blocks submit and closing the organizer
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('region', { name: '整理文章', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('region', { name: '整理文章', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: '整理文章', exact: true })
+
+
+      289 |     await expect(
+      290 |       page.getByRole('region', { name: '整理文章', exact: true }),
+    > 291 |     ).toBeVisible();
+          |       ^
+      292 |     await input.dispatchEvent('compositionend');
+      293 |     await page.getByRole('button', { name: '关闭整理', exact: true }).click();
+      294 |     await expect(
+        at <repo>/tests/e2e/article-organization.spec.ts:291:7
+
+    Error Context: test-results/article-organization-LIBRA-3913b-t-and-closing-the-organizer-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-organization-LIBRA-3913b-t-and-closing-the-organizer-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-organization-LIBRA-3913b-t-and-closing-the-organizer-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/article-organization.spec.ts:298:1 › LIBRARY-TAGS-007 definitive write rejection unlocks explicit abandonment of tag input
+
+    Test timeout of 10000ms exceeded.
+
+    Error Context: test-results/article-organization-LIBRA-7195d-it-abandonment-of-tag-input-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-organization-LIBRA-7195d-it-abandonment-of-tag-input-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-organization-LIBRA-7195d-it-abandonment-of-tag-input-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › tests/e2e/article-organization.spec.ts:270:3 › LIBRARY-TAGS-007 新标题 composition blocks submit and closing the organizer
+    [chromium] › tests/e2e/article-organization.spec.ts:270:3 › LIBRARY-TAGS-007 文章标签（一行一个） composition blocks submit and closing the organizer
+    [chromium] › tests/e2e/article-organization.spec.ts:298:1 › LIBRARY-TAGS-007 definitive write rejection unlocks explicit abandonment of tag input
+ ELIFECYCLE  Command failed with exit code 1.

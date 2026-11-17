@@ -1,0 +1,151 @@
+
+> inkling@0.1.0 verify <repo>
+> pnpm format:check && pnpm lint && pnpm typecheck && pnpm check:architecture && pnpm build && pnpm test && pnpm test:harness && pnpm check:docs && pnpm check:specs
+
+
+> inkling@0.1.0 format:check <repo>
+> prettier --check apps packages tests scripts/build-server.mjs '*.json' '*config.*' '.dependency-cruiser.cjs' '.github/workflows/checks.yml' pnpm-workspace.yaml
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> inkling@0.1.0 lint <repo>
+> eslint apps packages tests --max-warnings 0
+
+
+> inkling@0.1.0 typecheck <repo>
+> tsc --noEmit
+
+
+> inkling@0.1.0 check:architecture <repo>
+> depcruise apps packages --config .dependency-cruiser.cjs --output-type err-long
+
+
+✔ no dependency violations found (50 modules, 124 dependencies cruised)
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2255 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-BVWxYVoy.css   12.54 kB │ gzip:   3.37 kB
+apps/web/dist/assets/index-BWc1DHth.js   781.98 kB │ gzip: 242.81 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 309ms
+
+> inkling@0.1.0 test <repo>
+> vitest run
+
+
+ RUN  v5.1.0 <repo>
+
+
+ Test Files  17 passed (17)
+      Tests  77 passed (77)
+   Start at  22:32:27
+   Duration  5.26s (tests 91%, import 7%, transform 1%)
+
+
+> inkling@0.1.0 test:harness <repo>
+> node --test scripts/harness/check.test.mjs
+
+TAP version 13
+# Subtest: HARNESS-001 blocks two active changes
+ok 1 - HARNESS-001 blocks two active changes
+  ---
+  duration_ms: 6.485625
+  type: 'test'
+  ...
+# Subtest: HARNESS-002 blocks missing plan artifacts
+ok 2 - HARNESS-002 blocks missing plan artifacts
+  ---
+  duration_ms: 5.73425
+  type: 'test'
+  ...
+# Subtest: HARNESS-003 accepts mapped plan and valid evidence
+ok 3 - HARNESS-003 accepts mapped plan and valid evidence
+  ---
+  duration_ms: 5.965542
+  type: 'test'
+  ...
+# Subtest: HARNESS-004 rejects stale code evidence
+ok 4 - HARNESS-004 rejects stale code evidence
+  ---
+  duration_ms: 4.957583
+  type: 'test'
+  ...
+# Subtest: HARNESS-005 rejects failed required check
+ok 5 - HARNESS-005 rejects failed required check
+  ---
+  duration_ms: 4.571
+  type: 'test'
+  ...
+# Subtest: HARNESS-006 rejects missing scenario evidence
+ok 6 - HARNESS-006 rejects missing scenario evidence
+  ---
+  duration_ms: 4.086333
+  type: 'test'
+  ...
+# Subtest: HARNESS-007 rejects unfinished tasks
+ok 7 - HARNESS-007 rejects unfinished tasks
+  ---
+  duration_ms: 3.903125
+  type: 'test'
+  ...
+# Subtest: HARNESS-008 rejects outside evidence paths
+ok 8 - HARNESS-008 rejects outside evidence paths
+  ---
+  duration_ms: 3.461208
+  type: 'test'
+  ...
+# Subtest: HARNESS-009 fails unknown change and invalid stage
+ok 9 - HARNESS-009 fails unknown change and invalid stage
+  ---
+  duration_ms: 3.925667
+  type: 'test'
+  ...
+# Subtest: HARNESS-010 requires each delta in the evidence fingerprint
+ok 10 - HARNESS-010 requires each delta in the evidence fingerprint
+  ---
+  duration_ms: 4.747917
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 103.729084
+
+> inkling@0.1.0 check:docs <repo>
+> node scripts/harness/docs-check.mjs
+
+Checked 81 Markdown files; 0 local path / directory errors. Anchor contents and external URLs are not checked.
+
+> inkling@0.1.0 check:specs <repo>
+> OPENSPEC_TELEMETRY=0 openspec validate --all --strict --no-interactive && OPENSPEC_TELEMETRY=0 openspec validate --archived --strict --no-interactive && node scripts/harness/check.mjs
+
+✓ spec/article-persistence
+✓ spec/article-revisions
+✓ spec/development-checks
+✓ spec/local-workbench
+✓ spec/local-workspace-access
+✓ change/manage-article-library
+Totals: 6 passed, 0 failed (6 items)
+✓ change/2026-11-16-bootstrap-local-workbench
+✓ change/2026-11-17-persist-article-revisions
+Totals: 2 passed, 0 failed (2 items)
+Single-active-change structure check passed.

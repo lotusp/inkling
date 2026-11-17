@@ -687,3 +687,24 @@ it('LIBRARY-TAGS-007 mutation failure rolls tags and metadata version back toget
     ).statusCode,
   ).toBe(200);
 });
+it('LIBRARY-TAGS-007 rejects embedded line separators so labels round trip through the organizer', async () => {
+  const f = await setup(),
+    { article } = await f.create();
+  for (const separator of ['\n', '\r', '\u2028', '\u2029']) {
+    const result = await f.app.inject({
+      method: 'PUT',
+      url: `/api/articles/${article.articleId}/metadata`,
+      headers: f.headers,
+      payload: {
+        mutationId: randomUUID(),
+        baseMetadataVersion: 1,
+        tags: ['一个' + separator + '标签'],
+      },
+    });
+    expect(result.statusCode).toBe(422);
+  }
+  expect(f.service.metadata(article.articleId)).toMatchObject({
+    tags: [],
+    metadataVersion: 1,
+  });
+});

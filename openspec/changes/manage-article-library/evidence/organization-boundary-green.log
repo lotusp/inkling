@@ -1,0 +1,47 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-organization.spec.ts --workers=3
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2255 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-BVWxYVoy.css   12.54 kB │ gzip:   3.37 kB
+apps/web/dist/assets/index-Dbkfm_Sx.js   781.92 kB │ gzip: 242.76 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 315ms
+
+Running 13 tests using 3 workers
+
+(node:77379) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:77378) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:77377) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   3 [chromium] › tests/e2e/article-organization.spec.ts:60:1 › LIBRARY-RENAME-006 stale rename keeps the local proposal and never overwrites remote body (1.7s)
+  ✓   2 [chromium] › tests/e2e/article-organization.spec.ts:36:1 › LIBRARY-RENAME-006 rename preserves unsaved body in the same article and survives reload (1.8s)
+  ✓   5 [chromium] › tests/e2e/article-organization.spec.ts:159:1 › LIBRARY-TAGS-007 unknown response is reconciled without duplicate writes or replacing newer tag input (1.0s)
+  ✓   1 [chromium] › tests/e2e/article-organization.spec.ts:93:1 › LIBRARY-RENAME-006 late rename acknowledgement preserves newer title and body (3.0s)
+  ✓   4 [chromium] › tests/e2e/article-organization.spec.ts:123:1 › LIBRARY-TAGS-007 normalize tags without creating content revisions and render on narrow screens (1.9s)
+  ✓   6 [chromium] › tests/e2e/article-organization.spec.ts:208:1 › LIBRARY-TAGS-007 conflicting tags require explicit reload and keep navigation blocked while organizing (1.0s)
+  ✓   7 [chromium] › tests/e2e/article-organization.spec.ts:243:1 › LIBRARY-RENAME-006 organizing another article uses safe navigation before editing its title (1.2s)
+  ✓   8 [chromium] › tests/e2e/article-organization.spec.ts:270:3 › LIBRARY-TAGS-007 新标题 composition blocks submit and closing the organizer (897ms)
+  ✓   9 [chromium] › tests/e2e/article-organization.spec.ts:270:3 › LIBRARY-TAGS-007 文章标签（一行一个） composition blocks submit and closing the organizer (989ms)
+  ✓  10 [chromium] › tests/e2e/article-organization.spec.ts:298:1 › LIBRARY-TAGS-007 definitive write rejection unlocks explicit abandonment of tag input (901ms)
+  ✓  11 [chromium] › tests/e2e/article-organization.spec.ts:325:1 › LIBRARY-TAGS-007 failed mutation lookup does not resend and a later lookup reconciles (1.0s)
+  ✓  12 [chromium] › tests/e2e/article-organization.spec.ts:360:1 › LIBRARY-TAGS-007 explicit reload cannot replace text entered while metadata is loading (889ms)
+  ✓  13 [chromium] › tests/e2e/article-organization.spec.ts:405:1 › LIBRARY-TAGS-007 a missing mutation retries the original immutable command before saving newer input (1.0s)
+
+  13 passed (8.7s)

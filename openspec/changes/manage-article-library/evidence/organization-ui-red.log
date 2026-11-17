@@ -1,0 +1,260 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-organization.spec.ts --workers=3 --timeout=12000
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2253 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-BQhYSlK9.css   10.79 kB │ gzip:   3.06 kB
+apps/web/dist/assets/index-DlhtJRxo.js   774.24 kB │ gzip: 240.83 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 404ms
+
+Running 7 tests using 3 workers
+
+(node:74693) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:74694) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:74695) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-organization.spec.ts:36:1 › LIBRARY-RENAME-006 rename preserves unsaved body in the same article and survives reload (12.1s)
+  ✘  3 [chromium] › tests/e2e/article-organization.spec.ts:60:1 › LIBRARY-RENAME-006 stale rename keeps the local proposal and never overwrites remote body (12.1s)
+  ✘  2 [chromium] › tests/e2e/article-organization.spec.ts:93:1 › LIBRARY-RENAME-006 late rename acknowledgement preserves newer title and body (12.1s)
+(node:74838) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:74839) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:74840) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  5 [chromium] › tests/e2e/article-organization.spec.ts:123:1 › LIBRARY-TAGS-007 normalize tags without creating content revisions and render on narrow screens (12.1s)
+  ✘  4 [chromium] › tests/e2e/article-organization.spec.ts:159:1 › LIBRARY-TAGS-007 unknown response is reconciled without duplicate writes or replacing newer tag input (12.1s)
+  ✘  6 [chromium] › tests/e2e/article-organization.spec.ts:208:1 › LIBRARY-TAGS-007 conflicting tags require explicit reload and keep navigation blocked while organizing (12.1s)
+(node:74990) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  7 [chromium] › tests/e2e/article-organization.spec.ts:243:1 › LIBRARY-RENAME-006 organizing another article uses safe navigation before editing its title (12.1s)
+
+
+  1) [chromium] › tests/e2e/article-organization.spec.ts:36:1 › LIBRARY-RENAME-006 rename preserves unsaved body in the same article and survives reload
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '整理：未命名文章', exact: true })
+
+
+      31 |   await page
+      32 |     .getByRole('button', { name: '整理：' + name, exact: true })
+    > 33 |     .click();
+         |      ^
+      34 |   await expect(tags(page)).toBeEnabled();
+      35 | }
+      36 | test('LIBRARY-RENAME-006 rename preserves unsaved body in the same article and survives reload', async ({
+        at organize (<repo>/tests/e2e/article-organization.spec.ts:33:6)
+        at <repo>/tests/e2e/article-organization.spec.ts:41:3
+
+    Error Context: test-results/article-organization-LIBRA-67d7b-article-and-survives-reload-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-organization-LIBRA-67d7b-article-and-survives-reload-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-organization-LIBRA-67d7b-article-and-survives-reload-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/article-organization.spec.ts:60:1 › LIBRARY-RENAME-006 stale rename keeps the local proposal and never overwrites remote body
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '整理：未命名文章', exact: true })
+
+
+      31 |   await page
+      32 |     .getByRole('button', { name: '整理：' + name, exact: true })
+    > 33 |     .click();
+         |      ^
+      34 |   await expect(tags(page)).toBeEnabled();
+      35 | }
+      36 | test('LIBRARY-RENAME-006 rename preserves unsaved body in the same article and survives reload', async ({
+        at organize (<repo>/tests/e2e/article-organization.spec.ts:33:6)
+        at <repo>/tests/e2e/article-organization.spec.ts:65:3
+
+    Error Context: test-results/article-organization-LIBRA-6ea6b-ever-overwrites-remote-body-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-organization-LIBRA-6ea6b-ever-overwrites-remote-body-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-organization-LIBRA-6ea6b-ever-overwrites-remote-body-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/article-organization.spec.ts:93:1 › LIBRARY-RENAME-006 late rename acknowledgement preserves newer title and body
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '整理：未命名文章', exact: true })
+
+
+      31 |   await page
+      32 |     .getByRole('button', { name: '整理：' + name, exact: true })
+    > 33 |     .click();
+         |      ^
+      34 |   await expect(tags(page)).toBeEnabled();
+      35 | }
+      36 | test('LIBRARY-RENAME-006 rename preserves unsaved body in the same article and survives reload', async ({
+        at organize (<repo>/tests/e2e/article-organization.spec.ts:33:6)
+        at <repo>/tests/e2e/article-organization.spec.ts:96:3
+
+    Error Context: test-results/article-organization-LIBRA-40c02-serves-newer-title-and-body-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-organization-LIBRA-40c02-serves-newer-title-and-body-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-organization-LIBRA-40c02-serves-newer-title-and-body-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/article-organization.spec.ts:123:1 › LIBRARY-TAGS-007 normalize tags without creating content revisions and render on narrow screens
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '整理：未命名文章', exact: true })
+
+
+      31 |   await page
+      32 |     .getByRole('button', { name: '整理：' + name, exact: true })
+    > 33 |     .click();
+         |      ^
+      34 |   await expect(tags(page)).toBeEnabled();
+      35 | }
+      36 | test('LIBRARY-RENAME-006 rename preserves unsaved body in the same article and survives reload', async ({
+        at organize (<repo>/tests/e2e/article-organization.spec.ts:33:6)
+        at <repo>/tests/e2e/article-organization.spec.ts:128:3
+
+    Error Context: test-results/article-organization-LIBRA-57889-nd-render-on-narrow-screens-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-organization-LIBRA-57889-nd-render-on-narrow-screens-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-organization-LIBRA-57889-nd-render-on-narrow-screens-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests/e2e/article-organization.spec.ts:159:1 › LIBRARY-TAGS-007 unknown response is reconciled without duplicate writes or replacing newer tag input
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '整理：未命名文章', exact: true })
+
+
+      31 |   await page
+      32 |     .getByRole('button', { name: '整理：' + name, exact: true })
+    > 33 |     .click();
+         |      ^
+      34 |   await expect(tags(page)).toBeEnabled();
+      35 | }
+      36 | test('LIBRARY-RENAME-006 rename preserves unsaved body in the same article and survives reload', async ({
+        at organize (<repo>/tests/e2e/article-organization.spec.ts:33:6)
+        at <repo>/tests/e2e/article-organization.spec.ts:164:3
+
+    Error Context: test-results/article-organization-LIBRA-e662f-r-replacing-newer-tag-input-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-organization-LIBRA-e662f-r-replacing-newer-tag-input-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-organization-LIBRA-e662f-r-replacing-newer-tag-input-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › tests/e2e/article-organization.spec.ts:208:1 › LIBRARY-TAGS-007 conflicting tags require explicit reload and keep navigation blocked while organizing
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '整理：未命名文章', exact: true })
+
+
+      31 |   await page
+      32 |     .getByRole('button', { name: '整理：' + name, exact: true })
+    > 33 |     .click();
+         |      ^
+      34 |   await expect(tags(page)).toBeEnabled();
+      35 | }
+      36 | test('LIBRARY-RENAME-006 rename preserves unsaved body in the same article and survives reload', async ({
+        at organize (<repo>/tests/e2e/article-organization.spec.ts:33:6)
+        at <repo>/tests/e2e/article-organization.spec.ts:213:3
+
+    Error Context: test-results/article-organization-LIBRA-36941-on-blocked-while-organizing-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-organization-LIBRA-36941-on-blocked-while-organizing-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-organization-LIBRA-36941-on-blocked-while-organizing-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [chromium] › tests/e2e/article-organization.spec.ts:243:1 › LIBRARY-RENAME-006 organizing another article uses safe navigation before editing its title
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '整理：第二篇', exact: true })
+
+
+      252 |   await body(page).fill('原稿尚未保存');
+      253 |   await page.getByRole('button', { name: '文章库', exact: true }).click();
+    > 254 |   await page.getByRole('button', { name: '整理：第二篇', exact: true }).click();
+          |                                                                   ^
+      255 |   await page.getByRole('button', { name: '保存后切换', exact: true }).click();
+      256 |   await expect(title(page)).toHaveValue('第二篇');
+      257 |   await expect(tags(page)).toBeEnabled();
+        at <repo>/tests/e2e/article-organization.spec.ts:254:67
+
+    Error Context: test-results/article-organization-LIBRA-c0ec9-on-before-editing-its-title-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-organization-LIBRA-c0ec9-on-before-editing-its-title-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-organization-LIBRA-c0ec9-on-before-editing-its-title-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7 failed
+    [chromium] › tests/e2e/article-organization.spec.ts:36:1 › LIBRARY-RENAME-006 rename preserves unsaved body in the same article and survives reload
+    [chromium] › tests/e2e/article-organization.spec.ts:60:1 › LIBRARY-RENAME-006 stale rename keeps the local proposal and never overwrites remote body
+    [chromium] › tests/e2e/article-organization.spec.ts:93:1 › LIBRARY-RENAME-006 late rename acknowledgement preserves newer title and body
+    [chromium] › tests/e2e/article-organization.spec.ts:123:1 › LIBRARY-TAGS-007 normalize tags without creating content revisions and render on narrow screens
+    [chromium] › tests/e2e/article-organization.spec.ts:159:1 › LIBRARY-TAGS-007 unknown response is reconciled without duplicate writes or replacing newer tag input
+    [chromium] › tests/e2e/article-organization.spec.ts:208:1 › LIBRARY-TAGS-007 conflicting tags require explicit reload and keep navigation blocked while organizing
+    [chromium] › tests/e2e/article-organization.spec.ts:243:1 › LIBRARY-RENAME-006 organizing another article uses safe navigation before editing its title
+ ELIFECYCLE  Command failed with exit code 1.

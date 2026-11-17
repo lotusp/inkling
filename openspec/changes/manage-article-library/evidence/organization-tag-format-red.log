@@ -1,0 +1,32 @@
+
+ RUN  v5.1.0 <repo>
+
+ ❯ tests/api/article-library.test.ts (13 tests | 1 failed | 12 skipped) 126ms
+   × LIBRARY-TAGS-007 rejects embedded line separators so labels round trip through the organizer 125ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-TAGS-007 rejects embedded line separators so labels round trip through the organizer
+AssertionError: expected 200 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 200
+
+ ❯ tests/api/article-library.test.ts:704:31
+    702|       },
+    703|     });
+    704|     expect(result.statusCode).toBe(422);
+       |                               ^
+    705|   }
+    706|   expect(f.service.metadata(article.articleId)).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 skipped (13)
+   Start at  22:31:07
+   Duration  377ms (tests 43%, import 38%, transform 18%, worker 1%)

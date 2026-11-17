@@ -3,6 +3,7 @@ import {
   ArticleListPage,
   ArticleTitle,
   type ArticleSnapshot,
+  type ArticleListItem,
 } from '@inkling/contracts';
 import { BookOpen, FilePlus2, RefreshCw, X } from 'lucide-react';
 import { api } from './api';
@@ -10,10 +11,14 @@ export function ArticleLibrary({
   current,
   disabled,
   openArticle,
+  organizeArticle,
+  confirmedMetadata,
   createArticle,
   close,
 }: {
   current: ArticleSnapshot | null;
+  confirmedMetadata: ArticleListItem | null;
+  organizeArticle: (id: string) => void;
   disabled: boolean;
   openArticle: (id: string) => void;
   createArticle: (title: string) => void;
@@ -173,6 +178,26 @@ export function ArticleLibrary({
                   </time>
                 </span>
               </button>
+              <div className="library-card-details">
+                <div className="article-tags" aria-label="文章标签">
+                  {(selected &&
+                  confirmedMetadata &&
+                  confirmedMetadata.metadataVersion >= item.metadataVersion
+                    ? confirmedMetadata.tags
+                    : item.tags
+                  ).map((tag) => (
+                    <span key={tag}>{tag}</span>
+                  ))}
+                </div>
+                <button
+                  className="organize-button"
+                  disabled={disabled}
+                  aria-label={'整理：' + name}
+                  onClick={() => organizeArticle(item.articleId)}
+                >
+                  整理
+                </button>
+              </div>
             </li>
           );
         })}

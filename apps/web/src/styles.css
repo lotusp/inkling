@@ -785,3 +785,124 @@ svg {
     flex-basis: 100%;
   }
 }
+
+.library-items li {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: white;
+}
+.library-items li > button {
+  flex: 1;
+  height: auto;
+  border: 0;
+}
+.library-items .is-current {
+  border-color: #b4c8ac;
+  background: #edf2e9;
+}
+.library-card-details {
+  padding: 0 12px 10px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+.article-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+.article-tags span {
+  background: #edf1e9;
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.library-items .organize-button {
+  padding: 5px 8px;
+  font-size: 12px;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+}
+.article-organizer {
+  margin: 16px 0;
+  padding: 22px;
+  border: 1px solid #cbd8c5;
+  border-radius: 9px;
+  background: white;
+}
+.organizer-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.organizer-heading h2 {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+.article-organizer p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.organizer-heading button {
+  font-size: 12px;
+}
+.organizer-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  margin-top: 14px;
+}
+.organizer-fields form {
+  min-width: 0;
+}
+.organizer-fields label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+.organizer-fields input,
+.organizer-fields textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 10px 12px;
+  color: inherit;
+  background: #fbfcf9;
+}
+.organizer-fields textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+.organizer-fields button {
+  font-size: 12px;
+}
+.organizer-fields [role='status'],
+.tag-conflict p {
+  color: #765d34;
+}
+.tag-conflict {
+  background: #fbf6e9;
+  padding: 10px;
+  border-radius: 6px;
+}
+@media (max-width: 700px) {
+  .article-organizer {
+    padding: 16px;
+  }
+  .organizer-heading {
+    flex-wrap: wrap;
+  }
+  .organizer-fields {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}

@@ -26,8 +26,11 @@ export const ArticleTag = z
   .string()
   .transform((value) => value.trim().normalize('NFC'))
   .refine(
-    (value) => [...value].length >= 1 && [...value].length <= 30,
-    '标签需要 1–30 个字符',
+    (value) =>
+      [...value].length >= 1 &&
+      [...value].length <= 30 &&
+      !/[\r\n\u2028\u2029]/u.test(value),
+    '标签需要 1–30 个字符且不能包含换行',
   );
 export const ArticleTags = z
   .array(ArticleTag)

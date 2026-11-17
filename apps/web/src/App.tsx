@@ -155,7 +155,11 @@ function Workbench({
         </button>
       </header>
       {access.status === 'connected' && (
-        <ArticleNavigation article={article} navigate={navigate} />
+        <ArticleNavigation
+          article={article}
+          navigate={navigate}
+          organizeInitially={initial?.organize ?? false}
+        />
       )}
       <div className={`workspace ${focused ? 'is-focused' : ''}`}>
         <main className="document-pane">

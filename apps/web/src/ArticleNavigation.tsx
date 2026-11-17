@@ -1,19 +1,34 @@
 import { useRef, useState } from 'react';
-import { ArticleSnapshot, WorkspaceInfo } from '@inkling/contracts';
+import {
+  ArticleSnapshot,
+  WorkspaceInfo,
+  type ArticleListItem,
+} from '@inkling/contracts';
 import { api, ApiError } from './api';
 import { ArticleLibrary } from './ArticleLibrary';
+import { ArticleOrganizer } from './ArticleOrganizer';
 import { Library } from 'lucide-react';
 import { ownDraftClient } from './draft-store';
 import type { ArticleSession, useArticle } from './use-article';
-type Intent = { mutationId: string; articleId?: string; title?: string };
+type Intent = {
+  mutationId: string;
+  articleId?: string;
+  title?: string;
+  organize?: boolean;
+};
 export function ArticleNavigation({
   article,
   navigate,
+  organizeInitially,
 }: {
   article: ReturnType<typeof useArticle>;
+  organizeInitially: boolean;
   navigate: (session: ArticleSession) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(organizeInitially);
+  const [organizing, setOrganizing] = useState(organizeInitially);
+  const [confirmedMetadata, setConfirmedMetadata] =
+    useState<ArticleListItem | null>(null);
   const [intent, setIntent] = useState<Intent | null>(null);
   const [message, setMessage] = useState('');
   const [choice, setChoice] = useState(false);
@@ -54,7 +69,11 @@ export function ArticleNavigation({
       } catch {
         /* The destination reports unavailable browser protection. */
       }
-      navigate({ workspaceId: workspace.workspaceId, article: snapshot });
+      navigate({
+        workspaceId: workspace.workspaceId,
+        article: snapshot,
+        organize: target.organize,
+      });
     } catch (error) {
       release?.();
       // A definitive first rejection is cancellable. An earlier unknown outcome
@@ -73,7 +92,7 @@ export function ArticleNavigation({
     }
   }
   function request(target: Intent) {
-    if (intent || executing.current) return;
+    if (intent || organizing || executing.current) return;
     setIntent(target);
     setMessage('');
     sent.current = false;
@@ -114,7 +133,17 @@ export function ArticleNavigation({
       {open && (
         <ArticleLibrary
           current={article.snapshot}
-          disabled={!!intent}
+          confirmedMetadata={confirmedMetadata}
+          organizeArticle={(articleId) => {
+            if (articleId === article.snapshot?.articleId) setOrganizing(true);
+            else
+              request({
+                mutationId: crypto.randomUUID(),
+                articleId,
+                organize: true,
+              });
+          }}
+          disabled={!!intent || organizing}
           openArticle={(articleId) =>
             request({ mutationId: crypto.randomUUID(), articleId })
           }
@@ -122,6 +151,13 @@ export function ArticleNavigation({
             request({ mutationId: crypto.randomUUID(), title })
           }
           close={() => setOpen(false)}
+        />
+      )}
+      {organizing && article.snapshot && (
+        <ArticleOrganizer
+          article={article}
+          onConfirmed={setConfirmedMetadata}
+          close={() => setOrganizing(false)}
         />
       )}
       {intent && (

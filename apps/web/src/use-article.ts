@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import {
   ArticleDocument,
+  ArticleTitle,
   RevisionDetail,
   ArticleSnapshot,
   SaveResult,
@@ -25,6 +26,7 @@ import {
   type RecoveryChoice,
 } from './draft-store';
 export interface ArticleSession {
+  organize?: boolean;
   workspaceId: string;
   article: ArticleSnapshot;
 }
@@ -938,6 +940,39 @@ export function useArticle(
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
   }, [save]);
+  const renameTitle = useCallback(
+    async (value: string) => {
+      const nextTitle = ArticleTitle.parse(value);
+      if (
+        navigating.current ||
+        busy.current ||
+        choosing.current ||
+        conflicted.current ||
+        inFlight.current ||
+        !head.current ||
+        !latest.current ||
+        !valid.current ||
+        composing.current ||
+        editor?.view.composing
+      )
+        throw new Error('请先完成选词、保存核对或冲突处理，再重命名。');
+      if (latest.current.title !== nextTitle) {
+        resetConfirmation();
+        latest.current = { ...latest.current, title: nextTitle };
+        titleRef.current = nextTitle;
+        setTitle(nextTitle);
+        editSeq.current++;
+        dirtySince.current ??= Date.now();
+        setStatus('dirty');
+        setEditVersion((value) => value + 1);
+      }
+      if (editSeq.current === savedSeq.current) return;
+      const result = await save();
+      if (!result)
+        throw new Error('标题已保留在当前草稿，请在正文保存提示中核对或重试。');
+    },
+    [editor, resetConfirmation, save, setTitle],
+  );
   const navigationState = useCallback(() => {
     if (composing.current || editor?.view.composing)
       throw new Error('请先完成中文选词，再重新切换文章。');
@@ -1013,6 +1048,7 @@ export function useArticle(
   return {
     snapshot,
     navigationState,
+    renameTitle,
     prepareNavigation,
     navigationLocked,
     damagedArticleId,
