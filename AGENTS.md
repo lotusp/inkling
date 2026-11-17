@@ -9,7 +9,7 @@
 - [ATDD 与证据](docs/engineering/atdd-and-evidence.md)
 - [V1 范围](docs/product/v1-scope.md) 与当前 OpenSpec change
 
-关键约定：一次一个 active change；验收先于实现；G1/G2/G3 校验产物与证据，不要求多人签署。实际已交付行为的权威位置是 `openspec/specs/`，目标设计留在 `docs/`。通过 G2 后，在 change 分支 archive 更新规格，再把代码和规格一起合入主分支。
+关键约定：一次一个 active change；验收先于实现；每个可独立验证步骤完成、检查通过并更新进度后立即本地 commit，再进入下一步；G1/G2/G3 校验产物与证据，不要求多人签署。实际已交付行为的权威位置是 `openspec/specs/`，目标设计留在 `docs/`。通过 G2 后，在 change 分支 archive 更新规格，再把代码和规格一起合入主分支。
 
 Skills 位于 `.agents/skills/inkling-*/`；可以使用自然语言调用。它们不扩大当前授权，不自动进行远端 push、公开发布或多 agent 并行开发。
 

@@ -58,7 +58,7 @@ openspec/changes/<change-id>/
 
 默认分支沿用当前仓库 `master`，开发分支为 `codex/<change-id>`。同一时刻只允许一个未归档 change；未来想法留在[开发顺序](#建议的首批-change)，不要先批量创建 changes。每次开始读取 Git 状态和 `openspec list --json`，恢复未完成工作优先。
 
-单 change 可以有多个提交、多个测试切片。默认在同一工作区推进，不开并行功能 worktree。结构检查只看当前工作区的 active change，无法发现其他工作区或他人分支；串行约定仍需执行者遵守。
+单 change 按步骤提交：每完成 tasks 中一个可独立验证的编号任务（或预先拆出的子步骤），检查通过、更新进度后立即 commit，再进入下一步；设计与规范产物也各自提交。Red → Green 默认在同一步内完成，不把全部实现拖到最终一次提交。默认在同一工作区推进，不开并行功能 worktree。结构检查只看当前工作区的 active change，无法发现其他工作区或他人分支；串行约定仍需执行者遵守。
 
 三个动作分别是：
 
