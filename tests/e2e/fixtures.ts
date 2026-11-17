@@ -15,18 +15,27 @@ export const test = base.extend<{
   workspace: WorkspaceFixture;
   autoCreateArticle: boolean;
   autoConnect: boolean;
+  serverEntry: string;
+  serverEnv: Record<string, string>;
 }>({
   autoCreateArticle: [true, { option: true }],
   autoConnect: [true, { option: true }],
-  workspace: async ({ browserName }, use) => {
+  serverEntry: ['apps/server/dist/main.js', { option: true }],
+  serverEnv: [{}, { option: true }],
+  workspace: async ({ browserName, serverEntry, serverEnv }, use) => {
     const dir = mkdtempSync(join(tmpdir(), `inkling-${browserName}-`));
     let child: ReturnType<typeof spawn>;
     const launch = async (port: string) => {
       const launched = spawn(
         process.execPath,
-        ['apps/server/dist/main.js', '--workspace', dir],
+        [
+          ...(serverEntry.endsWith('.ts') ? ['--import', 'tsx'] : []),
+          serverEntry,
+          '--workspace',
+          dir,
+        ],
         {
-          env: { ...process.env, PORT: port },
+          env: { ...process.env, ...serverEnv, PORT: port },
           stdio: ['ignore', 'pipe', 'pipe'],
         },
       );

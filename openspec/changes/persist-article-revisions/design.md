@@ -182,3 +182,7 @@ C02 实现会替换 WORKBENCH-EDIT-004 的刷新清空断言，保留格式与�
 工作台显示加载、保存、恢复与冲突入口；版本面板按需打开，不把编辑器换成数据库管理页面。只开发单稿使用链路，多文章导航留给 C03。
 
 实现任务、验收映射见 tasks/acceptance。进入实现时采用 ATDD，先记录真实缺失行为 Red，再交付切片。POC 通过仅支撑设计选择；不会填写 product evidence.json 为 passed，也不会归档或修改 Living Spec。
+
+### 存储故障验证边界
+
+测试通过 adapter 的公开 repository 构造器装配隔离 SQLite 连接，使用与正式工作空间一致的 WAL/FULL/fullfsync 设置。只读连接、SQLite 页数上限、临时 SQL trigger 与进程 SIGKILL 用于验证原事务实现；故障控制只存在于 tests/fixtures，不增加产品环境变量或 HTTP 管理后门。真实 SQLite_FULL 不等于真实操作系统 ENOSPC；trigger 异常是模拟 I/O 故障；不宣称覆盖物理断电。
