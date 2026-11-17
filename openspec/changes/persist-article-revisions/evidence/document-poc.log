@@ -1,0 +1,5 @@
+PASS canonical JSON roundtrip fixture 1
+PASS canonical JSON roundtrip fixture 2
+PASS canonical JSON roundtrip fixture 3
+PASS unknown node rejected; attributes still require strict application validation
+RESULT 4 checks passed; schema-level only, no DOM/IME or product persistence verification

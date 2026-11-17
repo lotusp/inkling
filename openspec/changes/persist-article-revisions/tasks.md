@@ -1,0 +1,44 @@
+# Implementation tasks
+
+状态：设计完成后待实施。每个切片先写验收并记录有效 Red/baseline，再实现 UI/服务/存储所需部分，验证并更新证据。以下产品任务均未完成，POC 不勾选产品实现任务。
+
+## 1. 可安全打开的本地工作空间
+
+- [ ] 1.1 建立真实 SQLite 夹具与进程验收，覆盖 WORKSPACE-OPEN-001、WORKSPACE-LOCK-002；锁定驱动、初始化迁移、独占生命周期，验证同目录不同端口及崩溃释放。
+- [ ] 1.2 为 WORKSPACE-AUTH-003、WORKSPACE-CSRF-004、WORKSPACE-PATH-005 编写 API/浏览器验收；实现启动凭证、会话、CSRF、Origin、请求限制和本机重新接入命令，验证重启/过期不清除草稿。
+- [ ] 1.3 更新启动/数据目录说明并检查 core/adapters/contracts 依赖方向；保证原有健康与启动边界有效，不先开放未保护的文章写接口。
+
+## 2. 一篇稿件保存后重开
+
+- [ ] 2.1 先覆盖 ARTICLE-CREATE-001、ARTICLE-SAVE-002、ARTICLE-SCHEMA-011 与 WORKBENCH-EDIT-004；建立严格正文 schema、初始化当前稿、保存 API 和编辑器加载/状态，记录刷新由清空转为恢复的 Red → Green。
+- [ ] 2.2 实现 ARTICLE-RETRY-003、ARTICLE-KEY-004、ARTICLE-RACE-005：原子修订/head/mutation、no-op 去重、串行保存；验证响应丢失、head 推进后旧请求重放及保存期间继续输入。
+- [ ] 2.3 运行现有格式/Chat/健康回归，补全当前 node/mark 组合、标题 Unicode 限制和中文输入法手工检查；同步保存状态文档。
+
+## 3. 离线输入与冲突处理
+
+- [ ] 3.1 为 ARTICLE-LOCAL-007、ARTICLE-IDB-008 建立 IndexedDB 和浏览器恢复验收；实现按 client 隔离的 ack/inFlight/draft、副本写入状态、重连核对和救援下载。
+- [ ] 3.2 为 ARTICLE-CONFLICT-006 增加真实双标签测试；实现比较/显式合并/保留或放弃副本，覆盖复制标签 clientId 冲突、多个恢复副本与 mutation 查询失败，不自动覆盖。
+- [ ] 3.3 核对 IME 与旧响应并存、服务器停止后刷新不可用的明确提示，进行桌面与窄屏的保存/离线/冲突视觉复核。
+
+## 4. 可查看、命名和恢复的版本
+
+- [ ] 4.1 覆盖 REVISION-HISTORY-001、REVISION-COMPARE-002；实现恢复点策略、分页、命名去重、指定版本比较，验证纯格式/列表/代码差异不改当前稿。
+- [ ] 4.2 覆盖 REVISION-RESTORE-003、REVISION-CONFLICT-004；实现新修订恢复与确认基线，验证历史保留、重复恢复、面板打开后的本地输入和远端冲突。
+- [ ] 4.3 以可控时钟验证初始/首次保存/五分钟/恢复的标记，检查命名未保存内容的流程说明与视觉状态。
+
+## 5. 存储故障与资源边界
+
+- [ ] 5.1 覆盖 ARTICLE-WRITE-009、ARTICLE-CRASH-010：真实只读存储、提交边界故障注入/SIGKILL，验证 head/revision/mutation 一致与错误后恢复；日志区分模拟 ENOSPC 与真实故障。
+- [ ] 5.2 覆盖 ARTICLE-CORRUPT-012、ARTICLE-QUOTA-013：损坏隔离、有效旧稿救援、阈值警告和超限拒绝，确保不自动删库、回退或删除历史。
+- [ ] 5.3 建立 test:storage-performance 入口，在目标 Mac 验证设计规定的普通/最大稿件和事件循环门槛；如需调整存储执行方式，先更新 design 再重复受影响验收。
+
+## 6. G2 交付证据
+
+- [ ] 6.1 确认 Vitest 发现新增 unit/integration 测试，CI 安装锁定原生驱动；执行 verify、E2E、性能与手工 IME/视觉检查，失败或未执行不记通过。
+- [ ] 6.2 自检 23 个场景、错误/恢复交互及依赖边界，记录真实 verification/evidence.json，更新实际运行说明与相关知识入口；通过 G2 结构与规格检查。
+
+## Workflow follow-up
+
+- 本轮先完成设计评审和 G1；未实施前不归档、不修改 Living Spec。
+- 产品实现通过 G2 后在 change 分支 archive，核对改名和刷新行为的 delta 合并效果及文档路径。
+- 按当时用户授权将代码、规格、证据共同合入主分支，再处理下一条 change。
