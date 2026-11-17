@@ -15,6 +15,7 @@ function preview(doc: DocumentNode) {
 export function RecoveryPanel({
   choices,
   busy,
+  readOnly,
   message,
   recover,
   keepServer,
@@ -23,6 +24,7 @@ export function RecoveryPanel({
 }: {
   choices: RecoveryChoice[];
   busy: boolean;
+  readOnly: boolean;
   message: string;
   recover: (choice: RecoveryChoice) => Promise<void>;
   keepServer: () => Promise<void>;
@@ -48,7 +50,7 @@ export function RecoveryPanel({
             {preview(choice.record.draft.document.doc)}
           </p>
           <button
-            disabled={busy}
+            disabled={busy || readOnly}
             onClick={() => {
               setDiscarding(null);
               void recover(choice);

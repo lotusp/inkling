@@ -209,6 +209,30 @@ function Workbench({
               disabled={!article.editable}
               maxLength={400}
             />
+            {article.snapshot && (
+              <section className="article-state" aria-label="文章状态">
+                {article.stateReadOnly && (
+                  <p role="status">
+                    {article.articleState === 'archived'
+                      ? '文章已归档，当前为只读。'
+                      : article.articleState === 'trashed'
+                        ? '文章已移入回收站，本页输入仍保留。'
+                        : '文章状态尚未确认，已暂停编辑。'}
+                  </p>
+                )}
+                <button
+                  disabled={article.navigationLocked}
+                  onClick={() => void article.refreshState()}
+                >
+                  核对文章状态
+                </button>
+                {article.stateReadOnly && (
+                  <p>
+                    可保留草稿后切换文章；重新启用编辑前请先恢复文章状态并核对。
+                  </p>
+                )}
+              </section>
+            )}
             {article.snapshot && <HistoryCapacity article={article.snapshot} />}
             {article.damagedArticleId && (
               <DamagedArticlePanel articleId={article.damagedArticleId} />
@@ -216,6 +240,7 @@ function Workbench({
             <RecoveryPanel
               choices={article.recoveries}
               busy={article.recovering || article.navigationLocked}
+              readOnly={article.stateReadOnly}
               message={article.message}
               recover={article.recover}
               keepServer={article.keepServer}
@@ -262,6 +287,7 @@ function Workbench({
             {historyOpen && article.snapshot && (
               <VersionPanel
                 article={article.snapshot}
+                readOnly={article.stateReadOnly || article.navigationLocked}
                 flush={article.flushForVersion}
                 reviewRestore={article.reviewRestore}
                 confirmRestore={article.confirmRestore}

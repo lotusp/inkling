@@ -11,6 +11,7 @@ import {
 } from '@inkling/contracts';
 import { api, ApiError } from './api';
 import { connectWorkspace } from './access';
+import { useArticleState } from './use-article-state';
 import { downloadRescue } from './draft-rescue';
 import { inspectConflict } from './conflict';
 import {
@@ -43,6 +44,12 @@ export function useArticle(
   connected: boolean,
   initial?: ArticleSession,
 ) {
+  const {
+    current: accessState,
+    state: articleState,
+    check: checkState,
+    block: blockState,
+  } = useArticleState();
   const [snapshot, setSnapshot] = useState<ArticleSnapshot | null>(null);
   const [status, setStatus] = useState<
     'loading' | 'empty' | 'clean' | 'dirty' | 'saving' | 'error' | 'conflict'
@@ -188,6 +195,7 @@ export function useArticle(
             ArticleSnapshot.parse(
               await api('/api/articles/' + workspace.currentArticleId),
             );
+          await checkState(article.articleId);
           let choices: RecoveryChoice[] = [];
           try {
             choices = await listDrafts(
@@ -217,7 +225,7 @@ export function useArticle(
     return () => {
       active = false;
     };
-  }, [connected, editor, display, loadAttempt, initial]);
+  }, [connected, editor, display, loadAttempt, initial, checkState]);
   const create = useCallback(async () => {
     try {
       setStatus('loading');
@@ -226,6 +234,7 @@ export function useArticle(
           mutationId: crypto.randomUUID(),
         }),
       );
+      await checkState(initial.articleId);
       display(
         ArticleSnapshot.parse(await api('/api/articles/' + initial.articleId)),
       );
@@ -233,10 +242,11 @@ export function useArticle(
       setStatus('error');
       setMessage(error instanceof Error ? error.message : '创建失败。');
     }
-  }, [display]);
+  }, [display, checkState]);
   const save = useCallback(
     async (forNavigation = false) => {
       if (navigating.current && !forNavigation) return;
+      if (head.current && accessState.current !== 'active') return;
       if (!head.current) {
         setLoadAttempt((value) => value + 1);
         return;
@@ -388,6 +398,15 @@ export function useArticle(
         await persist();
         return result;
       } catch (error) {
+        if (
+          error instanceof ApiError &&
+          ['ARTICLE_NOT_ACTIVE', 'ARTICLE_TRASHED'].includes(error.code)
+        ) {
+          blockState();
+          void checkState(article.articleId).catch(() => {
+            /* Stay paused until explicit successful check. */
+          });
+        }
         if (error instanceof ApiError && error.code === 'STORAGE_CORRUPT')
           setDamagedArticleId(article.articleId);
         if (pending) pending.reconcile = true;
@@ -405,10 +424,11 @@ export function useArticle(
         setEditVersion((value) => value + 1);
       }
     },
-    [editor, display, persist],
+    [editor, display, persist, accessState, blockState, checkState],
   );
   const flushForVersion = useCallback(async () => {
     if (
+      accessState.current !== 'active' ||
       navigating.current ||
       busy.current ||
       choosing.current ||
@@ -428,10 +448,11 @@ export function useArticle(
     const result = await save();
     if (!result) throw new Error('尚未确认保存，请保留输入并重试。');
     return { revisionId: result.appliedRevisionId, seq: result.appliedSeq };
-  }, [editor, save]);
+  }, [editor, save, accessState]);
   const reviewRestore = useCallback(
     async (sourceRevisionId: string): Promise<RestoreReview> => {
       if (
+        accessState.current !== 'active' ||
         navigating.current ||
         busy.current ||
         choosing.current ||
@@ -465,7 +486,7 @@ export function useArticle(
         throw new Error('草稿已变化，请重新查看并确认恢复。');
       return { ...ticket, source };
     },
-    [editor],
+    [editor, accessState],
   );
   const confirmRestore = useCallback(
     async (ticket: RestoreReview) => {
@@ -479,6 +500,7 @@ export function useArticle(
         )
           throw new Error('草稿已变化，请重新查看并确认恢复。');
         if (
+          accessState.current !== 'active' ||
           navigating.current ||
           busy.current ||
           choosing.current ||
@@ -513,7 +535,7 @@ export function useArticle(
         throw new Error('恢复尚未确认，请在正文保存提示中核对或重试。');
       return result;
     },
-    [editor, save],
+    [editor, save, accessState],
   );
   const compare = useCallback(async () => {
     if (
@@ -560,6 +582,7 @@ export function useArticle(
   }, [editor, persist, resetConfirmation]);
   const prepareMerge = useCallback(() => {
     if (
+      accessState.current !== 'active' ||
       navigating.current ||
       busy.current ||
       !comparison ||
@@ -578,10 +601,11 @@ export function useArticle(
     };
     setMergePrepared(true);
     setConflictMessage('');
-  }, [comparison, editor]);
+  }, [comparison, editor, accessState]);
   const confirmMerge = useCallback(async () => {
     const ticket = confirmation.current;
     if (
+      accessState.current !== 'active' ||
       navigating.current ||
       busy.current ||
       !ticket ||
@@ -616,7 +640,7 @@ export function useArticle(
     resetConfirmation();
     setMessage('');
     await save();
-  }, [comparison, editor, resetConfirmation, save]);
+  }, [comparison, editor, resetConfirmation, save, accessState]);
   const recover = useCallback(
     async (choice: RecoveryChoice) => {
       if (
@@ -633,6 +657,10 @@ export function useArticle(
       try {
         const record = choice.record;
         await connectWorkspace();
+        if ((await checkState(record.articleId)).state !== 'active')
+          throw new Error(
+            '文章不可编辑，恢复副本已保留；请先取消归档或从回收站恢复。',
+          );
         let result: SaveResult | null = null;
         if (record.pending) {
           if (
@@ -731,7 +759,7 @@ export function useArticle(
         setRecovering(false);
       }
     },
-    [editor, display, persist, setTitle],
+    [editor, display, persist, setTitle, checkState],
   );
   const keepServer = useCallback(async () => {
     if (
@@ -751,6 +779,7 @@ export function useArticle(
           '本页草稿未能保留，已停止切换。请先下载救援稿或重试保存副本。',
         );
       await connectWorkspace();
+      await checkState(head.current.articleId);
       const current = ArticleSnapshot.parse(
         await api('/api/articles/' + head.current.articleId),
       );
@@ -773,7 +802,7 @@ export function useArticle(
       busy.current = false;
       setRecovering(false);
     }
-  }, [display, editor, persist]);
+  }, [display, editor, persist, checkState]);
   const discard = useCallback(
     async (choice: RecoveryChoice): Promise<boolean> => {
       if (
@@ -886,26 +915,39 @@ export function useArticle(
   useEffect(() => {
     changed();
   }, [title, changed]);
+  const stateReadOnly = articleState !== 'active';
+  const lockEditing =
+    stateReadOnly && !composing.current && !editor?.view.composing;
   useEffect(() => {
     editor?.view.dom.setAttribute(
       'aria-readonly',
       String(
-        snapshot === null ||
+        lockEditing ||
+          snapshot === null ||
           recoveries.length > 0 ||
           recovering ||
           navigationLocked,
       ),
     );
     editor?.setEditable(
-      snapshot !== null &&
+      !lockEditing &&
+        snapshot !== null &&
         recoveries.length === 0 &&
         !recovering &&
         !navigationLocked,
       false,
     );
-  }, [editor, snapshot, recoveries.length, recovering, navigationLocked]);
+  }, [
+    editor,
+    snapshot,
+    recoveries.length,
+    recovering,
+    navigationLocked,
+    lockEditing,
+  ]);
   useEffect(() => {
     if (
+      stateReadOnly ||
       status !== 'dirty' ||
       recoveries.length ||
       recovering ||
@@ -929,6 +971,7 @@ export function useArticle(
     recoveries.length,
     recovering,
     navigationLocked,
+    stateReadOnly,
   ]);
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
@@ -944,6 +987,7 @@ export function useArticle(
     async (value: string) => {
       const nextTitle = ArticleTitle.parse(value);
       if (
+        accessState.current !== 'active' ||
         navigating.current ||
         busy.current ||
         choosing.current ||
@@ -971,7 +1015,7 @@ export function useArticle(
       if (!result)
         throw new Error('标题已保留在当前草稿，请在正文保存提示中核对或重试。');
     },
-    [editor, resetConfirmation, save, setTitle],
+    [editor, resetConfirmation, save, setTitle, accessState],
   );
   const navigationState = useCallback(() => {
     if (composing.current || editor?.view.composing)
@@ -1001,7 +1045,12 @@ export function useArticle(
       const release = () => {
         navigating.current = false;
         setNavigationLocked(false);
-        editor?.setEditable(!!head.current && !choosing.current, false);
+        editor?.setEditable(
+          accessState.current === 'active' &&
+            !!head.current &&
+            !choosing.current,
+          false,
+        );
         setEditVersion((value) => value + 1);
       };
       try {
@@ -1043,9 +1092,29 @@ export function useArticle(
         throw error;
       }
     },
-    [editor, navigationState, persist, resetConfirmation, save],
+    [editor, navigationState, persist, resetConfirmation, save, accessState],
   );
+  const refreshState = useCallback(async () => {
+    if (!head.current) return;
+    if (
+      composing.current ||
+      editor?.view.composing ||
+      busy.current ||
+      navigating.current
+    ) {
+      setMessage('请先完成选词、保存或导航，再核对文章状态。');
+      return;
+    }
+    try {
+      await checkState(head.current.articleId);
+    } catch {
+      setMessage('无法核对文章状态，原输入已保留，请重试。');
+    }
+  }, [editor, checkState]);
   return {
+    articleState,
+    stateReadOnly,
+    refreshState,
     snapshot,
     navigationState,
     renameTitle,
@@ -1077,6 +1146,7 @@ export function useArticle(
     prepareMerge,
     confirmMerge,
     canMerge:
+      !stateReadOnly &&
       comparison !== null &&
       !conflictBusy &&
       !inFlight.current &&
@@ -1085,6 +1155,7 @@ export function useArticle(
     hasConflict: conflicted.current,
     document: latest.current,
     editable:
+      !lockEditing &&
       snapshot !== null &&
       recoveries.length === 0 &&
       !recovering &&

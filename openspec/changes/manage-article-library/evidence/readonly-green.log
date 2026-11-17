@@ -1,0 +1,42 @@
+Command: fnm exec --using 22.22.2 corepack pnpm test:e2e tests/e2e/article-lifecycle.spec.ts --workers=4
+Exit code: 0
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-lifecycle.spec.ts --workers=4
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2257 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-jeI9cF1f.css   13.25 kB │ gzip:   3.50 kB
+apps/web/dist/assets/index-BRCX1_PL.js   787.38 kB │ gzip: 244.39 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 344ms
+
+Running 4 tests using 4 workers
+
+(node:9353) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9354) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9355) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › tests/e2e/article-lifecycle.spec.ts:119:1 › LIBRARY-ARCHIVE-009 failed state check pauses writes without replacing input, then can retry (1.8s)
+  ✓  1 [chromium] › tests/e2e/article-lifecycle.spec.ts:89:1 › LIBRARY-ARCHIVE-009 another tab archives while typing; refused save keeps draft and resumes only after explicit state check (3.3s)
+  ✓  3 [chromium] › tests/e2e/article-lifecycle.spec.ts:136:1 › LIBRARY-ARCHIVE-009 a late rejection preserves composition until commit and retains recoveries on archived reopening (3.4s)
+  ✓  4 [chromium] › tests/e2e/article-lifecycle.spec.ts:47:1 › LIBRARY-ARCHIVE-009 archived reopening is read-only with readable history and disabled version mutations (3.5s)
+
+  4 passed (6.1s)

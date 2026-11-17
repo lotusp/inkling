@@ -1,0 +1,140 @@
+Command: fnm exec --using 22.22.2 corepack pnpm test:e2e tests/e2e/article-lifecycle.spec.ts --workers=3
+Exit code: 1
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-lifecycle.spec.ts --workers=3
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2256 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-jeI9cF1f.css   13.25 kB │ gzip:   3.50 kB
+apps/web/dist/assets/index-csgMix-G.js   784.92 kB │ gzip: 243.59 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 335ms
+
+Running 3 tests using 3 workers
+
+(node:7961) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7960) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7959) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [chromium] › tests/e2e/article-lifecycle.spec.ts:89:1 › LIBRARY-ARCHIVE-009 another tab archives while typing; refused save keeps draft and resumes only after explicit state check (6.7s)
+  ✘  3 [chromium] › tests/e2e/article-lifecycle.spec.ts:47:1 › LIBRARY-ARCHIVE-009 archived reopening is read-only with readable history and disabled version mutations (8.1s)
+  ✘  1 [chromium] › tests/e2e/article-lifecycle.spec.ts:119:1 › LIBRARY-ARCHIVE-009 failed state check pauses writes without replacing input, then can retry (30.1s)
+
+
+  1) [chromium] › tests/e2e/article-lifecycle.spec.ts:47:1 › LIBRARY-ARCHIVE-009 archived reopening is read-only with readable history and disabled version mutations
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator:  getByRole('textbox', { name: '文章标题', exact: true })
+    Expected: disabled
+    Received: enabled
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeDisabled" getByRole('textbox', { name: '文章标题', exact: true }) with timeout 5000ms
+      - waiting for getByRole('textbox', { name: '文章标题', exact: true })
+        14 × locator resolved to <input value="只读归档" maxlength="400" aria-label="文章标题" class="article-title" placeholder="给这个想法一个标题"/>
+           - unexpected value "enabled"
+
+
+      64 |   await page.reload();
+      65 |   await expect(title(page)).toHaveValue('只读归档');
+    > 66 |   await expect(title(page)).toBeDisabled();
+         |                             ^
+      67 |   await expect(body(page)).toHaveAttribute('contenteditable', 'false');
+      68 |   await expect(
+      69 |     page.getByText('文章已归档，当前为只读。', { exact: true }),
+        at <repo>/tests/e2e/article-lifecycle.spec.ts:66:29
+
+    Error Context: test-results/article-lifecycle-LIBRARY--77b96--disabled-version-mutations-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-lifecycle-LIBRARY--77b96--disabled-version-mutations-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-lifecycle-LIBRARY--77b96--disabled-version-mutations-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/article-lifecycle.spec.ts:89:1 › LIBRARY-ARCHIVE-009 another tab archives while typing; refused save keeps draft and resumes only after explicit state check
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('文章已归档，当前为只读。', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('文章已归档，当前为只读。', { exact: true }) with timeout 5000ms
+      - waiting for getByText('文章已归档，当前为只读。', { exact: true })
+
+
+       96 |   await expect(
+       97 |     page.getByText('文章已归档，当前为只读。', { exact: true }),
+    >  98 |   ).toBeVisible();
+          |     ^
+       99 |   await expect(body(page)).toHaveText('另一标签变化之后仍应保留的洞见');
+      100 |   await expect(body(page)).toHaveAttribute('contenteditable', 'false');
+      101 |   await expect(
+        at <repo>/tests/e2e/article-lifecycle.spec.ts:98:5
+
+    Error Context: test-results/article-lifecycle-LIBRARY--bac26--after-explicit-state-check-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-lifecycle-LIBRARY--bac26--after-explicit-state-check-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-lifecycle-LIBRARY--bac26--after-explicit-state-check-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/article-lifecycle.spec.ts:119:1 › LIBRARY-ARCHIVE-009 failed state check pauses writes without replacing input, then can retry
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '核对文章状态', exact: true })
+
+
+      122 |   await body(page).fill('核对失败仍在本页');
+      123 |   await page.route('**/api/articles/*/metadata', (route) => route.abort());
+    > 124 |   await page.getByRole('button', { name: '核对文章状态', exact: true }).click();
+          |                                                                   ^
+      125 |   await expect(
+      126 |     page.getByText('文章状态尚未确认，已暂停编辑。', { exact: true }),
+      127 |   ).toBeVisible();
+        at <repo>/tests/e2e/article-lifecycle.spec.ts:124:67
+
+    Error Context: test-results/article-lifecycle-LIBRARY--98c5b-lacing-input-then-can-retry-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-lifecycle-LIBRARY--98c5b-lacing-input-then-can-retry-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-lifecycle-LIBRARY--98c5b-lacing-input-then-can-retry-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › tests/e2e/article-lifecycle.spec.ts:47:1 › LIBRARY-ARCHIVE-009 archived reopening is read-only with readable history and disabled version mutations
+    [chromium] › tests/e2e/article-lifecycle.spec.ts:89:1 › LIBRARY-ARCHIVE-009 another tab archives while typing; refused save keeps draft and resumes only after explicit state check
+    [chromium] › tests/e2e/article-lifecycle.spec.ts:119:1 › LIBRARY-ARCHIVE-009 failed state check pauses writes without replacing input, then can retry
+ ELIFECYCLE  Command failed with exit code 1.

@@ -13,11 +13,13 @@ import { DocumentPart } from './DocumentComparison';
 import type { RestoreReview } from './use-article';
 export function VersionPanel({
   article,
+  readOnly,
   flush,
   reviewRestore,
   confirmRestore,
 }: {
   article: ArticleSnapshot;
+  readOnly: boolean;
   flush: () => Promise<{ revisionId: string; seq: number }>;
   reviewRestore: (source: string) => Promise<RestoreReview>;
   confirmRestore: (review: RestoreReview) => Promise<unknown>;
@@ -40,6 +42,8 @@ export function VersionPanel({
   const [review, setReview] = useState<RestoreReview | null>(null);
   const generation = useRef(0),
     action = useRef(false);
+  const writeBlocked = useRef(readOnly);
+  writeBlocked.current = readOnly;
   const path = '/api/articles/' + article.articleId;
   const load = useCallback(
     async (before?: number) => {
@@ -98,6 +102,7 @@ export function VersionPanel({
     seq: number;
     command: NameRevisionCommand;
   }) => {
+    if (writeBlocked.current) throw new Error('文章当前只读，不能命名版本。');
     setPending(target);
     NameRevisionResult.parse(
       await api(
@@ -130,13 +135,20 @@ export function VersionPanel({
         <label>
           版本名称
           <input
+            disabled={readOnly}
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={160}
           />
         </label>
         <button
-          disabled={busy || !!pending || !name.trim() || [...name].length > 80}
+          disabled={
+            readOnly ||
+            busy ||
+            !!pending ||
+            !name.trim() ||
+            [...name].length > 80
+          }
           onClick={() =>
             void run(async () => {
               const target = await flush();
@@ -151,7 +163,7 @@ export function VersionPanel({
         </button>
         {pending && (
           <button
-            disabled={busy}
+            disabled={readOnly || busy}
             onClick={() => void run(() => submit(pending))}
           >
             重试命名
@@ -173,7 +185,11 @@ export function VersionPanel({
             </span>
             <button
               disabled={
-                busy || !!pending || !name.trim() || [...name].length > 80
+                readOnly ||
+                busy ||
+                !!pending ||
+                !name.trim() ||
+                [...name].length > 80
               }
               onClick={() =>
                 void run(() =>
@@ -188,7 +204,7 @@ export function VersionPanel({
               命名版本 #{r.seq}
             </button>
             <button
-              disabled={busy}
+              disabled={readOnly || busy}
               onClick={() =>
                 void run(async () => {
                   setReview(null);
@@ -249,7 +265,7 @@ export function VersionPanel({
           <h4>{review.source.document.title || '未命名文章'}</h4>
           <DocumentPart node={review.source.document.doc} />
           <button
-            disabled={busy}
+            disabled={readOnly || busy}
             onClick={() =>
               void run(async () => {
                 await confirmRestore(review);
