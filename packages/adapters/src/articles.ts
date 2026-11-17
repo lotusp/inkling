@@ -11,6 +11,10 @@ import {
 } from '@inkling/core';
 import {
   ArticleDocument,
+  ArticleListItem,
+  type ArticleListQuery,
+  type ArticleListPage,
+  type CreateArticleCommand,
   RevisionInfo,
   RevisionDetail,
   NameRevisionResult,
@@ -187,45 +191,100 @@ export class SqliteArticles implements ArticleRepository {
           );
           return result;
         }
-        const articleId = randomUUID(),
-          revisionId = randomUUID(),
-          time = this.now();
-        const document: ArticleDocument = {
-          schemaVersion: 1,
-          title: '',
-          doc: { type: 'doc', content: [{ type: 'paragraph' }] },
-        };
-        const json = canonical(document),
-          bytes = Buffer.byteLength(json),
-          contentHash = hash(document);
-        this.db
-          .prepare('INSERT INTO articles VALUES(?,?,1,?,?,?)')
-          .run(articleId, revisionId, bytes, time, time);
-        this.db
-          .prepare(
-            "INSERT INTO article_revisions VALUES(?,?,1,NULL,'initial',NULL,?,?,?,?)",
-          )
-          .run(revisionId, articleId, json, contentHash, bytes, time);
-        this.db
-          .prepare('INSERT INTO revision_markers VALUES(?,?,?,NULL,?)')
-          .run(articleId, revisionId, time, time);
-        this.db
-          .prepare(
-            'UPDATE workspace SET current_article_id=? WHERE singleton=1',
-          )
-          .run(articleId);
-        const result = this.read(articleId);
+        const result = this.insertArticle('');
         this.remember(
           mutationId,
-          articleId,
+          result.articleId,
           'create',
           requestHash,
           result,
-          revisionId,
+          result.headRevisionId,
         );
         return result;
       })
       .immediate();
+  }
+  private insertArticle(title: string): ArticleSnapshot {
+    const articleId = randomUUID(),
+      revisionId = randomUUID(),
+      time = this.now();
+    const document: ArticleDocument = {
+      schemaVersion: 1,
+      title,
+      doc: { type: 'doc', content: [{ type: 'paragraph' }] },
+    };
+    const json = canonical(document),
+      bytes = Buffer.byteLength(json),
+      contentHash = hash(document);
+    this.db
+      .prepare('INSERT INTO articles VALUES(?,?,1,?,?,?)')
+      .run(articleId, revisionId, bytes, time, time);
+    this.db
+      .prepare(
+        "INSERT INTO article_revisions VALUES(?,?,1,NULL,'initial',NULL,?,?,?,?)",
+      )
+      .run(revisionId, articleId, json, contentHash, bytes, time);
+    this.db
+      .prepare('INSERT INTO revision_markers VALUES(?,?,?,NULL,?)')
+      .run(articleId, revisionId, time, time);
+    this.db
+      .prepare("INSERT INTO article_library VALUES(?,?,'active',NULL,1,?,?)")
+      .run(articleId, title, time, time);
+    this.db
+      .prepare('UPDATE workspace SET current_article_id=? WHERE singleton=1')
+      .run(articleId);
+    return this.read(articleId);
+  }
+  create(command: CreateArticleCommand): ArticleSnapshot {
+    return this.db
+      .transaction(() => {
+        const requestHash = hash({ operation: 'create-article', ...command });
+        const old = this.replay(command.mutationId, requestHash);
+        if (old !== undefined) return ArticleSnapshot.parse(old);
+        const result = this.insertArticle(command.title);
+        this.remember(
+          command.mutationId,
+          result.articleId,
+          'create-article',
+          requestHash,
+          result,
+          result.headRevisionId,
+        );
+        return result;
+      })
+      .immediate();
+  }
+  list(query: ArticleListQuery): ArticleListPage {
+    const values = this.db
+      .prepare(
+        "SELECT article_id,title,state,metadata_version,created_at,updated_at FROM article_library WHERE state='active' AND (? IS NULL OR created_at < ? OR (created_at = ? AND article_id < ?)) ORDER BY created_at DESC,article_id DESC LIMIT ?",
+      )
+      .all(
+        query.beforeCreatedAt ?? null,
+        query.beforeCreatedAt ?? null,
+        query.beforeCreatedAt ?? null,
+        query.beforeId ?? null,
+        query.limit + 1,
+      );
+    const items = values.slice(0, query.limit).map((value) => {
+      const r = row(value);
+      return ArticleListItem.parse({
+        articleId: r.article_id,
+        title: r.title,
+        state: r.state,
+        metadataVersion: r.metadata_version,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at,
+      });
+    });
+    const last = items.at(-1);
+    return {
+      items,
+      nextCursor:
+        values.length > query.limit && last
+          ? { createdAt: last.createdAt, articleId: last.articleId }
+          : null,
+    };
   }
   read(articleId: string): ArticleSnapshot {
     this.assertHealthy(articleId);
@@ -421,6 +480,11 @@ export class SqliteArticles implements ArticleRepository {
               articleId,
               current.headRevisionId,
             );
+          this.db
+            .prepare(
+              'UPDATE article_library SET title=?,updated_at=? WHERE article_id=?',
+            )
+            .run(document.title, time, articleId);
           const last = row(
             this.db
               .prepare(

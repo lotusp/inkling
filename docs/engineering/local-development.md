@@ -144,3 +144,13 @@ PORT=4327 node apps/server/dist/main.js --workspace "$(mktemp -d "${TMPDIR:-/tmp
 完整场景、代码自检、文件指纹及限制见[本轮验收报告](../../openspec/changes/archive/2026-11-17-persist-article-revisions/verification.md)。验收针对已提交版本；存在未提交改动时，不能把该报告直接作为这些新改动的证据。G2 通过不等同于规格归档或 Git 合并。
 
 C02 已于 2026-11-17 归档并合入 master（774ff4e），合入版本的完整本地检查通过；Living Spec 为当前行为依据，归档验收报告保留逐步证据与限制。
+
+## C03 文章库开发进度
+
+当前开发分支已建立文章库 schema 3、新建和分页列表的真实认证 API；文章库导航、标签及生命周期界面仍待后续切片，不表示已交付完整 C03。
+
+首次打开已有 schema 2 空间会在独占事务中增加文章库/标签元数据表和索引，回填当前标题，保留既有正文、修订、命名和去重记录；迁移或完整性检查失败会回滚。旧版 C02 程序不支持 schema 3，不能直接用旧程序打开升级后的目录；当前不提供自动降级。验收只使用临时工作空间，不修改作者个人稿件。
+
+`POST /api/articles` 接收 mutationId 和可选 title，新请求建立独立稿件，重放不重复创建或改变后来选择的稿件。`GET /api/articles` 返回当前活动文章的元数据，以创建时间和 ID 倒序分页；limit 默认为 20、最大 100，beforeCreatedAt/beforeId 必须成对。不返回全文，也未接入查找/标签筛选。标题投影与正文保存、版本恢复同事务更新，正文标题仍是唯一权威。
+
+实现计划和实际步骤见 [C03 进度](../../openspec/changes/manage-article-library/progress.md)。

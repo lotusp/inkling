@@ -185,12 +185,13 @@ export function validDocumentNode(value: unknown): value is DocumentNode {
   }
   return true;
 }
+export const ArticleTitle = z
+  .string()
+  .refine((x) => [...x].length <= 200, '标题不能超过 200 字符');
 export const ArticleDocument = z
   .object({
     schemaVersion: z.literal(1),
-    title: z
-      .string()
-      .refine((x) => [...x].length <= 200, '标题不能超过 200 字符'),
+    title: ArticleTitle,
     doc: z.custom<DocumentNode>(validDocumentNode, '不支持的正文结构'),
   })
   .strict()

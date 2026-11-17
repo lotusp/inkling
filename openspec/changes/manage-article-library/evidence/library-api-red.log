@@ -1,0 +1,110 @@
+
+ RUN  v5.1.0 <repo>
+
+ ❯ tests/api/article-library.test.ts (5 tests | 5 failed) 255ms
+   × LIBRARY-CREATE-002 and ARTICLE-CREATE-001 explicit create is independent, while ensure and replay do not duplicate or rewind selection 120ms
+   × LIBRARY-LIST-003 lists empty and duplicate-title articles with stable tied-time keyset pages and no document payload 33ms
+   × LIBRARY-LIST-003 saved and restored titles update the metadata projection atomically without changing identity 31ms
+   × LIBRARY-FAILURE-013 protects library access and rejects malformed title or pagination without writing 35ms
+   × LIBRARY-FAILURE-013 failed metadata insertion or title projection rolls back article, head and mutation 36ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-CREATE-002 and ARTICLE-CREATE-001 explicit create is independent, while ensure and replay do not duplicate or rewind selection
+AssertionError: {"message":"Route POST:/api/articles not found","error":"Not Found","statusCode":404}: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ Object.create tests/api/article-library.test.ts:26:48
+     24|     const command = { mutationId: randomUUID(), title };
+     25|     const response = await app.inject({ method: 'POST', url: '/api/art…
+     26|     expect(response.statusCode, response.body).toBe(200);
+       |                                                ^
+     27|     return { article: ArticleSnapshot.parse(response.json()), command …
+     28|   };
+ ❯ tests/api/article-library.test.ts:34:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-LIST-003 lists empty and duplicate-title articles with stable tied-time keyset pages and no document payload
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/article-library.test.ts:51:28
+     49|   const f = await setup();
+     50|   const empty = await f.app.inject({ url: '/api/articles', headers: f.…
+     51|   expect(empty.statusCode).toBe(200);
+       |                            ^
+     52|   expect(empty.json()).toEqual({items: [], nextCursor: null});
+     53|   const ids: string[] = [];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-LIST-003 saved and restored titles update the metadata projection atomically without changing identity
+AssertionError: {"message":"Route POST:/api/articles not found","error":"Not Found","statusCode":404}: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ Object.create tests/api/article-library.test.ts:26:48
+     24|     const command = { mutationId: randomUUID(), title };
+     25|     const response = await app.inject({ method: 'POST', url: '/api/art…
+     26|     expect(response.statusCode, response.body).toBe(200);
+       |                                                ^
+     27|     return { article: ArticleSnapshot.parse(response.json()), command …
+     28|   };
+ ❯ tests/api/article-library.test.ts:69:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-FAILURE-013 protects library access and rejects malformed title or pagination without writing
+AssertionError: expected 404 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 404
+
+ ❯ tests/api/article-library.test.ts:81:180
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-FAILURE-013 failed metadata insertion or title projection rolls back article, head and mutation
+AssertionError: {"message":"Route POST:/api/articles not found","error":"Not Found","statusCode":404}: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ Object.create tests/api/article-library.test.ts:26:48
+     24|     const command = { mutationId: randomUUID(), title };
+     25|     const response = await app.inject({ method: 'POST', url: '/api/art…
+     26|     expect(response.statusCode, response.body).toBe(200);
+       |                                                ^
+     27|     return { article: ArticleSnapshot.parse(response.json()), command …
+     28|   };
+ ❯ tests/api/article-library.test.ts:87:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed (5)
+   Start at  15:57:22
+   Duration  563ms (tests 55%, import 34%, transform 10%, worker 1%)

@@ -1,5 +1,8 @@
 import {
   ArticleDocument,
+  CreateArticleCommand,
+  ArticleListQuery,
+  type ArticleListPage,
   RevisionQuery,
   RestoreRevisionCommand,
   NameRevisionCommand,
@@ -16,6 +19,8 @@ import {
 export interface ArticleRepository {
   workspace(): WorkspaceInfo;
   ensure(mutationId: string): ArticleSnapshot;
+  create(command: CreateArticleCommand): ArticleSnapshot;
+  list(query: ArticleListQuery): ArticleListPage;
   read(articleId: string): ArticleSnapshot;
   save(articleId: string, command: SaveArticleCommand): SaveResult;
   restore(articleId: string, command: RestoreRevisionCommand): SaveResult;
@@ -35,6 +40,12 @@ export class ArticleService {
   }
   ensure(input: unknown) {
     return this.repository.ensure(EnsureArticleCommand.parse(input).mutationId);
+  }
+  create(input: unknown) {
+    return this.repository.create(CreateArticleCommand.parse(input));
+  }
+  list(input: unknown) {
+    return this.repository.list(ArticleListQuery.parse(input));
   }
   read(id: unknown) {
     return this.repository.read(Id.parse(id));

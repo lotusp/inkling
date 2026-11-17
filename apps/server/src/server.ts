@@ -83,6 +83,10 @@ export function createServer(
         );
       return articles;
     };
+    app.get('/api/articles', async (request) => service().list(request.query));
+    app.post('/api/articles', async (request) =>
+      service().create(request.body),
+    );
     app.post('/api/articles/ensure-current', async (request) =>
       service().ensure(request.body),
     );
