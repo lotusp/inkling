@@ -1,0 +1,45 @@
+
+ RUN  v5.1.0 <repo>
+
+ ❯ tests/integration/article-library.test.ts (2 tests | 2 failed) 32ms
+   × LIBRARY-MIGRATE-001 upgrades a real schema 2 workspace without changing its history or replay 23ms
+   × LIBRARY-MIGRATE-001 a migration DDL failure rolls back new tables and preserves schema 2 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/article-library.test.ts > LIBRARY-MIGRATE-001 upgrades a real schema 2 workspace without changing its history or replay
+AssertionError: expected 2 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 2
+
+ ❯ tests/integration/article-library.test.ts:51:57
+     49|   const db = new Database(f.path);
+     50|   try {
+     51|     expect(db.pragma('user_version', { simple: true })).toBe(3);
+       |                                                         ^
+     52|     expect(legacyRows(db)).toEqual(f.before);
+     53|     expect(db.prepare('SELECT * FROM article_library').all()).toEqual(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/article-library.test.ts > LIBRARY-MIGRATE-001 a migration DDL failure rolls back new tables and preserves schema 2
+AssertionError: expected [Function] to throw an error
+ ❯ tests/integration/article-library.test.ts:66:45
+     64|   collision.exec('CREATE TABLE article_tags(unrelated TEXT)');
+     65|   collision.close();
+     66|   expect(() => SqliteWorkspace.open(f.dir)).toThrow();
+       |                                             ^
+     67|   const db = new Database(f.path);
+     68|   try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  15:52:14
+   Duration  226ms (import 47%, transform 27%, tests 24%, worker 2%)

@@ -1,0 +1,8 @@
+-- Frozen C02 schema from fbfd07b; do not derive this fixture from current migrations.
+CREATE TABLE workspace(singleton INTEGER PRIMARY KEY CHECK(singleton=1),workspace_id TEXT NOT NULL UNIQUE,current_article_id TEXT,created_at INTEGER NOT NULL) STRICT;
+CREATE TABLE articles(id TEXT PRIMARY KEY,head_revision_id TEXT NOT NULL,head_seq INTEGER NOT NULL,revision_bytes INTEGER NOT NULL,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL,FOREIGN KEY(id,head_revision_id) REFERENCES article_revisions(article_id,id) DEFERRABLE INITIALLY DEFERRED) STRICT;
+ CREATE TABLE article_revisions(id TEXT PRIMARY KEY,article_id TEXT NOT NULL REFERENCES articles(id) DEFERRABLE INITIALLY DEFERRED,seq INTEGER NOT NULL,parent_revision_id TEXT,kind TEXT NOT NULL,restored_from_revision_id TEXT,document_json TEXT NOT NULL,content_hash TEXT NOT NULL,byte_size INTEGER NOT NULL,created_at INTEGER NOT NULL,UNIQUE(article_id,seq),UNIQUE(article_id,id),FOREIGN KEY(article_id,parent_revision_id) REFERENCES article_revisions(article_id,id),FOREIGN KEY(article_id,restored_from_revision_id) REFERENCES article_revisions(article_id,id)) STRICT;
+ CREATE TABLE revision_markers(article_id TEXT NOT NULL,revision_id TEXT PRIMARY KEY,automatic_at INTEGER,name TEXT,updated_at INTEGER NOT NULL,FOREIGN KEY(article_id,revision_id) REFERENCES article_revisions(article_id,id)) STRICT;
+ CREATE TABLE mutations(id TEXT PRIMARY KEY,article_id TEXT NOT NULL REFERENCES articles(id),operation TEXT NOT NULL,request_hash TEXT NOT NULL,result_json TEXT NOT NULL,result_revision_id TEXT NOT NULL,created_at INTEGER NOT NULL,FOREIGN KEY(article_id,result_revision_id) REFERENCES article_revisions(article_id,id)) STRICT;
+PRAGMA user_version=2;
+PRAGMA application_id=1229867852;

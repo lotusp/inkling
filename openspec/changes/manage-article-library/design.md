@@ -10,7 +10,7 @@ C02 已交付，沿用 [DEC-0004](../../../docs/decisions/0004-article-storage-a
 
 schema 2→3 为增量迁移，新增 `article_library`：article_id 主键/FK、title（当前正文标题的列表投影）、state（active/archived/trashed）、previous_state（回收站来源，其他状态为 null）、metadata_version（初始 1）、created_at、updated_at。初始状态约束及投影在 SQL 事务中保持。另建 `article_tags(article_id,tag)` 复合主键/FK，标签按文章隔离。列表索引为 state/created_at/article_id。
 
-迁移在已有独占锁内以一个事务创建表、从当前 head 回填标题和时间并提升 user_version；不改写 articles/revisions/markers/mutations 的既有记录。不做破坏性变换，不需要为了本次加表先引入完整备份系统；迁移失败回滚、旧 schema 与数据保留。旧程序拒绝 schema 3，回退程序不能直接打开已升级目录，也不自动降级。新建空空间依次建立 C02 schema 后迁移。历史损坏沿用 C02 检查，非法 head JSON 导致迁移拒绝，不能替换空标题掩盖问题。
+迁移在已有独占锁内以一个事务创建表、从当前 head 回填标题和时间并提升 user_version；不改写 articles/revisions/markers/mutations 的既有记录。回填逐行完成读取后写入，不在活跃 SQLite iterator 中写同一连接；quick_check/foreign_key_check 在迁移事务内通过后才推进 schema，完整性失败同样回滚。不做破坏性变换，不需要为了本次加表先引入完整备份系统；迁移失败回滚、旧 schema 与数据保留。旧程序拒绝 schema 3，回退程序不能直接打开已升级目录，也不自动降级。新建空空间依次建立 C02 schema 后迁移。历史损坏沿用 C02 检查，非法 head JSON 导致迁移拒绝，不能替换空标题掩盖问题。
 
 标题只有 document.title 一个权威。article_library.title 是可重建投影，在新建、save、restore 的同一事务更新；name revision 不更新文章标题。列表仅查元数据，不为每页解析正文或加载历史。
 

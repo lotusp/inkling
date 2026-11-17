@@ -4,7 +4,7 @@
 
 ## 1. 可兼容旧稿的文章库基础
 
-- [ ] 1.1 LIBRARY-MIGRATE-001：真实 schema 2 夹具、迁移回滚与重开验收；实现增量 schema 3，保留 C02 全部正文/历史/去重，验证并记录兼容边界。
+- [x] 1.1 LIBRARY-MIGRATE-001：真实 schema 2 夹具、迁移回滚与重开验收；实现增量 schema 3，保留 C02 全部正文/历史/去重，验证并记录兼容边界。
 - [ ] 1.2 LIBRARY-CREATE-002/LIST-003/FAILURE-013、ARTICLE-CREATE-001/KEY-004：真实认证 API Red → Green；实现显式新建、稳定分页、同事务标题投影与重放，检查故障/权限/参数边界及已有保存回归。
 
 ## 2. 可安全切换的多文章界面

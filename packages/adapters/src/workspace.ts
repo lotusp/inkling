@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3';
 import { migrateArticles, SqliteArticles } from './articles';
+import { migrateLibrary } from './library';
 import { randomUUID } from 'node:crypto';
 import {
   chmodSync,
@@ -100,7 +101,7 @@ export class SqliteWorkspace {
       chmodSync(file, 0o600);
       if (
         existed &&
-        (![1, 2].includes(
+        (![1, 2, 3].includes(
           Number(db.pragma('user_version', { simple: true })),
         ) ||
           db.pragma('application_id', { simple: true }) !== APPLICATION_ID)
@@ -141,6 +142,7 @@ export class SqliteWorkspace {
         }).immediate();
       }
       migrateArticles(db);
+      migrateLibrary(db);
       const foreignErrors = db.pragma('foreign_key_check');
       if (
         db.pragma('quick_check', { simple: true }) !== 'ok' ||

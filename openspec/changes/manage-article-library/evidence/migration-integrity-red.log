@@ -1,0 +1,32 @@
+
+ RUN  v5.1.0 <repo>
+
+ ❯ tests/integration/article-library.test.ts (3 tests | 1 failed) 78ms
+   × LIBRARY-MIGRATE-001 inconsistent old references cannot leave a half-upgraded workspace 25ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/article-library.test.ts > LIBRARY-MIGRATE-001 inconsistent old references cannot leave a half-upgraded workspace
+AssertionError: expected 3 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 3
+
+ ❯ tests/integration/article-library.test.ts:180:57
+    178|   const db = new Database(f.path);
+    179|   try {
+    180|     expect(db.pragma('user_version', { simple: true })).toBe(2);
+       |                                                         ^
+    181|     expect(legacyRows(db)).toEqual(before);
+    182|     expect(db.prepare("SELECT name FROM sqlite_master WHERE name='arti…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  15:54:23
+   Duration  266ms (tests 44%, import 35%, transform 19%, worker 2%)

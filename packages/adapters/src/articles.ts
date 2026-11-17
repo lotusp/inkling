@@ -41,7 +41,7 @@ function number(value: unknown) {
   return value;
 }
 export function migrateArticles(db: Database.Database) {
-  if (db.pragma('user_version', { simple: true }) === 2) return;
+  if (Number(db.pragma('user_version', { simple: true })) >= 2) return;
   db.transaction(() => {
     db.exec(`
  CREATE TABLE articles(id TEXT PRIMARY KEY,head_revision_id TEXT NOT NULL,head_seq INTEGER NOT NULL,revision_bytes INTEGER NOT NULL,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL,FOREIGN KEY(id,head_revision_id) REFERENCES article_revisions(article_id,id) DEFERRABLE INITIALLY DEFERRED) STRICT;
