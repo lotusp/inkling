@@ -1,4 +1,5 @@
 import type { DocumentNode } from '@inkling/contracts';
+import { useState } from 'react';
 import type { RecoveryChoice } from './draft-store';
 import { downloadRescue } from './draft-rescue';
 function preview(doc: DocumentNode) {
@@ -17,13 +18,18 @@ export function RecoveryPanel({
   message,
   recover,
   keepServer,
+  discard,
+  clientId,
 }: {
   choices: RecoveryChoice[];
   busy: boolean;
   message: string;
   recover: (choice: RecoveryChoice) => Promise<void>;
   keepServer: () => Promise<void>;
+  discard: (choice: RecoveryChoice) => Promise<boolean>;
+  clientId: string | undefined;
 }) {
+  const [discarding, setDiscarding] = useState<RecoveryChoice | null>(null);
   if (!choices.length) return null;
   return (
     <section className="recovery-panel" aria-label="待恢复草稿">
@@ -41,17 +47,55 @@ export function RecoveryPanel({
           <p className="draft-preview">
             {preview(choice.record.draft.document.doc)}
           </p>
-          <button disabled={busy} onClick={() => void recover(choice)}>
+          <button
+            disabled={busy}
+            onClick={() => {
+              setDiscarding(null);
+              void recover(choice);
+            }}
+          >
             {busy ? '正在核对…' : '恢复此草稿'}
           </button>
           <button onClick={() => downloadRescue(choice.record)}>
             下载此副本
           </button>
+          <button
+            disabled={
+              busy || (choice.active && choice.record.clientId !== clientId)
+            }
+            onClick={() => setDiscarding(choice)}
+          >
+            放弃此副本
+          </button>
         </div>
       ))}
+      {discarding && (
+        <div role="group" aria-label="放弃副本确认">
+          <p>
+            仅删除这份浏览器恢复副本，不撤回服务器已提交的内容。需要保留时请先下载。
+          </p>
+          <button
+            disabled={busy}
+            onClick={() =>
+              void discard(discarding).then(() => setDiscarding(null))
+            }
+          >
+            确认放弃此副本
+          </button>
+          <button disabled={busy} onClick={() => setDiscarding(null)}>
+            取消放弃
+          </button>
+        </div>
+      )}
       {message && <p role="alert">{message}</p>}
       <p>也可以使用下方的服务器版本继续写作，未选择的副本会保留供以后恢复。</p>
-      <button disabled={busy} onClick={() => void keepServer()}>
+      <button
+        disabled={busy}
+        onClick={() => {
+          setDiscarding(null);
+          void keepServer();
+        }}
+      >
         保留副本，使用服务器版本
       </button>
     </section>

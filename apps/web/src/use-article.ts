@@ -13,6 +13,7 @@ import { downloadRescue } from './draft-rescue';
 import { inspectConflict } from './conflict';
 import {
   listDrafts,
+  discardDraft,
   ownDraftClient,
   putDraft,
   removeRecoveredSource,
@@ -547,10 +548,21 @@ export function useArticle(
     [editor, display, persist, setTitle],
   );
   const keepServer = useCallback(async () => {
-    if (busy.current || !head.current || !identity.current) return;
+    if (
+      busy.current ||
+      !head.current ||
+      !identity.current ||
+      composing.current ||
+      editor?.view.composing
+    )
+      return;
     busy.current = true;
     setRecovering(true);
     try {
+      if (conflicted.current && !(await persist()))
+        throw new Error(
+          '本页草稿未能保留，已停止切换。请先下载救援稿或重试保存副本。',
+        );
       await connectWorkspace();
       const current = ArticleSnapshot.parse(
         await api('/api/articles/' + head.current.articleId),
@@ -574,7 +586,45 @@ export function useArticle(
       busy.current = false;
       setRecovering(false);
     }
-  }, [display]);
+  }, [display, editor, persist]);
+  const discard = useCallback(
+    async (choice: RecoveryChoice): Promise<boolean> => {
+      if (busy.current || !identity.current || !choosing.current) return false;
+      busy.current = true;
+      setRecovering(true);
+      try {
+        await discardDraft(choice.record, identity.current.clientId);
+        const remaining = recoveries.filter(
+          (item) => item.record.clientId !== choice.record.clientId,
+        );
+        setRecoveries(remaining);
+        choosing.current = remaining.length > 0;
+        setMessage('');
+        return true;
+      } catch (error) {
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : '无法放弃副本，原内容已保留。',
+        );
+        try {
+          const refreshed = await listDrafts(
+            choice.record.workspaceId,
+            choice.record.articleId,
+          );
+          choosing.current = refreshed.length > 0;
+          setRecoveries(refreshed);
+        } catch {
+          /* Keep the visible snapshot and error until the next successful read. */
+        }
+        return false;
+      } finally {
+        busy.current = false;
+        setRecovering(false);
+      }
+    },
+    [recoveries],
+  );
   const download = useCallback(() => {
     if (!head.current || !editor) return;
     downloadRescue({
@@ -688,6 +738,8 @@ export function useArticle(
     recovering,
     recover,
     keepServer,
+    discard,
+    clientId: identity.current?.clientId,
     download,
     compare,
     comparison,

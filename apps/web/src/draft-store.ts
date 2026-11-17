@@ -271,3 +271,35 @@ export async function removeRecoveredSource(
     };
   });
 }
+
+export async function discardDraft(record: DraftRecord, currentClient: string) {
+  const removeExact = async () => {
+    const removed = await transaction<boolean>('readwrite', (store, done) => {
+      const key = [record.workspaceId, record.articleId, record.clientId];
+      const request = store.get(key);
+      request.onsuccess = () => {
+        let same = false;
+        try {
+          same =
+            Boolean(request.result) &&
+            stableJson(parseRecord(request.result)) === stableJson(record);
+        } catch {
+          /* Unknown records remain intact. */
+        }
+        if (same) store.delete(key);
+        done(same);
+      };
+    });
+    if (!removed) throw new Error('副本已变化或已被处理，请重新查看后决定。');
+  };
+  if (record.clientId === currentClient) return removeExact();
+  await navigator.locks.request(
+    lockName(record.clientId),
+    { ifAvailable: true },
+    async (lock) => {
+      if (!lock)
+        throw new Error('所属标签页仍在使用这份副本，请先关闭该标签页。');
+      await removeExact();
+    },
+  );
+}

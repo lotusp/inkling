@@ -169,6 +169,8 @@ export function App() {
               message={article.message}
               recover={article.recover}
               keepServer={article.keepServer}
+              discard={article.discard}
+              clientId={article.clientId}
             />
             <div className={`editor-wrap ${format?.length ? '' : 'is-empty'}`}>
               <EditorContent editor={editor} />
@@ -189,6 +191,12 @@ export function App() {
                 {article.conflictMessage && (
                   <p role="alert">{article.conflictMessage}</p>
                 )}
+                <button
+                  disabled={article.conflictBusy || article.recovering}
+                  onClick={() => void article.keepServer()}
+                >
+                  保留本页草稿，使用服务器版本
+                </button>
               </div>
             )}
             {article.comparison && article.document && (

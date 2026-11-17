@@ -1,6 +1,50 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import { test, expect } from './fixtures';
 
+test('ARTICLE-CONFLICT-006 choosing the server version retains the conflicted local draft', async ({
+  page,
+  context,
+  workspace,
+}) => {
+  const other = await conflictingTabs(page, context, workspace.origin);
+  await other
+    .getByRole('button', { name: '保留本页草稿，使用服务器版本', exact: true })
+    .click();
+  await expect(
+    other.getByRole('textbox', { name: '文章正文', exact: true }),
+  ).toHaveText('先提交的实践依据');
+  await other.reload();
+  await expect(other.getByRole('region', { name: '待恢复草稿' })).toContainText(
+    '本页尚未保存的判断',
+  );
+  await other.close();
+});
+
+test('ARTICLE-CONFLICT-006 cannot replace the editor if preserving its draft fails', async ({
+  page,
+  context,
+  workspace,
+}) => {
+  const other = await conflictingTabs(page, context, workspace.origin);
+  await other.evaluate(() => {
+    IDBObjectStore.prototype.put = () => {
+      throw new DOMException('Injected storage failure', 'QuotaExceededError');
+    };
+  });
+  await other
+    .getByRole('button', { name: '保留本页草稿，使用服务器版本', exact: true })
+    .click();
+  await expect(
+    other.getByText(
+      '本页草稿未能保留，已停止切换。请先下载救援稿或重试保存副本。',
+    ),
+  ).toBeVisible();
+  await expect(
+    other.getByRole('textbox', { name: '文章正文', exact: true }),
+  ).toHaveText('本页尚未保存的判断');
+  await other.close();
+});
+
 test('ARTICLE-CONFLICT-006 editing or composing invalidates a prepared merge', async ({
   page,
   context,
@@ -239,6 +283,16 @@ test('ARTICLE-CONFLICT-006 compares two real tab versions without replacing the 
     panel.getByRole('region', { name: '本页草稿预览' }),
   ).toContainText('本页尚未保存的判断');
   await expect(panel).toContainText('第 1 段：文字不同');
+  await panel.screenshot({ path: 'test-results/conflict-compare-desktop.png' });
+  await other.setViewportSize({ width: 375, height: 900 });
+  await panel.scrollIntoViewIfNeeded();
+  await other.evaluate(() => new Promise(requestAnimationFrame));
+  await panel.screenshot({ path: 'test-results/conflict-compare-mobile.png' });
+  expect(
+    await other.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
   await expect(editor).toHaveText('本页尚未保存的判断');
   await editor.fill('比较时仍能继续思考');
   await expect(

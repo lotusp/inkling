@@ -11,7 +11,7 @@
 | ARTICLE-RETRY-003 | 未知响应重试 | API + UI | tests/api/article-persistence.test.ts；tests/integration/article-store.test.ts；tests/e2e/article-save-races.spec.ts | 真实提交后丢弃响应，再推进 head | 原 mutation 结果可查询，重试不增版本 |
 | ARTICLE-KEY-004 | 相同键不同载荷 | API | tests/api/article-persistence.test.ts | 修改文章/base/操作/正文的重复 ID | 409，不改变数据 |
 | ARTICLE-RACE-005 | 旧响应晚到 | UI | tests/e2e/article-save-races.spec.ts | 延迟真实保存响应，继续输入新字符 | 保留新内容和副本，不误显 clean |
-| ARTICLE-CONFLICT-006 | 两个标签页冲突 | API + UI | tests/e2e/article-conflict.spec.ts | 同 browser context 的两个页面 | 第二份写冲突，两边可查看，合并仍 CAS |
+| ARTICLE-CONFLICT-006 | 两个标签页冲突 | API + UI | tests/e2e/article-conflict.spec.ts；tests/e2e/article-discard.spec.ts | 同 browser context 的两个页面、确认后副本变化/来源重新活动 | 第二份写冲突，两边可查看；合并仍 CAS，输入变化使确认失效；放弃需确认且不能删除活动或已变化副本 |
 | ARTICLE-LOCAL-007 | 断线/重开恢复 | UI | tests/e2e/article-recovery.spec.ts | 已持久 IDB、在途/最新 draft、服务中断 | 先查 mutation/head，选择恢复；多副本隔离；旧基线不自动上传 |
 | ARTICLE-IDB-008 | 浏览器副本失效 | UI | tests/e2e/article-recovery-failures.spec.ts | 浏览器原生 IDB 调用边界注入配额/不可用/事务 abort，保留真实 UI 与服务器 | 提示失败、可下载内存救援稿，不声称已保存副本；未知记录不覆盖 |
 | ARTICLE-WRITE-009 | 数据库写失败 | 集成 + UI | tests/integration/article-store.test.ts；tests/e2e/article-save.spec.ts | 只读 SQLite 连接、SQLITE_FULL 故障注入、合法权限失败夹具 | 事务前后状态一致；显示失败并保留输入 |

@@ -22,16 +22,18 @@
 
 - 3.1.2：实际服务停机后继续输入，重启同端口并重新接入；补原页面 hash 链接认证及保留未选择副本继续编辑服务器稿件。响应丢失后的最新输入恢复、查询失败、旧基线冲突及复制标签均有真实浏览器验收。核对路径 baseline-pass；新链接处理与保留副本分支有效 Red 后实现，12 项浏览器验收通过，类型/lint 通过。日志 recovery-auth-red.log、recovery-choice-red.log、recovery-reconcile-baseline.log、recovery-reconcile-green.log。
 
-## 当前边界
+- 3.1.3：副本不可用/配额异常/事务 abort 均明确降级，在线保存仍可用；救援 JSON 包含最新内存输入（含非法长标题）与基线/未决请求，无凭证。未知副本元数据禁止覆盖；未保存离开提示已验收。4 个救援入口 Red 后实现，新增未知格式保留 baseline-pass；verify 通过（38 项应用/架构 + 10 项 Harness），完整 E2E 29 项通过。日志 recovery-rescue-red.log、recovery-rescue-green.log、recovery-checks.log、recovery-all-green.log。配额/访问拒绝是浏览器原生 API 边界注入，不声称填满真实磁盘。桌面/窄屏恢复与失败状态已看图；窄屏 resize 后曾出现截图重复绘制，DOM 单实例检查及滚动重绘后的上下视口正常，单场景复核通过（recovery-visual.log）。
 
 - 3.2.1：真实双标签冲突比较已实现，独立只读渲染两份结构化正文，标明文字/纯格式差异；主编辑器保持输入，核对原 mutation 失败时不给出可合并基线。有效入口 Red 后，3 项比较验收与保存/恢复回归共 14 项 E2E 通过，类型/lint/架构通过；日志 conflict-compare-red.log、conflict-compare-green.log。
 
-- 3.1.3：副本不可用/配额异常/事务 abort 均明确降级，在线保存仍可用；救援 JSON 包含最新内存输入（含非法长标题）与基线/未决请求，无凭证。未知副本元数据禁止覆盖；未保存离开提示已验收。4 个救援入口 Red 后实现，新增未知格式保留 baseline-pass；verify 通过（38 项应用/架构 + 10 项 Harness），完整 E2E 29 项通过。日志 recovery-rescue-red.log、recovery-rescue-green.log、recovery-checks.log、recovery-all-green.log。配额/访问拒绝是浏览器原生 API 边界注入，不声称填满真实磁盘。桌面/窄屏恢复与失败状态已看图；窄屏 resize 后曾出现截图重复绘制，DOM 单实例检查及滚动重绘后的上下视口正常，单场景复核通过（recovery-visual.log）。
+- 3.2.2：合并固定已查看版本、本地序号与内容，准备后继续输入/组合输入会使确认失效；确认进入原保存协议。有效入口 Red 后，合并成功、再次服务端冲突、确认失效、响应丢失继续输入和保存回归共 11 项 E2E 通过，类型/lint 通过；日志 conflict-merge-red.log、conflict-merge-green.log。
 
-3.1 的三个子步骤已完成：在线自动保存、浏览器草稿恢复/重连核对与救援下载已实现；冲突合并和版本 UI 尚未实现。服务停止期间刷新不能打开页面，重启后可恢复；救援 JSON 当前无导入界面。Linux 原生驱动安装和手工 IME 未验证。本机依赖安装成功；pnpm 原生驱动需要允许构建且可能使用 Xcode Command Line Tools。
+- 3.2.3：放弃指定副本需二次确认；确认后记录变化或来源标签重新活动时拒绝删除。冲突中切换服务器稿前必须成功保留本页副本，失败则保留编辑器内容。有效放弃入口 Red 后，12 项针对性 E2E 通过；完整 verify 通过（38 项应用/架构 + 10 项 Harness），完整 E2E 41 项通过。日志 conflict-discard-red.log、conflict-discard-green.log、conflict-checks.log、conflict-all-green.log。已查看桌面/375px 窄屏冲突比较及桌面放弃确认截图，布局正常，窄屏无横向溢出。自检确认删除在同一 IDB 事务比较完整快照，并在持有来源锁时执行；取消不删除，服务器历史不受影响。
+
+## 当前边界
+
+3.1 与 3.2 已完成：在线自动保存、浏览器草稿恢复/重连核对、救援下载、冲突比较/显式合并及确认放弃副本已实现；版本 UI 尚未实现。服务停止期间刷新不能打开页面，重启后可恢复；救援 JSON 当前无导入界面。Linux 原生驱动安装和手工 IME 未验证。本机依赖安装成功；pnpm 原生驱动需要允许构建且可能使用 Xcode Command Line Tools。
 
 ## 下一步
 
-- 3.2.2：合并固定已查看版本、本地序号与内容，准备后继续输入/组合输入会使确认失效；确认进入原保存协议。有效入口 Red 后，合并成功、再次服务端冲突、确认失效、响应丢失继续输入和保存回归共 11 项 E2E 通过，类型/lint 通过；日志 conflict-merge-red.log、conflict-merge-green.log。
-
-3.2.3：明确放弃副本、活动标签保护、完整回归及视觉检查。2.3b 真实中文输入法检查与 3.3、6.1 联验，仍待执行。当前自动检查通过不表示完整 change 的 G2 完成。
+先完成 3.3 的 IME/旧响应与离线提示联验，再进入 4.1 版本列表、命名和比较。2.3b 真实中文输入法候选窗检查仍待执行，自动组合事件测试不能替代。当前自动检查通过不表示完整 change 的 G2 完成；未 archive、merge 或 push。
