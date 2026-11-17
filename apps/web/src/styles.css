@@ -960,3 +960,24 @@ svg {
     max-width: none;
   }
 }
+
+.lifecycle-actions,
+.library-state-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.library-state-tabs button[aria-pressed='true'] {
+  background: #edf2e9;
+  border-color: #b4c8ac;
+  color: var(--green);
+}
+.article-state {
+  margin: 12px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.article-state p {
+  line-height: 1.7;
+}

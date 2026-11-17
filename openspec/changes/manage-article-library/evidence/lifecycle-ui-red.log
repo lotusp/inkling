@@ -1,0 +1,197 @@
+Command: fnm exec --using 22.22.2 corepack pnpm test:e2e tests/e2e/article-lifecycle.spec.ts --workers=4
+Exit code: 1
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-lifecycle.spec.ts --workers=4
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2257 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-jeI9cF1f.css   13.25 kB │ gzip:   3.50 kB
+apps/web/dist/assets/index-BRCX1_PL.js   787.38 kB │ gzip: 244.39 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 251ms
+
+Running 9 tests using 4 workers
+
+(node:11800) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11798) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11799) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11801) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [chromium] › tests/e2e/article-lifecycle.spec.ts:119:1 › LIBRARY-ARCHIVE-009 failed state check pauses writes without replacing input, then can retry (1.8s)
+  ✓  1 [chromium] › tests/e2e/article-lifecycle.spec.ts:89:1 › LIBRARY-ARCHIVE-009 another tab archives while typing; refused save keeps draft and resumes only after explicit state check (3.2s)
+  ✓  4 [chromium] › tests/e2e/article-lifecycle.spec.ts:136:1 › LIBRARY-ARCHIVE-009 a late rejection preserves composition until commit and retains recoveries on archived reopening (3.2s)
+  ✓  2 [chromium] › tests/e2e/article-lifecycle.spec.ts:47:1 › LIBRARY-ARCHIVE-009 archived reopening is read-only with readable history and disabled version mutations (3.5s)
+  ✘  5 [chromium] › tests/e2e/article-lifecycle.spec.ts:206:1 › LIBRARY-ARCHIVE-009/TRASH-010/RESTORE-011 author archives, unarchives, cancels trash, trashes last draft and restores without losing history (30.1s)
+(node:12125) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  7 [chromium] › tests/e2e/article-lifecycle.spec.ts:322:1 › LIBRARY-TRASH-010 a stale confirmation cannot adopt newer metadata or discard current typing (30.1s)
+  ✘  6 [chromium] › tests/e2e/article-lifecycle.spec.ts:292:1 › LIBRARY-ARCHIVE-009 explicit keep preserves an unsaved draft across archive and unarchive (30.3s)
+  ✘  8 [chromium] › tests/e2e/article-lifecycle.spec.ts:361:1 › LIBRARY-ARCHIVE-009 unknown lifecycle result is queried before retry; failed lookup never sends a second command (30.1s)
+  ✘  9 [chromium] › tests/e2e/article-lifecycle.spec.ts:400:1 › LIBRARY-TRASH-010 lifecycle cannot interrupt title composition or execute from an obsolete confirmation (30.1s)
+
+
+  1) [chromium] › tests/e2e/article-lifecycle.spec.ts:206:1 › LIBRARY-ARCHIVE-009/TRASH-010/RESTORE-011 author archives, unarchives, cancels trash, trashes last draft and restores without losing history
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '归档当前文章', exact: true })
+
+
+      215 |     await page.request.get(`/api/articles/${id}/revisions?all=true`)
+      216 |   ).json();
+    > 217 |   await page.getByRole('button', { name: '归档当前文章', exact: true }).click();
+          |                                                                   ^
+      218 |   await confirmation(page)
+      219 |     .getByRole('button', { name: '确认归档', exact: true })
+      220 |     .click();
+        at <repo>/tests/e2e/article-lifecycle.spec.ts:217:67
+
+    Error Context: test-results/article-lifecycle-LIBRARY--58eb8-ores-without-losing-history-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-lifecycle-LIBRARY--58eb8-ores-without-losing-history-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-lifecycle-LIBRARY--58eb8-ores-without-losing-history-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/article-lifecycle.spec.ts:292:1 › LIBRARY-ARCHIVE-009 explicit keep preserves an unsaved draft across archive and unarchive
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '归档当前文章', exact: true })
+
+
+      298 |     page.getByRole('button', { name: '重试保存', exact: true }),
+      299 |   ).toBeVisible();
+    > 300 |   await page.getByRole('button', { name: '归档当前文章', exact: true }).click();
+          |                                                                   ^
+      301 |   await confirmation(page)
+      302 |     .getByRole('button', { name: '保留草稿并归档', exact: true })
+      303 |     .click();
+        at <repo>/tests/e2e/article-lifecycle.spec.ts:300:67
+
+    Error Context: test-results/article-lifecycle-LIBRARY--93dd2-cross-archive-and-unarchive-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-lifecycle-LIBRARY--93dd2-cross-archive-and-unarchive-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-lifecycle-LIBRARY--93dd2-cross-archive-and-unarchive-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/article-lifecycle.spec.ts:322:1 › LIBRARY-TRASH-010 a stale confirmation cannot adopt newer metadata or discard current typing
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '移入回收站', exact: true })
+
+
+      325 | }) => {
+      326 |   const { id, headers } = await context(page, workspace.origin);
+    > 327 |   await page.getByRole('button', { name: '移入回收站', exact: true }).click();
+          |                                                                  ^
+      328 |   await expect(
+      329 |     confirmation(page).getByRole('button', {
+      330 |       name: '确认移入回收站',
+        at <repo>/tests/e2e/article-lifecycle.spec.ts:327:66
+
+    Error Context: test-results/article-lifecycle-LIBRARY--ac0d2-a-or-discard-current-typing-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-lifecycle-LIBRARY--ac0d2-a-or-discard-current-typing-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-lifecycle-LIBRARY--ac0d2-a-or-discard-current-typing-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/article-lifecycle.spec.ts:361:1 › LIBRARY-ARCHIVE-009 unknown lifecycle result is queried before retry; failed lookup never sends a second command
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '归档当前文章', exact: true })
+
+
+      368 |     await route.abort();
+      369 |   });
+    > 370 |   await page.getByRole('button', { name: '归档当前文章', exact: true }).click();
+          |                                                                   ^
+      371 |   await confirmation(page)
+      372 |     .getByRole('button', { name: '确认归档', exact: true })
+      373 |     .click();
+        at <repo>/tests/e2e/article-lifecycle.spec.ts:370:67
+
+    Error Context: test-results/article-lifecycle-LIBRARY--cccde-ever-sends-a-second-command-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-lifecycle-LIBRARY--cccde-ever-sends-a-second-command-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-lifecycle-LIBRARY--cccde-ever-sends-a-second-command-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests/e2e/article-lifecycle.spec.ts:400:1 › LIBRARY-TRASH-010 lifecycle cannot interrupt title composition or execute from an obsolete confirmation
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '移入回收站', exact: true })
+
+
+      404 |   const { id } = await context(page, workspace.origin);
+      405 |   await title(page).dispatchEvent('compositionstart');
+    > 406 |   await page.getByRole('button', { name: '移入回收站', exact: true }).click();
+          |                                                                  ^
+      407 |   await expect(confirmation(page)).toHaveCount(0);
+      408 |   await title(page).dispatchEvent('compositionend');
+      409 |   await page.getByRole('button', { name: '移入回收站', exact: true }).click();
+        at <repo>/tests/e2e/article-lifecycle.spec.ts:406:66
+
+    Error Context: test-results/article-lifecycle-LIBRARY--a8974-om-an-obsolete-confirmation-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-lifecycle-LIBRARY--a8974-om-an-obsolete-confirmation-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-lifecycle-LIBRARY--a8974-om-an-obsolete-confirmation-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5 failed
+    [chromium] › tests/e2e/article-lifecycle.spec.ts:206:1 › LIBRARY-ARCHIVE-009/TRASH-010/RESTORE-011 author archives, unarchives, cancels trash, trashes last draft and restores without losing history
+    [chromium] › tests/e2e/article-lifecycle.spec.ts:292:1 › LIBRARY-ARCHIVE-009 explicit keep preserves an unsaved draft across archive and unarchive
+    [chromium] › tests/e2e/article-lifecycle.spec.ts:322:1 › LIBRARY-TRASH-010 a stale confirmation cannot adopt newer metadata or discard current typing
+    [chromium] › tests/e2e/article-lifecycle.spec.ts:361:1 › LIBRARY-ARCHIVE-009 unknown lifecycle result is queried before retry; failed lookup never sends a second command
+    [chromium] › tests/e2e/article-lifecycle.spec.ts:400:1 › LIBRARY-TRASH-010 lifecycle cannot interrupt title composition or execute from an obsolete confirmation
+  4 passed (1.1m)
+ ELIFECYCLE  Command failed with exit code 1.

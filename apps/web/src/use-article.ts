@@ -29,7 +29,7 @@ import {
 export interface ArticleSession {
   organize?: boolean;
   workspaceId: string;
-  article: ArticleSnapshot;
+  article: ArticleSnapshot | null;
 }
 export interface RestoreReview {
   source: RevisionDetail;
@@ -177,7 +177,7 @@ export function useArticle(
         const workspace = initial
           ? {
               workspaceId: initial.workspaceId,
-              currentArticleId: initial.article.articleId,
+              currentArticleId: initial.article?.articleId ?? null,
             }
           : WorkspaceInfo.parse(await api('/api/workspace'));
         if (!active) return;

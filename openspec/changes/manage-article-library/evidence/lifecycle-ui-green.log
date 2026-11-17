@@ -1,0 +1,53 @@
+Command: fnm exec --using 22.22.2 corepack pnpm test:e2e tests/e2e/article-lifecycle.spec.ts --workers=4
+Exit code: 0
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-lifecycle.spec.ts --workers=4
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2258 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-C6ThjMeS.css   13.54 kB │ gzip:   3.54 kB
+apps/web/dist/assets/index-DzC-JNy0.js   794.22 kB │ gzip: 246.04 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 314ms
+
+Running 15 tests using 4 workers
+
+(node:15551) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15549) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15550) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15552) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   4 [chromium] › tests/e2e/article-lifecycle.spec.ts:119:1 › LIBRARY-ARCHIVE-009 failed state check pauses writes without replacing input, then can retry (1.7s)
+  ✓   2 [chromium] › tests/e2e/article-lifecycle.spec.ts:89:1 › LIBRARY-ARCHIVE-009 another tab archives while typing; refused save keeps draft and resumes only after explicit state check (3.1s)
+  ✓   3 [chromium] › tests/e2e/article-lifecycle.spec.ts:136:1 › LIBRARY-ARCHIVE-009 a late rejection preserves composition until commit and retains recoveries on archived reopening (3.1s)
+  ✓   1 [chromium] › tests/e2e/article-lifecycle.spec.ts:47:1 › LIBRARY-ARCHIVE-009 archived reopening is read-only with readable history and disabled version mutations (3.2s)
+  ✓   7 [chromium] › tests/e2e/article-lifecycle.spec.ts:322:1 › LIBRARY-TRASH-010 a stale confirmation cannot adopt newer metadata or discard current typing (869ms)
+  ✓   8 [chromium] › tests/e2e/article-lifecycle.spec.ts:361:1 › LIBRARY-ARCHIVE-009 unknown lifecycle result is queried before retry; failed lookup never sends a second command (994ms)
+  ✓   5 [chromium] › tests/e2e/article-lifecycle.spec.ts:206:1 › LIBRARY-ARCHIVE-009/TRASH-010/RESTORE-011 author archives, unarchives, cancels trash, trashes last draft and restores without losing history (3.1s)
+  ✓  10 [chromium] › tests/e2e/article-lifecycle.spec.ts:433:1 › LIBRARY-RESTORE-011 restoring a previously archived article keeps it read-only and does not switch the active draft (1.1s)
+  ✓  11 [chromium] › tests/e2e/article-lifecycle.spec.ts:469:1 › LIBRARY-TRASH-010 failed browser draft protection prevents lifecycle writes and preserves the rescue (732ms)
+  ✓   9 [chromium] › tests/e2e/article-lifecycle.spec.ts:400:1 › LIBRARY-TRASH-010 lifecycle cannot interrupt title composition or execute from an obsolete confirmation (2.1s)
+  ✓  12 [chromium] › tests/e2e/article-lifecycle.spec.ts:496:1 › LIBRARY-ARCHIVE-009 an uncommitted unknown operation retries its original payload and a rejected retry cannot erase it (911ms)
+  ✓  13 [chromium] › tests/e2e/article-lifecycle.spec.ts:538:1 › LIBRARY-ARCHIVE-009 a failed handoff retries opening without repeating the committed lifecycle command (951ms)
+  ✓   6 [chromium] › tests/e2e/article-lifecycle.spec.ts:292:1 › LIBRARY-ARCHIVE-009 explicit keep preserves an unsaved draft across archive and unarchive (3.7s)
+  ✓  14 [chromium] › tests/e2e/article-lifecycle.spec.ts:578:1 › LIBRARY-FIND-008 switching state discards a late archived list and renders the trash safely (929ms)
+  ✓  15 [chromium] › tests/e2e/article-lifecycle.spec.ts:655:1 › LIBRARY-TRASH-010 a missing unknown mutation with a newer metadata baseline requires a fresh confirmation (856ms)
+
+  15 passed (9.8s)

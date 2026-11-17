@@ -5,12 +5,16 @@ import {
   type ArticleSnapshot,
   type ArticleListItem,
   type ArticleSearchFilters,
+  type ArticleState,
 } from '@inkling/contracts';
 import { BookOpen, FilePlus2, RefreshCw, X } from 'lucide-react';
 import { api } from './api';
 import { ArticleSearchForm } from './ArticleSearchForm';
 export function ArticleLibrary({
   current,
+  initialState,
+  stateChanged,
+  restoreArticle,
   disabled,
   openArticle,
   organizeArticle,
@@ -19,6 +23,9 @@ export function ArticleLibrary({
   close,
 }: {
   current: ArticleSnapshot | null;
+  initialState: ArticleState;
+  stateChanged: (state: ArticleState) => void;
+  restoreArticle: (id: string) => void;
   confirmedMetadata: ArticleListItem | null;
   organizeArticle: (id: string) => void;
   disabled: boolean;
@@ -32,9 +39,15 @@ export function ArticleLibrary({
   });
   const [query, setQuery] = useState<{
     attempt: number;
+    state: ArticleState;
     cursor: ArticleListPage['nextCursor'];
     filters: ArticleSearchFilters;
-  }>({ attempt: 0, cursor: null, filters: { q: '', tag: '' } });
+  }>({
+    attempt: 0,
+    cursor: null,
+    filters: { q: '', tag: '' },
+    state: initialState,
+  });
   const generation = useRef(0);
   const [loading, setLoading] = useState(true),
     [loaded, setLoaded] = useState(false),
@@ -49,6 +62,7 @@ export function ArticleLibrary({
     setLoading(true);
     setError('');
     const params = new URLSearchParams({ limit: '20' });
+    if (query.state !== 'active') params.set('state', query.state);
     if (query.filters.q) params.set('q', query.filters.q);
     if (query.filters.tag) params.set('tag', query.filters.tag);
     if (query.cursor) {
@@ -103,10 +117,31 @@ export function ArticleLibrary({
       setLoaded(false);
     }
     setQuery((previous) => ({
+      ...previous,
       attempt: previous.attempt + 1,
       cursor: null,
       filters,
     }));
+  }
+  const stateLabels = {
+    active: '活动文章',
+    archived: '已归档',
+    trashed: '回收站',
+  };
+  function changeState(state: ArticleState) {
+    if (disabled || state === query.state) return;
+    generation.current++;
+    setPage({ items: [], nextCursor: null });
+    setLoading(true);
+    setLoaded(false);
+    setError('');
+    setQuery((previous) => ({
+      ...previous,
+      state,
+      cursor: null,
+      attempt: previous.attempt + 1,
+    }));
+    stateChanged(state);
   }
   const hasFilters = !!(query.filters.q || query.filters.tag);
   const filterSummary = [
@@ -179,11 +214,27 @@ export function ArticleLibrary({
         </div>
         {titleError && <p role="alert">{titleError}</p>}
       </form>
+      <div
+        className="library-state-tabs"
+        role="group"
+        aria-label="文章状态筛选"
+      >
+        {(['active', 'archived', 'trashed'] as const).map((state) => (
+          <button
+            key={state}
+            disabled={disabled}
+            aria-pressed={query.state === state}
+            onClick={() => changeState(state)}
+          >
+            {stateLabels[state]}
+          </button>
+        ))}
+      </div>
       <ArticleSearchForm apply={applyFilters} />
       <p className="search-summary">
         {hasFilters
           ? '当前筛选：' + filterSummary
-          : '全部活动文章 · 可按标题或标签查找'}
+          : '全部' + stateLabels[query.state] + ' · 可按标题或标签查找'}
       </p>
       {error && (
         <div className="library-error">
@@ -198,10 +249,14 @@ export function ArticleLibrary({
         <p className="library-empty">
           {hasFilters
             ? '没有匹配的文章，试试其他标题或标签。'
-            : '还没有文章，从一个问题开始写作。'}
+            : query.state === 'active'
+              ? '还没有文章，从一个问题开始写作。'
+              : query.state === 'archived'
+                ? '还没有归档文章。'
+                : '回收站为空。'}
         </p>
       )}
-      <ul className="library-items" aria-label="活动文章">
+      <ul className="library-items" aria-label={stateLabels[query.state]}>
         {page.items.map((item) => {
           const selected = item.articleId === current?.articleId;
           const name =
@@ -209,14 +264,22 @@ export function ArticleLibrary({
           return (
             <li key={item.articleId} className={selected ? 'is-current' : ''}>
               <button
-                disabled={disabled || selected}
+                disabled={disabled || selected || item.state === 'trashed'}
                 aria-label={'打开：' + name}
                 aria-current={selected ? 'page' : undefined}
                 onClick={() => openArticle(item.articleId)}
               >
                 <span className="library-item-title">{name}</span>
                 <span className="library-item-meta">
-                  <span>{selected ? '当前文章' : '草稿'}</span>
+                  <span>
+                    {selected
+                      ? '当前文章'
+                      : item.state === 'archived'
+                        ? '只读归档'
+                        : item.state === 'trashed'
+                          ? '回收站'
+                          : '草稿'}
+                  </span>
                   <time dateTime={new Date(item.createdAt).toISOString()}>
                     {new Date(item.createdAt).toLocaleDateString('zh-CN')}
                   </time>
@@ -233,14 +296,26 @@ export function ArticleLibrary({
                     <span key={tag}>{tag}</span>
                   ))}
                 </div>
-                <button
-                  className="organize-button"
-                  disabled={disabled}
-                  aria-label={'整理：' + name}
-                  onClick={() => organizeArticle(item.articleId)}
-                >
-                  整理
-                </button>
+                {item.state === 'active' && (
+                  <button
+                    className="organize-button"
+                    disabled={disabled}
+                    aria-label={'整理：' + name}
+                    onClick={() => organizeArticle(item.articleId)}
+                  >
+                    整理
+                  </button>
+                )}
+                {item.state === 'trashed' && (
+                  <button
+                    className="organize-button"
+                    disabled={disabled}
+                    aria-label={'恢复：' + name}
+                    onClick={() => restoreArticle(item.articleId)}
+                  >
+                    恢复
+                  </button>
+                )}
               </div>
             </li>
           );
