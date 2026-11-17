@@ -1,0 +1,42 @@
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2240 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.46 kB │ gzip:   0.32 kB
+apps/web/dist/assets/index-bukrPK1k.css    6.46 kB │ gzip:   2.12 kB
+apps/web/dist/assets/index-D4VVvJNU.js   739.96 kB │ gzip: 231.24 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 290ms
+
+Running 10 tests using 4 workers
+
+(node:6137) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6135) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6138) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   2 [chromium] › tests/e2e/article-formats.spec.ts:102:1 › WORKBENCH-EDIT-004 title composition defers saves until composition ends (2.1s)
+  ✓   4 [chromium] › tests/e2e/article-formats.spec.ts:5:1 › ARTICLE-SCHEMA-011 every supported format survives editor load and another save (3.3s)
+  ✓   1 [chromium] › tests/e2e/article-recovery.spec.ts:3:1 › ARTICLE-LOCAL-007 cloned client IDs retain two isolated recovery choices (3.9s)
+  ✓   3 [chromium] › tests/e2e/article-formats.spec.ts:56:1 › ARTICLE-SCHEMA-011 an overlong title cannot be acknowledged by an older save (4.5s)
+  ✓   6 [chromium] › tests/e2e/article-save-races.spec.ts:4:1 › ARTICLE-RACE-005 reconciliation preserves newer local input and blocks overwrite (1.9s)
+  ✓   8 [chromium] › tests/e2e/article-save-races.spec.ts:105:1 › ARTICLE-RETRY-003 lost response reconciles a newer remote head before claiming clean (1.9s)
+  ✓   7 [chromium] › tests/e2e/article-save-races.spec.ts:72:1 › ARTICLE-RACE-005 late acknowledgement never replaces newer local input (3.3s)
+  ✓   5 [chromium] › tests/e2e/article-recovery.spec.ts:64:1 › ARTICLE-LOCAL-007 an offline draft survives reload and is restored only by choice (5.2s)
+  ✓   9 [chromium] › tests/e2e/article-save-races.spec.ts:165:1 › ARTICLE-RETRY-003 failed mutation lookup keeps the request unresolved (2.1s)
+  ✓  10 [chromium] › tests/e2e/article-save.spec.ts:5:1 › ARTICLE-SAVE-002 Chinese draft is saved and reopened with formatting (2.2s)
+
+  10 passed (11.4s)

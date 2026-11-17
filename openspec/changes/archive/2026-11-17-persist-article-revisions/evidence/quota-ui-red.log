@@ -1,0 +1,67 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-quota.spec.ts
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2249 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-Aloy4iO7.css    8.57 kB │ gzip:   2.57 kB
+apps/web/dist/assets/index-B_N4xcCn.js   763.49 kB │ gzip: 237.73 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 409ms
+
+Running 1 test using 1 worker
+
+(node:75746) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-quota.spec.ts:3:1 › ARTICLE-QUOTA-013 warns before the limit and retains refused input and named history (8.2s)
+
+
+  1) [chromium] › tests/e2e/article-quota.spec.ts:3:1 › ARTICLE-QUOTA-013 warns before the limit and retains refused input and named history
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('status', { name: '历史容量' })
+    Expected substring: "历史占用较多"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByRole('status', { name: '历史容量' }) with timeout 5000ms
+      - waiting for getByRole('status', { name: '历史容量' })
+
+
+      4 |  const editor=page.getByRole('textbox',{name:'文章正文',exact:true});await expect(editor).toBeEditable();await editor.fill('第一份需要保留的技术判断'.repeat(5));
+      5 |  await expect(page.getByText('已保存',{exact:true})).toBeVisible();
+    > 6 |  await expect(page.getByRole('status',{name:'历史容量'})).toContainText('历史占用较多');
+        |                                                       ^
+      7 |  await page.getByRole('button',{name:'版本历史',exact:true}).click();const panel=page.getByRole('region',{name:'版本历史'});
+      8 |  await panel.getByLabel('版本名称',{exact:true}).fill('保留的命名版');await panel.getByRole('button',{name:'命名版本 #2',exact:true}).click();await expect(panel.getByRole('status')).toContainText('已命名版本 #2');
+      9 |  await editor.fill('新的判断'.repeat(200));
+        at <repo>/tests/e2e/article-quota.spec.ts:6:55
+
+    Error Context: test-results/article-quota-ARTICLE-QUOT-53d57-sed-input-and-named-history-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-quota-ARTICLE-QUOT-53d57-sed-input-and-named-history-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-quota-ARTICLE-QUOT-53d57-sed-input-and-named-history-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/article-quota.spec.ts:3:1 › ARTICLE-QUOTA-013 warns before the limit and retains refused input and named history
+ ELIFECYCLE  Command failed with exit code 1.

@@ -1,0 +1,73 @@
+RUN  v5.1.0 <repo>
+
+ ❯ tests/process/workspace-access.test.ts (4 tests | 4 failed) 1006ms
+   × WORKSPACE-OPEN-001 creates persistent identity and reopens it 242ms
+   × WORKSPACE-LOCK-002 rejects another port and releases ownership after SIGTERM 313ms
+   × WORKSPACE-LOCK-002 rejects another port and releases ownership after SIGKILL 304ms
+   × WORKSPACE-OPEN-001 never replaces an existing non-database file 146ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/process/workspace-access.test.ts > WORKSPACE-OPEN-001 creates persistent identity and reopens it
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/process/workspace-access.test.ts:23:49
+     21| it('WORKSPACE-OPEN-001 creates persistent identity and reopens it',asy…
+     22|  const dir=directory();const first=boot(dir);expect((await first.settl…
+     23|  expect(existsSync(join(dir,'inkling.sqlite'))).toBe(true);
+       |                                                 ^
+     24|  const done=once(first.child,'exit');first.child.kill('SIGTERM');await…
+     25|  const bytes=readFileSync(join(dir,'inkling.sqlite'));expect(bytes.sub…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/process/workspace-access.test.ts > WORKSPACE-LOCK-002 rejects another port and releases ownership after SIGTERM
+ FAIL  tests/process/workspace-access.test.ts > WORKSPACE-LOCK-002 rejects another port and releases ownership after SIGKILL
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/process/workspace-access.test.ts:30:60
+     28| it.each(['SIGTERM','SIGKILL'] as const)('WORKSPACE-LOCK-002 rejects an…
+     29|  const dir=directory();const first=boot(dir);expect((await first.settl…
+     30|  const second=await boot(dir).settled;expect(second.ready).toBe(false)…
+       |                                                            ^
+     31|  const done=once(first.child,'exit');first.child.kill(signal);await do…
+     32|  expect((await boot(dir).settled).ready).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/process/workspace-access.test.ts > WORKSPACE-OPEN-001 never replaces an existing non-database file
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/process/workspace-access.test.ts:36:60
+     34| it('WORKSPACE-OPEN-001 never replaces an existing non-database file',a…
+     35|  const dir=directory();const path=join(dir,'inkling.sqlite');writeFile…
+     36|  const result=await boot(dir).settled;expect(result.ready).toBe(false)…
+       |                                                            ^
+     37| });
+     38|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  08:30:20
+   Duration  1.12s (tests 97%, transform 2%, import 1%)

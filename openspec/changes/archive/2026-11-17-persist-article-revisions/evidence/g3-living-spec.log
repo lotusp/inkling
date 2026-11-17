@@ -1,0 +1,6 @@
+article-persistence: 3 requirements, 13 scenarios; exact added requirement bodies preserved
+article-revisions: 3 requirements, 4 scenarios; exact added requirement bodies preserved
+local-workspace-access: 2 requirements, 5 scenarios; exact added requirement bodies preserved
+local-workbench: renamed 临时正文编辑 to 可恢复正文编辑; modified body matches delta; other 4 requirements / 6 scenarios unchanged
+development-checks: unchanged; 23 change scenarios represented without dropping existing behavior
+Result: passed; exit 0. Automated body comparison plus self-review; not an independent review.

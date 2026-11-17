@@ -1,0 +1,95 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2250 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-Aloy4iO7.css    8.57 kB │ gzip:   2.57 kB
+apps/web/dist/assets/index-BM4uYYtc.js   764.12 kB │ gzip: 237.98 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 253ms
+
+Running 59 tests using 4 workers
+
+(node:81241) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:81239) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:81238) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:81240) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › tests/e2e/article-conflict.spec.ts:23:1 › ARTICLE-CONFLICT-006 cannot replace the editor if preserving its draft fails (5.8s)
+  ✓   2 [chromium] › tests/e2e/article-conflict.spec.ts:4:1 › ARTICLE-CONFLICT-006 choosing the server version retains the conflicted local draft (5.8s)
+  ✓   3 [chromium] › tests/e2e/article-conflict.spec.ts:48:1 › ARTICLE-CONFLICT-006 editing or composing invalidates a prepared merge (6.0s)
+  ✓   4 [chromium] › tests/e2e/article-conflict.spec.ts:81:1 › ARTICLE-CONFLICT-006 a newer remote edit rejects a prepared merge until compared again (7.3s)
+  ✓   7 [chromium] › tests/e2e/article-conflict.spec.ts:198:1 › ARTICLE-CONFLICT-006 identifies a format-only difference (4.0s)
+  ✓   6 [chromium] › tests/e2e/article-conflict.spec.ts:170:1 › ARTICLE-CONFLICT-006 explicitly confirms the edited merge and preserves it after reload (4.3s)
+  ✓   8 [chromium] › tests/e2e/article-conflict.spec.ts:214:1 › ARTICLE-CONFLICT-006 cannot compare from an unresolved failed mutation lookup (3.7s)
+  ✓   5 [chromium] › tests/e2e/article-conflict.spec.ts:123:1 › ARTICLE-CONFLICT-006 a lost merge acknowledgement keeps newer typing and retries once (5.8s)
+  ✓  10 [chromium] › tests/e2e/article-corruption.spec.ts:8:1 › ARTICLE-CORRUPT-012 offers only verified old revision downloads while the damaged current draft stays blocked (1.6s)
+  ✓   9 [chromium] › tests/e2e/article-conflict.spec.ts:267:1 › ARTICLE-CONFLICT-006 compares two real tab versions without replacing the editor (4.0s)
+  ✓  13 [chromium] › tests/e2e/article-discard.spec.ts:78:1 › ARTICLE-CONFLICT-006 discards only the explicitly confirmed recovery copy (2.9s)
+  ✓  11 [chromium] › tests/e2e/article-discard.spec.ts:4:3 › ARTICLE-CONFLICT-006 refuses discard when the source became active after confirmation opened (4.8s)
+  ✓  12 [chromium] › tests/e2e/article-discard.spec.ts:4:3 › ARTICLE-CONFLICT-006 refuses discard when the source became changed after confirmation opened (4.6s)
+  ✓  14 [chromium] › tests/e2e/article-formats.spec.ts:5:1 › ARTICLE-SCHEMA-011 every supported format survives editor load and another save (2.5s)
+  ✓  16 [chromium] › tests/e2e/article-formats.spec.ts:102:1 › WORKBENCH-EDIT-004 title composition defers saves until composition ends (2.0s)
+  ✓  15 [chromium] › tests/e2e/article-formats.spec.ts:56:1 › ARTICLE-SCHEMA-011 an overlong title cannot be acknowledged by an older save (4.6s)
+  ✓  17 [chromium] › tests/e2e/article-ime-races.spec.ts:4:3 › ARTICLE-RACE-005 文章标题 composition survives a late acknowledgement without submitting candidates (3.4s)
+  ✓  18 [chromium] › tests/e2e/article-ime-races.spec.ts:4:3 › ARTICLE-RACE-005 文章正文 composition survives a late acknowledgement without submitting candidates (3.4s)
+  ✓  19 [chromium] › tests/e2e/article-ime-races.spec.ts:57:1 › ARTICLE-LOCAL-007 stopped service explains refresh limitation while preserving input (4.7s)
+  ✓  20 [chromium] › tests/e2e/article-quota.spec.ts:7:1 › ARTICLE-QUOTA-013 warns before the limit and retains refused input and named history (3.8s)
+  ✓  21 [chromium] › tests/e2e/article-recovery-failures.spec.ts:4:1 › ARTICLE-IDB-008 unreadable recovery metadata is retained instead of overwritten (4.0s)
+  ✓  22 [chromium] › tests/e2e/article-recovery-failures.spec.ts:82:3 › ARTICLE-IDB-008 unavailable keeps online saving and offers an exact memory rescue (4.3s)
+  ✓  25 [chromium] › tests/e2e/article-recovery-failures.spec.ts:183:1 › ARTICLE-IDB-008 rescue includes invalid unsaved input rather than the last valid draft (1.1s)
+  ✓  23 [chromium] › tests/e2e/article-recovery-failures.spec.ts:82:3 › ARTICLE-IDB-008 quota keeps online saving and offers an exact memory rescue (3.7s)
+  ✓  26 [chromium] › tests/e2e/article-recovery.spec.ts:4:1 › ARTICLE-LOCAL-007 continuing the server version preserves an unchosen recovery copy (2.5s)
+  ✓  24 [chromium] › tests/e2e/article-recovery-failures.spec.ts:82:3 › ARTICLE-IDB-008 abort keeps online saving and offers an exact memory rescue (3.8s)
+  ✓  27 [chromium] › tests/e2e/article-recovery.spec.ts:36:1 › ARTICLE-LOCAL-007 lost acknowledgement and newer typing recover without replaying a commit (3.6s)
+  ✓  30 [chromium] › tests/e2e/article-recovery.spec.ts:149:1 › ARTICLE-LOCAL-007 a newer server head blocks recovered stale input from overwriting it (2.5s)
+  ✓  28 [chromium] › tests/e2e/article-recovery.spec.ts:85:1 › ARTICLE-LOCAL-007 failed mutation lookup cannot authorize a replay (3.7s)
+  ✓  29 [chromium] › tests/e2e/article-recovery.spec.ts:122:1 › WORKSPACE-AUTH-003 real service restart and new access link preserve offline typing (3.6s)
+  ✓  31 [chromium] › tests/e2e/article-recovery.spec.ts:205:1 › ARTICLE-LOCAL-007 cloned client IDs retain two isolated recovery choices (2.6s)
+  ✓  33 [chromium] › tests/e2e/article-restore.spec.ts:19:1 › REVISION-RESTORE-003 restores a reviewed version as a new head and retains old history (3.6s)
+  ✓  32 [chromium] › tests/e2e/article-recovery.spec.ts:266:1 › ARTICLE-LOCAL-007 an offline draft survives reload and is restored only by choice (5.4s)
+  ✓  34 [chromium] › tests/e2e/article-restore.spec.ts:34:1 › REVISION-CONFLICT-004 typing or composition invalidates a restore confirmation (4.9s)
+  ✓  35 [chromium] › tests/e2e/article-restore.spec.ts:56:1 › REVISION-CONFLICT-004 a remote save rejects restore and keeps local content (4.9s)
+  ✓  36 [chromium] › tests/e2e/article-restore.spec.ts:77:1 › REVISION-CONFLICT-004 a late restore response preserves newer typing and requires reconciliation (3.4s)
+  ✓  37 [chromium] › tests/e2e/article-restore.spec.ts:106:1 › REVISION-RESTORE-003 an unknown restore survives reload and reconciles once (3.9s)
+  ✓  40 [chromium] › tests/e2e/article-save-races.spec.ts:4:1 › ARTICLE-RACE-005 reconciliation preserves newer local input and blocks overwrite (2.0s)
+  ✓  39 [chromium] › tests/e2e/article-restore.spec.ts:161:1 › REVISION-CONFLICT-004 unsaved input blocks restore review; cancel leaves the saved draft intact (3.4s)
+  ✓  38 [chromium] › tests/e2e/article-restore.spec.ts:133:1 › REVISION-RESTORE-003 an uncommitted restore replays its original request after reload (5.2s)
+  ✓  42 [chromium] › tests/e2e/article-save-races.spec.ts:105:1 › ARTICLE-RETRY-003 lost response reconciles a newer remote head before claiming clean (2.0s)
+  ✓  43 [chromium] › tests/e2e/article-save-races.spec.ts:165:1 › ARTICLE-RETRY-003 failed mutation lookup keeps the request unresolved (2.0s)
+  ✓  41 [chromium] › tests/e2e/article-save-races.spec.ts:72:1 › ARTICLE-RACE-005 late acknowledgement never replaces newer local input (3.3s)
+  ✓  44 [chromium] › tests/e2e/article-save.spec.ts:5:1 › ARTICLE-SAVE-002 Chinese draft is saved and reopened with formatting (2.1s)
+  ✓  45 [chromium] › tests/e2e/article-storage-faults.spec.ts:9:5 › readonly › ARTICLE-WRITE-009 real readonly database keeps unsaved input and offers rescue (2.1s)
+  ✓  46 [chromium] › tests/e2e/article-storage-faults.spec.ts:9:5 › full › ARTICLE-WRITE-009 real full database keeps unsaved input and offers rescue (2.1s)
+  ✓  47 [chromium] › tests/e2e/article-versions.spec.ts:3:1 › REVISION-HISTORY-001 saves and names the clicked draft; REVISION-COMPARE-002 compares without changing the editor (2.5s)
+  ✓  48 [chromium] › tests/e2e/article-versions.spec.ts:45:1 › REVISION-HISTORY-001 a lost naming response retries the same revision and does not include later typing (2.3s)
+  ✓  51 [chromium] › tests/e2e/workbench.spec.ts:2:1 › WORKBENCH-START-001 opens the workbench with real service status (647ms)
+  ✓  49 [chromium] › tests/e2e/article-versions.spec.ts:80:1 › REVISION-HISTORY-001 naming flush pins the saved revision while the author continues typing (2.3s)
+  ✓  50 [chromium] › tests/e2e/article-versions.spec.ts:133:1 › REVISION-COMPARE-002 restore preview contains long code lines within a narrow screen (2.3s)
+  ✓  53 [chromium] › tests/e2e/workbench.spec.ts:35:1 › WORKBENCH-EDIT-004 composition events do not submit or reset text (825ms)
+  ✓  54 [chromium] › tests/e2e/workbench.spec.ts:47:1 › WORKBENCH-CHAT-005 focus mode keeps text and never enables AI sending (833ms)
+  ✓  55 [chromium] › tests/e2e/workbench.spec.ts:67:3 › WORKBENCH-HEALTH-006 handles network failure and retry without losing draft (2.2s)
+  ✓  52 [chromium] › tests/e2e/workbench.spec.ts:14:1 › WORKBENCH-EDIT-004 edits Chinese text and basic formatting and preserves it after reload (3.5s)
+  ✓  56 [chromium] › tests/e2e/workbench.spec.ts:67:3 › WORKBENCH-HEALTH-006 handles invalid failure and retry without losing draft (2.5s)
+  ✓  57 [chromium] › tests/e2e/workbench.spec.ts:85:1 › WORKBENCH-EDIT-004 fits narrow screens (2.2s)
+  ✓  59 [chromium] › tests/e2e/workspace-access.spec.ts:5:1 › WORKSPACE-AUTH-003 connects from local link and removes its credential (805ms)
+  ✓  58 [chromium] › tests/e2e/workbench.spec.ts:100:1 › WORKBENCH-EDIT-004 supports lists and code blocks (1.3s)
+
+  59 passed (52.3s)

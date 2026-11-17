@@ -1,0 +1,173 @@
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2240 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.46 kB │ gzip:   0.32 kB
+apps/web/dist/assets/index-bukrPK1k.css    6.46 kB │ gzip:   2.12 kB
+apps/web/dist/assets/index-C8X85v5S.js   741.02 kB │ gzip: 231.50 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 343ms
+
+Running 4 tests using 4 workers
+
+(node:11650) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11649) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11651) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-recovery-failures.spec.ts:50:1 › ARTICLE-IDB-008 rescue includes invalid unsaved input rather than the last valid draft (6.6s)
+  ✘  4 [chromium] › tests/e2e/article-recovery-failures.spec.ts:5:3 › ARTICLE-IDB-008 unavailable keeps online saving and offers an exact memory rescue (9.3s)
+  ✘  2 [chromium] › tests/e2e/article-recovery-failures.spec.ts:5:3 › ARTICLE-IDB-008 quota keeps online saving and offers an exact memory rescue (9.3s)
+  ✘  3 [chromium] › tests/e2e/article-recovery-failures.spec.ts:5:3 › ARTICLE-IDB-008 abort keeps online saving and offers an exact memory rescue (9.3s)
+
+
+  1) [chromium] › tests/e2e/article-recovery-failures.spec.ts:5:3 › ARTICLE-IDB-008 unavailable keeps online saving and offers an exact memory rescue
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: '下载救援稿', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: '下载救援稿', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: '下载救援稿', exact: true })
+
+
+      27 |     await expect(page.getByText('浏览器恢复副本已更新', { exact: true })).not.toBeVisible();
+      28 |     await expect(page.getByRole('button', { name: '重试保存', exact: true })).toBeVisible();
+    > 29 |     await expect(page.getByRole('button', { name: '下载救援稿', exact: true })).toBeVisible();
+         |                                                                            ^
+      30 |     const downloading = page.waitForEvent('download');
+      31 |     await page.getByRole('button', { name: '下载救援稿', exact: true }).click();
+      32 |     const download = await downloading;
+        at <repo>/tests/e2e/article-recovery-failures.spec.ts:29:76
+
+    Error Context: test-results/article-recovery-failures--07a8e-fers-an-exact-memory-rescue-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-recovery-failures--07a8e-fers-an-exact-memory-rescue-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-recovery-failures--07a8e-fers-an-exact-memory-rescue-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/article-recovery-failures.spec.ts:5:3 › ARTICLE-IDB-008 quota keeps online saving and offers an exact memory rescue
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: '下载救援稿', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: '下载救援稿', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: '下载救援稿', exact: true })
+
+
+      27 |     await expect(page.getByText('浏览器恢复副本已更新', { exact: true })).not.toBeVisible();
+      28 |     await expect(page.getByRole('button', { name: '重试保存', exact: true })).toBeVisible();
+    > 29 |     await expect(page.getByRole('button', { name: '下载救援稿', exact: true })).toBeVisible();
+         |                                                                            ^
+      30 |     const downloading = page.waitForEvent('download');
+      31 |     await page.getByRole('button', { name: '下载救援稿', exact: true }).click();
+      32 |     const download = await downloading;
+        at <repo>/tests/e2e/article-recovery-failures.spec.ts:29:76
+
+    Error Context: test-results/article-recovery-failures--a40f5-fers-an-exact-memory-rescue-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-recovery-failures--a40f5-fers-an-exact-memory-rescue-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-recovery-failures--a40f5-fers-an-exact-memory-rescue-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/article-recovery-failures.spec.ts:5:3 › ARTICLE-IDB-008 abort keeps online saving and offers an exact memory rescue
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: '下载救援稿', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: '下载救援稿', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: '下载救援稿', exact: true })
+
+
+      27 |     await expect(page.getByText('浏览器恢复副本已更新', { exact: true })).not.toBeVisible();
+      28 |     await expect(page.getByRole('button', { name: '重试保存', exact: true })).toBeVisible();
+    > 29 |     await expect(page.getByRole('button', { name: '下载救援稿', exact: true })).toBeVisible();
+         |                                                                            ^
+      30 |     const downloading = page.waitForEvent('download');
+      31 |     await page.getByRole('button', { name: '下载救援稿', exact: true }).click();
+      32 |     const download = await downloading;
+        at <repo>/tests/e2e/article-recovery-failures.spec.ts:29:76
+
+    Error Context: test-results/article-recovery-failures--e4ffd-fers-an-exact-memory-rescue-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-recovery-failures--e4ffd-fers-an-exact-memory-rescue-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-recovery-failures--e4ffd-fers-an-exact-memory-rescue-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/article-recovery-failures.spec.ts:50:1 › ARTICLE-IDB-008 rescue includes invalid unsaved input rather than the last valid draft
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: '下载救援稿', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: '下载救援稿', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: '下载救援稿', exact: true })
+
+
+      53 |   await page.getByLabel('文章标题', { exact: true }).fill(title);
+      54 |   await page.getByRole('textbox', { name: '文章正文', exact: true }).fill('尚未通过保存校验的内容');
+    > 55 |   await expect(page.getByRole('button', { name: '下载救援稿', exact: true })).toBeVisible();
+         |                                                                          ^
+      56 |     const downloading = page.waitForEvent('download');
+      57 |   await page.getByRole('button', { name: '下载救援稿', exact: true }).click();
+      58 |   const file = await (await downloading).path();
+        at <repo>/tests/e2e/article-recovery-failures.spec.ts:55:74
+
+    Error Context: test-results/article-recovery-failures--49f1a-r-than-the-last-valid-draft-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-recovery-failures--49f1a-r-than-the-last-valid-draft-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-recovery-failures--49f1a-r-than-the-last-valid-draft-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [chromium] › tests/e2e/article-recovery-failures.spec.ts:5:3 › ARTICLE-IDB-008 unavailable keeps online saving and offers an exact memory rescue
+    [chromium] › tests/e2e/article-recovery-failures.spec.ts:5:3 › ARTICLE-IDB-008 quota keeps online saving and offers an exact memory rescue
+    [chromium] › tests/e2e/article-recovery-failures.spec.ts:5:3 › ARTICLE-IDB-008 abort keeps online saving and offers an exact memory rescue
+    [chromium] › tests/e2e/article-recovery-failures.spec.ts:50:1 › ARTICLE-IDB-008 rescue includes invalid unsaved input rather than the last valid draft

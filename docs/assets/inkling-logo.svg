@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 324 108" color="#35543d" role="img" aria-labelledby="title">
+  <title id="title">Inkling</title>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      svg { color: #a5c3a7; }
+    }
+  </style>
+  <g transform="translate(21 22)" fill="none" stroke="currentColor" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 46c.3-9.4 3.8-17.9 10.5-24.6C35.1 14.8 44.3 10.5 54 10c-.4 8.3-2.7 15.3-7 21l-10.5.5 6 4.6C36.6 42.9 27.7 46 18 46Z"/>
+    <path d="m8 56 34-34"/>
+  </g>
+  <text x="99" y="69" fill="currentColor" font-family="Georgia, 'Times New Roman', serif" font-size="56" font-weight="700" textLength="196" lengthAdjust="spacingAndGlyphs">Inkling</text>
+</svg>

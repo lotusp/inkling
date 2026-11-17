@@ -1,0 +1,57 @@
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2240 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.46 kB │ gzip:   0.32 kB
+apps/web/dist/assets/index-bukrPK1k.css    6.46 kB │ gzip:   2.12 kB
+apps/web/dist/assets/index-D4VVvJNU.js   739.96 kB │ gzip: 231.24 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 282ms
+
+Running 1 test using 1 worker
+
+(node:9379) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-recovery.spec.ts:4:1 › ARTICLE-LOCAL-007 continuing the server version preserves an unchosen recovery copy (30.1s)
+
+
+  1) [chromium] › tests/e2e/article-recovery.spec.ts:4:1 › ARTICLE-LOCAL-007 continuing the server version preserves an unchosen recovery copy
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '保留副本，使用服务器版本', exact: true })
+
+
+      10 |   await page.unroute('**/api/articles/*/content');
+      11 |   await page.reload();
+    > 12 |   await page.getByRole('button', { name: '保留副本，使用服务器版本', exact: true }).click();
+         |                                                                         ^
+      13 |   await expect(page.getByRole('region', { name: '待恢复草稿' })).not.toBeVisible();
+      14 |   await expect(editor).toBeEmpty();
+      15 |   await editor.fill('从服务器稿件继续形成的新想法');
+        at <repo>/tests/e2e/article-recovery.spec.ts:12:73
+
+    Error Context: test-results/article-recovery-ARTICLE-L-5f6be-s-an-unchosen-recovery-copy-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-recovery-ARTICLE-L-5f6be-s-an-unchosen-recovery-copy-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-recovery-ARTICLE-L-5f6be-s-an-unchosen-recovery-copy-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/article-recovery.spec.ts:4:1 › ARTICLE-LOCAL-007 continuing the server version preserves an unchosen recovery copy

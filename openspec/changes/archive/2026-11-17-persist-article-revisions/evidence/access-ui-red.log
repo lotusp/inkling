@@ -1,0 +1,54 @@
+[WebServer] (node:80373) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:80391) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] (node:80400) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:80449) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/workspace-access.spec.ts:4:1 › WORKSPACE-AUTH-003 connects from local link and removes its credential (5.7s)
+
+
+  1) [chromium] › tests/e2e/workspace-access.spec.ts:4:1 › WORKSPACE-AUTH-003 connects from local link and removes its credential
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('工作空间已连接', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('工作空间已连接', { exact: true }) with timeout 5000ms
+      - waiting for getByText('工作空间已连接', { exact: true })
+
+
+       7 |  const access=await request.post('/api/local/access',{headers:{'x-inkling-local-secret':info.secret},data:{}});expect(access.ok()).toBe(true);
+       8 |  const body=await access.json() as {url:string};await page.goto(body.url);
+    >  9 |  await expect(page.getByText('工作空间已连接',{exact:true})).toBeVisible();expect(new URL(page.url()).hash).toBe('');
+         |                                                       ^
+      10 |  await page.reload();await expect(page.getByText('工作空间已连接',{exact:true})).toBeVisible();
+      11 |  const duplicate=await request.post('/api/auth/exchange',{headers:{origin:info.origin},data:{token:new URLSearchParams(new URL(body.url).hash.slice(1)).get('access')}});expect(duplicate.status()).toBe(401);
+      12 | });
+        at <repo>/tests/e2e/workspace-access.spec.ts:9:55
+
+    Error Context: test-results/workspace-access-WORKSPACE-ad54f--and-removes-its-credential-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/workspace-access-WORKSPACE-ad54f--and-removes-its-credential-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/workspace-access-WORKSPACE-ad54f--and-removes-its-credential-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/workspace-access.spec.ts:4:1 › WORKSPACE-AUTH-003 connects from local link and removes its credential

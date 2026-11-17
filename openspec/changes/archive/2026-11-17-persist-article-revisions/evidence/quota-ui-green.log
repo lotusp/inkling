@@ -1,0 +1,44 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-quota.spec.ts tests/e2e/article-recovery.spec.ts
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2250 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-Aloy4iO7.css    8.57 kB │ gzip:   2.57 kB
+apps/web/dist/assets/index-BM4uYYtc.js   764.12 kB │ gzip: 237.98 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 376ms
+
+Running 8 tests using 4 workers
+
+(node:76419) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:76421) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:76420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:76418) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › tests/e2e/article-recovery.spec.ts:4:1 › ARTICLE-LOCAL-007 continuing the server version preserves an unchosen recovery copy (3.9s)
+  ✓  1 [chromium] › tests/e2e/article-quota.spec.ts:7:1 › ARTICLE-QUOTA-013 warns before the limit and retains refused input and named history (5.1s)
+  ✓  4 [chromium] › tests/e2e/article-recovery.spec.ts:36:1 › ARTICLE-LOCAL-007 lost acknowledgement and newer typing recover without replaying a commit (5.2s)
+  ✓  3 [chromium] › tests/e2e/article-recovery.spec.ts:85:1 › ARTICLE-LOCAL-007 failed mutation lookup cannot authorize a replay (5.2s)
+  ✓  6 [chromium] › tests/e2e/article-recovery.spec.ts:149:1 › ARTICLE-LOCAL-007 a newer server head blocks recovered stale input from overwriting it (2.6s)
+  ✓  5 [chromium] › tests/e2e/article-recovery.spec.ts:122:1 › WORKSPACE-AUTH-003 real service restart and new access link preserve offline typing (3.7s)
+  ✓  7 [chromium] › tests/e2e/article-recovery.spec.ts:205:1 › ARTICLE-LOCAL-007 cloned client IDs retain two isolated recovery choices (2.7s)
+  ✓  8 [chromium] › tests/e2e/article-recovery.spec.ts:266:1 › ARTICLE-LOCAL-007 an offline draft survives reload and is restored only by choice (5.5s)
+
+  8 passed (15.0s)

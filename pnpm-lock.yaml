@@ -14,9 +14,21 @@ importers:
       '@fission-ai/openspec':
         specifier: 1.16.1
         version: 1.16.1(@types/node@22.20.5)
+      '@inkling/adapters':
+        specifier: workspace:*
+        version: link:packages/adapters
+      '@inkling/contracts':
+        specifier: workspace:*
+        version: link:packages/contracts
+      '@inkling/core':
+        specifier: workspace:*
+        version: link:packages/core
       '@playwright/test':
         specifier: 1.65.1
         version: 1.65.1
+      '@types/better-sqlite3':
+        specifier: 9.6.0
+        version: 9.6.0
       '@types/node':
         specifier: 22.20.5
         version: 22.20.5
@@ -68,9 +80,18 @@ importers:
       '@fastify/static':
         specifier: 10.1.11
         version: 10.1.11
+      '@inkling/adapters':
+        specifier: workspace:*
+        version: link:../../packages/adapters
       '@inkling/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@inkling/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      better-sqlite3:
+        specifier: 13.2.0
+        version: 13.2.0
       fastify:
         specifier: 5.12.8
         version: 5.12.8
@@ -99,11 +120,29 @@ importers:
         specifier: 19.3.1
         version: 19.3.1(react@19.3.1)
 
+  packages/adapters:
+    dependencies:
+      '@inkling/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@inkling/core':
+        specifier: workspace:*
+        version: link:../core
+      better-sqlite3:
+        specifier: 13.2.0
+        version: 13.2.0
+
   packages/contracts:
     dependencies:
       zod:
         specifier: 4.6.7
         version: 4.6.7
+
+  packages/core:
+    dependencies:
+      '@inkling/contracts':
+        specifier: workspace:*
+        version: link:../contracts
 
 packages:
 
@@ -889,6 +928,9 @@ packages:
   '@tybys/wasm-util@0.10.5':
     resolution: {integrity: sha512-dOGOPxlaNV+G046mZzN+9C0dAcQZeSKcXiVaM0TYy/LM4ttTmgSBDxYfovcYI8Em3+eAbiAYpvWLOv8+ZVRJKA==}
 
+  '@types/better-sqlite3@9.6.0':
+    resolution: {integrity: sha512-ZEEwBSgMu7GYJOynoagg5X9JbxfL6dTJDsgViJIqh67jV44kyOr9RXfmFjLK5rzC4MWssP06t9hu/JwGDnUbCg==}
+
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
 
@@ -1076,6 +1118,10 @@ packages:
     resolution: {integrity: sha512-QYph+vfurmaxhNwi9FprfmtkT5cx2Keg8FzZ0vnjO8ukscIybVyZGMFwdllKGlTI6qyU8ck43OM9UXh+IFJihQ==}
     engines: {node: '>=6.0.0'}
     hasBin: true
+
+  better-sqlite3@13.2.0:
+    resolution: {integrity: sha512-Z8Q/9x/uNyKxA1v4FNodyItRVRw1TeKBrmj32JhxhR0ceNcBY+wMobt/Bv7M7TzwPAXjnZRtNaEsATnUZSKWZQ==}
+    engines: {node: '>=22'}
 
   brace-expansion@5.0.13:
     resolution: {integrity: sha512-Vh3dmFbc4wZeox7M9I/0L9GfFd83Su4+yCck/OF9Gi/P/dAHn0RT7X4K9R7gMNMhDck3DvhR6QXsnQdjjgwNvQ==}
@@ -1660,6 +1706,10 @@ packages:
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
+
+  node-addon-api@8.9.2:
+    resolution: {integrity: sha512-VijLXbi3UACN69I0JVXJsX4tjACjNoQDgv2gTF6sx2wWEi8tkSg2eX8p5gSIFi8z2+DL3oHmY6OyKce38SDolg==}
+    engines: {node: ^18 || ^20 || >= 21}
 
   node-releases@2.0.64:
     resolution: {integrity: sha512-zAPCKqMcnqs2nGy6nlkm7JduFseiBJy3EXHGLh+8pFR+TxGCBxxiEN21+UROU5CKwX/f4TlUcYjiM+vs/tsyxw==}
@@ -2932,6 +2982,10 @@ snapshots:
       tslib: 2.9.1
     optional: true
 
+  '@types/better-sqlite3@9.6.0':
+    dependencies:
+      '@types/node': 22.20.5
+
   '@types/chai@5.2.3':
     dependencies:
       '@types/deep-eql': 4.0.2
@@ -3122,6 +3176,10 @@ snapshots:
   balanced-match@4.0.4: {}
 
   baseline-browser-mapping@2.11.37: {}
+
+  better-sqlite3@13.2.0:
+    dependencies:
+      node-addon-api: 8.9.2
 
   brace-expansion@5.0.13:
     dependencies:
@@ -3685,6 +3743,8 @@ snapshots:
   nanoid@3.3.20: {}
 
   natural-compare@1.4.0: {}
+
+  node-addon-api@8.9.2: {}
 
   node-releases@2.0.64: {}
 

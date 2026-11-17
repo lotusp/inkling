@@ -5,17 +5,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,
   reporter: 'list',
-  use: { baseURL: 'http://127.0.0.1:4329', trace: 'retain-on-failure' },
+  globalSetup: './tests/e2e/build.ts',
+  use: { trace: 'retain-on-failure' },
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'], channel: 'chromium' },
     },
   ],
-  webServer: {
-    command: 'pnpm build && PORT=4329 node apps/server/dist/main.js',
-    url: 'http://127.0.0.1:4329/api/health',
-    reuseExistingServer: false,
-    timeout: 60000,
-  },
 });

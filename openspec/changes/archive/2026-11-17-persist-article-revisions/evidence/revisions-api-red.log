@@ -1,0 +1,58 @@
+
+> inkling@0.1.0 test <repo>
+> vitest run tests/api/article-revisions.test.ts
+
+
+ RUN  v5.1.0 <repo>
+
+ ❯ tests/api/article-revisions.test.ts (2 tests | 2 failed) 176ms
+   × REVISION-HISTORY-001 lists filtered history and stable pages; names replay without changing content 145ms
+   × WORKSPACE-PATH-005 revision reads and names reject foreign IDs, invalid bounds and unauthorized writes 29ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/article-revisions.test.ts > REVISION-HISTORY-001 lists filtered history and stable pages; names replay without changing content
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/article-revisions.test.ts:65:27
+     63|   }
+     64|   const list = await app.inject({url:path+'/revisions?limit=2&all=true…
+     65|   expect(list.statusCode).toBe(200);
+       |                           ^
+     66|   const page = list.json<{items:{revisionId:string;seq:number;name:str…
+     67|   expect(page.items.map(x=>x.seq)).toEqual([4,3]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/api/article-revisions.test.ts > WORKSPACE-PATH-005 revision reads and names reject foreign IDs, invalid bounds and unauthorized writes
+AssertionError: expected 404 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 404
+
+ ❯ tests/api/article-revisions.test.ts:90:73
+     88|   expect((await app.inject({url:path,headers:{host:headers.host}})).st…
+     89|   for (const query of ['limit=101','limit=0','beforeSeq=-1','all=maybe…
+     90|     expect((await app.inject({url:path+'?'+query,headers})).statusCode…
+       |                                                                         ^
+     91|   expect((await app.inject({url:`/api/articles/${randomUUID()}/revisio…
+     92|   for(const name of ['', ' '.repeat(3),'中'.repeat(81)])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  11:21:09
+   Duration  471ms (tests 46%, import 42%, transform 11%, worker 1%)
+
+ ELIFECYCLE  Test failed. See above for more details.

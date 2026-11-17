@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
-  Feather,
   Bold,
   Heading2,
   List,
@@ -17,13 +16,23 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { useHealth } from './use-health';
+import { useAccess } from './access';
+import { useArticle } from './use-article';
+import { RecoveryPanel } from './RecoveryPanel';
+import { ConflictPanel } from './ConflictPanel';
+import { VersionPanel } from './VersionPanel';
+import { DamagedArticlePanel } from './DamagedArticlePanel';
+import { HistoryCapacity } from './HistoryCapacity';
 import './styles.css';
 
 export function App() {
   const [title, setTitle] = useState('');
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const health = useHealth();
+  const access = useAccess();
   const editor = useEditor({
+    editable: false,
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3] },
@@ -41,6 +50,12 @@ export function App() {
       },
     },
   });
+  const article = useArticle(
+    editor,
+    title,
+    setTitle,
+    access.status === 'connected',
+  );
   const format = useEditorState({
     editor,
     selector: ({ editor }) => ({
@@ -51,7 +66,7 @@ export function App() {
       length: editor?.getText().replace(/\s/g, '').length ?? 0,
     }),
   });
-  const hasText = Boolean(title.trim() || format?.length);
+  const hasText = article.dirty;
   useEffect(() => {
     if (!hasText) return;
     const confirmLeave = (event: BeforeUnloadEvent) => {
@@ -91,7 +106,7 @@ export function App() {
     <div className="workbench">
       <header className="app-header">
         <div className="brand">
-          <Feather size={22} aria-hidden="true" />
+          <img src="/inkling-mark.svg" width={26} height={26} alt="" />
           <span>Inkling</span>
         </div>
         <div className="header-divider" />
@@ -114,13 +129,20 @@ export function App() {
         <main className="document-pane">
           <div className="format-bar" role="toolbar" aria-label="正文格式">
             <span className="document-label">草稿</span>
+            <button
+              disabled={!article.snapshot}
+              aria-expanded={historyOpen}
+              onClick={() => setHistoryOpen((x) => !x)}
+            >
+              版本历史
+            </button>
             <div className="format-actions">
               {tools.map(({ label, Icon, active, run }) => (
                 <button
                   key={label}
                   aria-label={label}
                   aria-pressed={active ?? false}
-                  disabled={!editor}
+                  disabled={!editor || !article.editable}
                   onClick={run}
                 >
                   <Icon size={17} aria-hidden="true" />
@@ -130,6 +152,12 @@ export function App() {
             <span className="format-note">慢慢想，清楚地写。</span>
           </div>
           <article className="writing-sheet">
+            {article.status === 'empty' && (
+              <button onClick={() => void article.create()}>开始写作</button>
+            )}
+            {!article.snapshot && access.status !== 'connected' && (
+              <p>请先打开终端提供的本机访问链接。</p>
+            )}
             <div className="document-eyebrow">
               <span />
               从一个值得追问的问题开始
@@ -140,7 +168,23 @@ export function App() {
               placeholder="给这个想法一个标题"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              maxLength={200}
+              onCompositionStart={article.compositionStart}
+              onCompositionEnd={article.compositionEnd}
+              disabled={!article.editable}
+              maxLength={400}
+            />
+            {article.snapshot && <HistoryCapacity article={article.snapshot} />}
+            {article.damagedArticleId && (
+              <DamagedArticlePanel articleId={article.damagedArticleId} />
+            )}
+            <RecoveryPanel
+              choices={article.recoveries}
+              busy={article.recovering}
+              message={article.message}
+              recover={article.recover}
+              keepServer={article.keepServer}
+              discard={article.discard}
+              clientId={article.clientId}
             />
             <div className={`editor-wrap ${format?.length ? '' : 'is-empty'}`}>
               <EditorContent editor={editor} />
@@ -150,14 +194,99 @@ export function App() {
                 </div>
               )}
             </div>
+            {article.hasConflict && (
+              <div className="conflict-actions">
+                <button
+                  disabled={article.conflictBusy}
+                  onClick={() => void article.compare()}
+                >
+                  {article.conflictBusy ? '正在核对冲突…' : '查看冲突'}
+                </button>
+                {article.conflictMessage && (
+                  <p role="alert">{article.conflictMessage}</p>
+                )}
+                <button
+                  disabled={article.conflictBusy || article.recovering}
+                  onClick={() => void article.keepServer()}
+                >
+                  保留本页草稿，使用服务器版本
+                </button>
+              </div>
+            )}
+            {article.comparison && article.document && (
+              <ConflictPanel
+                local={article.document}
+                server={article.comparison}
+                canMerge={article.canMerge}
+                prepared={article.mergePrepared}
+                prepare={article.prepareMerge}
+                confirm={article.confirmMerge}
+              />
+            )}
+            {historyOpen && article.snapshot && (
+              <VersionPanel
+                article={article.snapshot}
+                flush={article.flushForVersion}
+                reviewRestore={article.reviewRestore}
+                confirmRestore={article.confirmRestore}
+              />
+            )}
             <div className="document-meta">
               <span>{format?.length ?? 0} 字</span>
               <span>中文写作</span>
             </div>
-            <div className="save-notice">
-              <CircleAlert size={15} aria-hidden="true" />
-              <span>尚未保存 · 刷新后内容会清空</span>
+            <div
+              className={`save-notice ${article.status === 'clean' ? 'is-saved' : ''}`}
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {article.status === 'clean' ? (
+                <CircleCheck size={15} aria-hidden="true" />
+              ) : (
+                <CircleAlert size={15} aria-hidden="true" />
+              )}
+              <span>
+                {article.status === 'clean'
+                  ? '已保存'
+                  : article.status === 'saving'
+                    ? '保存中…'
+                    : article.status === 'loading'
+                      ? '正在打开稿件…'
+                      : article.status === 'empty'
+                        ? '创建稿件后开始写作'
+                        : '尚未保存'}
+              </span>
+              {(article.status === 'error' ||
+                article.status === 'conflict') && (
+                <>
+                  <span>{article.message}</span>
+                  {article.status === 'error' && (
+                    <button onClick={() => void article.save()}>
+                      重试保存
+                    </button>
+                  )}
+                </>
+              )}
             </div>
+            {article.snapshot &&
+              article.recoveries.length === 0 &&
+              article.backup !== 'idle' && (
+                <div className="backup-notice" aria-live="polite">
+                  {article.backup === 'durable'
+                    ? '浏览器恢复副本已更新'
+                    : article.backup === 'pending'
+                      ? '正在更新浏览器恢复副本…'
+                      : '浏览器恢复副本不可用。未保存内容仅留在本页，请先重试保存或下载救援稿。'}
+                </div>
+              )}
+            {article.snapshot &&
+              article.recoveries.length === 0 &&
+              (article.dirty || article.backup === 'unavailable') && (
+                <div className="rescue-actions">
+                  <button onClick={article.download}>下载救援稿</button>
+                  <span>包含正文与恢复信息的 JSON，不含访问凭证。</span>
+                </div>
+              )}
           </article>
         </main>
         <aside className="chat-pane" aria-label="写作讨论" hidden={focused}>
@@ -216,7 +345,22 @@ export function App() {
             重新连接
           </button>
         )}
-        <span className="footer-note">你的想法，由你决定。</span>
+        <span className="footer-note">
+          {access.status === 'connected'
+            ? '工作空间已连接'
+            : access.status === 'checking'
+              ? '正在连接工作空间…'
+              : '工作空间未连接'}
+        </span>
+        {access.status === 'disconnected' && (
+          <button
+            className="retry-button"
+            onClick={access.reconnect}
+            title="在终端运行 corepack pnpm local:access，打开输出的本机访问链接。"
+          >
+            连接工作空间
+          </button>
+        )}
       </footer>
     </div>
   );

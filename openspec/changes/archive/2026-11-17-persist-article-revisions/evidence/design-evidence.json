@@ -1,0 +1,114 @@
+{
+  "kind": "design-experiment-evidence",
+  "changeId": "persist-article-revisions",
+  "date": "2026-11-16",
+  "scope": "Isolated design experiments and G1 planning validation only. No product implementation or G2 acceptance.",
+  "experiments": [
+    {
+      "name": "storage-comparison",
+      "command": "INKLING_POC_DRIVER=<isolated-install>/node_modules/better-sqlite3 node openspec/changes/persist-article-revisions/poc/storage-comparison.mjs",
+      "exitCode": 0,
+      "checksPassed": 17,
+      "log": "storage-poc.log"
+    },
+    {
+      "name": "document-roundtrip",
+      "command": "node openspec/changes/persist-article-revisions/poc/document-roundtrip.mjs",
+      "exitCode": 0,
+      "checksPassed": 4,
+      "log": "document-poc.log"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "docs/decisions/0004-article-storage-and-revisions.md",
+      "sha256": "a5253460c70f9e59ebe06b2a4a68685cf2a8820e80b3c95eb63747e06b88bacb"
+    },
+    {
+      "path": "docs/validation/article-storage-poc.md",
+      "sha256": "ccee37915e822cdbc9c5211cf76ffe1c84592c1d77f343e67abdd02d154b05c6"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/.openspec.yaml",
+      "sha256": "c2bb431aa55054aacccab1ed5377c26e7e42a37d7cdd430cd31dba95cc638848"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/acceptance.md",
+      "sha256": "685e0720d05db807e8ef15897092b0c47d260aa66e93e6449452da1974a35b27"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/design.md",
+      "sha256": "332f1ab8a532547278a3a9f9f19a22454d0949169e88630250aa0da764371625"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/plan-review.md",
+      "sha256": "74f1f33f8ff793f315c9b1eabda8138d1561350b769a942f623abd3bb2090415"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/poc/README.md",
+      "sha256": "b17620625f0a34c295ce83f064797a635fee501f98ea017c36a9760caa33af87"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/poc/document-roundtrip.mjs",
+      "sha256": "6b967ff5e9a291e864509e1f106b9f7cf8bc754bd916dd4da850470e85372775"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/poc/package-lock.json",
+      "sha256": "3dc18d6a8378414761aed3454c22bce2050f1a0602062473f841563c452429ab"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/poc/package.json",
+      "sha256": "be41ee6a073235d058bd96f03687289e839a3fe19ed0b333446b7ec1eff128fe"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/poc/storage-comparison.mjs",
+      "sha256": "32da4b7c70e99095faa0601cd26acb291de3e04f66ac8e62a81d9728053d0a26"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/proposal.md",
+      "sha256": "ca8bfbdba96fc22c92808c7c0c35099a55979a8fdb8275483554955c01136953"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/specs/article-persistence/spec.md",
+      "sha256": "9b92599d0f78ce7f4ec55e423b5c65e9280389df5a71aa1fbdacbdbfaaeb55e6"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/specs/article-revisions/spec.md",
+      "sha256": "adce97afc5a938d322fd6dc786c6e438590a287faeb900dcb8358e1aebc4dad1"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/specs/local-workbench/spec.md",
+      "sha256": "044a5025c56ffdbed3b0a1ed36740fcbe1f8ce310fc9bea6916c3230b18ecb93"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/specs/local-workspace-access/spec.md",
+      "sha256": "42eb26e58a23c8ddad2198ecede10519bab31901fd283e370dee40430286a9b5"
+    },
+    {
+      "path": "openspec/changes/persist-article-revisions/tasks.md",
+      "sha256": "4ad6661f92c03c198a7475c06d8826a9f0b83f3f51215d9e17dcad150f594c92"
+    }
+  ],
+  "logs": [
+    {
+      "path": "document-poc.log",
+      "sha256": "633ecca934e9547cd97e065905193105e179256c7b357d1dce56e6f42e3f21da"
+    },
+    {
+      "path": "plan-validation.log",
+      "sha256": "954c98e54b760ba1190a1bf2eb3af3cc8b6cdf368aa686110c37910d7829763a"
+    },
+    {
+      "path": "storage-poc.log",
+      "sha256": "a1d6d5dd7c59f83d24e29f9957b7d339c65bc5f66df7d925f1ae8da82e6962f1"
+    }
+  ],
+  "notValidated": [
+    "Product UI/API persistence",
+    "Native IME",
+    "Actual power loss",
+    "Physical disk failure",
+    "Linux native-driver installation",
+    "Backup/restore"
+  ]
+}

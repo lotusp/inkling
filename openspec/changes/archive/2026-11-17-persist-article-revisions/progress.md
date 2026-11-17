@@ -1,0 +1,63 @@
+# 实施进度
+
+更新：2026-11-17。当前 change：persist-article-revisions。G1、G2 已通过；G3 尚未执行。
+
+## 已完成步骤
+
+- 规范：每个可验证步骤通过后立即 commit；提交 abce09d。
+- 设计：存储 POC、ADR、详细设计、23 个验收场景；提交 a34fc8c。
+- 1.1：正式 SQLite 驱动和工作空间初始化/身份、格式检查、独占连接、关闭与崩溃释放；拒绝已有非数据库、新版数据库和符号链接。4 个有效 Red 后实现，新增边界加基线回归共 11 项进程检查通过，日志 evidence/workspace-red.log、workspace-green.log。类型、lint、架构和构建通过。
+
+- 1.2：一次性启动链接、会话/CSRF、Origin 和受保护工作空间读取、本机重新获取链接、前端凭证交换/清除。4 个 API Red 和 1 个 UI Red 后，20 项 API/进程回归与 1 项浏览器验收通过；类型、lint、架构检查通过。持久草稿尚未实现，重启后副本联验留在 3.1。
+
+- 1.3：运行/数据目录/重新接入说明已更新；verify 全部通过（25 项 API/进程/架构 + 10 项 Harness），9 项浏览器回归通过。回归发现重连按钮名称相近，已区分“重新连接”与“连接工作空间”，未放宽旧测试断言。
+
+- 2.1：正文契约、core 用例、SQLite 修订/head/请求原子写入、受保护文章 API、首次创建与自动保存/重开 UI 已接通。有效 UI Red 后，3 项存储集成和 3 项 HTTP 验收通过；verify 31 项应用/架构测试及 10 项 Harness 通过，完整 E2E 10 项通过。修正初次加载的多余 dirty 状态后，重跑受影响的 9 项 E2E 通过。浏览器验收改为每个测试使用独立服务和目录。
+
+- 2.2：重试前查询原 mutation 并核对当前 head，查询失败不视为未提交；保留保存期间的新输入，冲突后阻止普通保存覆盖。2 个有效 UI Red 后修复；10 项 API/存储检查、5 项保存 E2E 通过（reconcile-*.log），类型和 lint 通过。后端既有事务去重记录为 baseline-pass。
+
+- 2.3a：补齐当前节点/marks、Unicode 标题、结构/字节/节点数/深度校验及组合输入自动检查。有效 Red 暴露行内 code 不兼容组合和标题组合输入仍提交，均修复。verify 通过（38 项应用/架构、10 项 Harness），17 项完整 E2E 通过；保存提示视觉调整后重跑 8 项工作台回归并查看桌面/窄屏截图，通过。日志 format-*.log；真实 IME 单列 2.3b，未勾选。
+
+- 3.1.1：IndexedDB strict 事务完成后确认浏览器副本；保存前持久化不可变请求，编辑只更新最新 draft；Web Locks 隔离复制标签的 client。刷新后显式选择并核对恢复，副本复制成功后才清理非活动来源。有效 UI Red 后，恢复/双标签及保存竞态/格式的 10 项浏览器验收通过，类型、lint、架构通过。日志 recovery-red.log、recovery-first-green.log。
+
+- 3.1.2：实际服务停机后继续输入，重启同端口并重新接入；补原页面 hash 链接认证及保留未选择副本继续编辑服务器稿件。响应丢失后的最新输入恢复、查询失败、旧基线冲突及复制标签均有真实浏览器验收。核对路径 baseline-pass；新链接处理与保留副本分支有效 Red 后实现，12 项浏览器验收通过，类型/lint 通过。日志 recovery-auth-red.log、recovery-choice-red.log、recovery-reconcile-baseline.log、recovery-reconcile-green.log。
+
+- 3.1.3：副本不可用/配额异常/事务 abort 均明确降级，在线保存仍可用；救援 JSON 包含最新内存输入（含非法长标题）与基线/未决请求，无凭证。未知副本元数据禁止覆盖；未保存离开提示已验收。4 个救援入口 Red 后实现，新增未知格式保留 baseline-pass；verify 通过（38 项应用/架构 + 10 项 Harness），完整 E2E 29 项通过。日志 recovery-rescue-red.log、recovery-rescue-green.log、recovery-checks.log、recovery-all-green.log。配额/访问拒绝是浏览器原生 API 边界注入，不声称填满真实磁盘。桌面/窄屏恢复与失败状态已看图；窄屏 resize 后曾出现截图重复绘制，DOM 单实例检查及滚动重绘后的上下视口正常，单场景复核通过（recovery-visual.log）。
+
+- 3.2.1：真实双标签冲突比较已实现，独立只读渲染两份结构化正文，标明文字/纯格式差异；主编辑器保持输入，核对原 mutation 失败时不给出可合并基线。有效入口 Red 后，3 项比较验收与保存/恢复回归共 14 项 E2E 通过，类型/lint/架构通过；日志 conflict-compare-red.log、conflict-compare-green.log。
+
+- 3.2.2：合并固定已查看版本、本地序号与内容，准备后继续输入/组合输入会使确认失效；确认进入原保存协议。有效入口 Red 后，合并成功、再次服务端冲突、确认失效、响应丢失继续输入和保存回归共 11 项 E2E 通过，类型/lint 通过；日志 conflict-merge-red.log、conflict-merge-green.log。
+
+- 3.2.3：放弃指定副本需二次确认；确认后记录变化或来源标签重新活动时拒绝删除。冲突中切换服务器稿前必须成功保留本页副本，失败则保留编辑器内容。有效放弃入口 Red 后，12 项针对性 E2E 通过；完整 verify 通过（38 项应用/架构 + 10 项 Harness），完整 E2E 41 项通过。日志 conflict-discard-red.log、conflict-discard-green.log、conflict-checks.log、conflict-all-green.log。已查看桌面/375px 窄屏冲突比较及桌面放弃确认截图，布局正常，窄屏无横向溢出。自检确认删除在同一 IDB 事务比较完整快照，并在持有来源锁时执行；取消不删除，服务器历史不受影响。
+
+- 3.3：标题/正文组合输入期间到达旧保存响应，保持焦点和新输入，候选期间不提交也不显示 clean，结束后保存并刷新保留；实际停机提示及重启后恢复已联验。已有行为 baseline-pass，7 项 E2E 通过，类型/lint 通过。桌面/375px 离线提示已看图，保存/冲突视觉沿用 3.2 全回归结果。日志 ime-races-baseline.log。测试曾误把 hash 重新接入当成刷新、并在窄屏查找被布局隐藏的连接提示，修正测试操作后通过，未记作产品 Red。真实候选窗由用户稍后检查，2.3b 保留未完成。
+
+- 4.1a：分页/筛选历史、指定版本读取及命名/重命名 API 已接通；读取历史校验正文 hash，命名与 mutation 同事务。两个真实 HTTP 404 Red 后，12 项 API/存储验收及回归通过，类型/lint/依赖边界通过。覆盖分页边界、未授权、跨文章/不存在版本、名称 Unicode 上限、旧命名重试不撤销后续重命名。日志 revisions-api-red.log、revisions-api-green.log。
+
+- 4.1b：历史/命名 UI、只读两版本比较已接通。有效缺失入口 Red 后，版本、冲突和 IME 共 14 项 E2E 通过；3 项差异单元检查通过，类型/lint 通过，请求清理整理后 2 项版本验收再次通过。桌面/375px 截图已查看，无横向溢出。名称固定 flush 结果，丢失响应重试不换目标/id；大稿差异使用有界算法。日志 revisions-ui-red.log、revisions-ui-green.log、revisions-ui-final.log、revisions-diff-green.log。
+
+- 4.2：恢复接口与确认预览已接通，恢复与保存共用事务/CAS/去重和浏览器串行请求；新增修订记录来源/父版本，保留历史。接口 404 与 5 个 UI 缺失入口 Red 后，9 项接口/存储测试、12 项恢复/离线 E2E 通过；补测未提交恢复原样重试、取消/未保存阻断后，14 项恢复/副本故障/版本 E2E 通过，类型/lint 通过。覆盖本地输入/组合输入失效、远端冲突、迟到响应保留新输入、丢失响应刷新后核对。日志 restore-api-red/green.log、restore-ui-red/green.log、restore-boundaries-green.log。副本格式升为 v2 并兼容读 v1，避免旧前端误解释恢复意图；SQLite schema 无变化。
+
+- 4.3：可控时钟验证初始/首次变化/五分钟边界/恢复的标记，无变化保存不重置计时，命名不改自动标记；命名等待时新输入不改变目标，均 baseline-pass。窄屏长代码恢复预览有效 Red 后增加换行；完整回归首次发现测试未等预览完成就开始组合输入，补等待后 55 项 E2E 通过（revisions-full-first.log 保留首次结果）。大段整块增删比较自检补有界表分配保护及内容完整性单测，随后 verify 通过（46 项应用/架构 + 10 项 Harness），4 项受影响版本 E2E 再次通过。桌面/窄屏历史、确认与长代码预览均已看图。日志 revision-markers-baseline.log、revision-naming-baseline.log、restore-code-red.log、revisions-all-green.log、revisions-final-checks.log、revision-final-affected.log。手工候选窗指南在 local-development.md，用户约定稍后执行。
+
+- 2.3b（2026-11-17 补验）：用户确认此前三项真实中文输入法手工检查全部通过，包括候选期间不提前提交、迟到响应不替换输入、继续输入后旧恢复确认失效。记录 evidence/manual-ime.md；具体浏览器/输入法版本未提供，结论限于本次实际操作环境。
+
+- 5.1：9 项真实存储/进程验收与 2 项故障 UI 验收 baseline-pass，类型/lint/依赖边界通过。只读使用 SQLite readonly 连接；容量耗尽使用真实 max_page_count 引发 SQLITE_FULL（不是填满 macOS 磁盘）；临时 SQL trigger 注入异常和检查点，外部 SIGKILL 覆盖 revision/head/mutation/COMMIT 后四个阶段。错误后同一请求可重试，未提交时三表不留半状态，提交后重试只返回原结果。测试入口独立于生产，无新增 HTTP 故障开关，临时空间清理；日志 storage-fault-baseline.log、storage-fault-ui-baseline.log。
+
+- 5.2a：有效 Red 暴露损坏 head 无法列旧版本，以及发现旧版损坏后仍可写；已增加文章只读隔离与逐版校验下载。启动逐条扫描历史正文/hash，重开仍隔离受损文章；健康旧版可读取，未替换当前稿；坏库头原字节保留。13 项损坏/故障/进程回归及 1 项真实损坏库 UI 验收通过，类型/lint 通过；桌面/375px 救援截图已查看。日志 corruption-red/green.log、corruption-ui-red/green.log。
+
+- 5.2b：容量 DTO/提示有效 Red 后，14 项容量/损坏/故障/API 检查和 8 项容量/恢复 E2E 通过，类型/lint 通过。正式策略 64 MiB 预警、256 MiB 上限，测试用隔离注入小阈值验证精确边界；超过上限保存/恢复均回滚，无自动删除，命名/no-op/原请求重放仍可用。旧恢复副本缺阈值字段按正式默认值读取。已查看容量提示截图；日志 quota-red/green.log、quota-ui-red/green.log。历史分页改为只读取元数据，避免加载整页正文占用内存。
+
+- 5.3：建立 test:storage-performance，中文段落/混合格式/标题/列表/代码构成精确 60 KiB 与 2 MiB 样本，每组预热 2 次、连续测量 30 次。现有实现 baseline-pass：API p95 分别 12.08 / 171.68 ms，普通稿服务端事件循环 p95 10.82 ms，均满足预设门槛；最大稿事件循环 p95 94.18 ms，仅作观测，不套用普通稿门槛。约 69 MB 历史重新打开及 hash 扫描 883.54 ms，不推广到容量上限。完整 verify 通过（61 项应用/架构 + 10 项 Harness），59 项 E2E 全部通过；首次全检发现两处格式问题，修正后完整重跑通过。日志 storage-performance.log、storage-performance-initial.log、storage-final-checks.log、storage-all-green.log；方法和限制见 docs/validation/article-storage-performance.md。未调整 durability 或放宽门槛，测试使用临时目录，不影响个人工作空间。
+
+- 6.1：独立 git archive 目录验证已提交版本 1442bae，Mac 锁定安装、verify（61 项应用 + 10 项 Harness）与 59 项 E2E 全通过；真实 GitHub Ubuntu 26.04.1 x64 CI 运行 44028413229 同样全部通过，better-sqlite3 13.2.0 原生安装成功。性能沿用未变化实现的 5.3 实测；已复看桌面/窄屏交互截图，手工 IME 沿用用户反馈。完整说明和日志见 evidence/g2-platform-validation.md、g2-mac-*.log、g2-linux-ci.log、g2-linux-run.json。用户未提交的品牌修改排除在本次被测对象外。
+
+- 6.2：23 个场景、4 份 delta 与实现/测试逐项自检，未发现阻断项；生成 verification.md、evidence.json 和完整产品/测试/配置指纹，核对与主分支差异无遗漏。独立目录的 G2 结构、strict 规格和文档检查通过；知识索引与本地运行说明同步。代码保持 1442bae 被测基线不变，用户未提交品牌修改不在本次 G2 对象内；详见 evidence/g2-subject-coverage.log、g2-gates.log。6.1 日志行尾空格在后续独立修正提交中清理。
+
+## 当前边界
+
+3.1–4.3 已完成：在线自动保存、浏览器草稿恢复/重连核对、救援下载、冲突比较/显式合并、确认放弃副本，以及版本历史/命名/比较/恢复已实现。服务停止期间刷新不能打开页面，重启后可恢复；救援 JSON 当前无导入界面。Linux 原生驱动安装和完整功能 CI 已通过；真实 IME 已由用户手工确认通过。本机依赖安装成功；pnpm 原生驱动需要允许构建且可能使用 Xcode Command Line Tools。
+
+## 下一步
+
+G2 已完成，已无待处理实现任务。下一步按授权在 change 分支 archive，核对 3 个新增 capability 和 local-workbench 改名/修改的 Living Spec 效果，再 Git merge 与 G3 验证；当前未 archive 或 merge。产品基线已推送以运行 Linux CI，后续验收文档提交仍以实际 Git 状态为准。未提交品牌修改保留在原工作区，不能视为已被本次指纹验收。

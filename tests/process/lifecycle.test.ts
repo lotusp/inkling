@@ -2,10 +2,16 @@ import { afterEach, expect, it } from 'vitest';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { createServer } from 'node:net';
 import { once } from 'node:events';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+const dirs: string[] = [];
 const children: ChildProcess[] = [];
 function boot(port: string) {
+  const dir = mkdtempSync(join(tmpdir(), 'inkling-lifecycle-'));
+  dirs.push(dir);
   const child = spawn(process.execPath, ['apps/server/dist/main.js'], {
-    env: { ...process.env, PORT: port },
+    env: { ...process.env, PORT: port, INKLING_WORKSPACE: dir },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   children.push(child);
@@ -44,6 +50,8 @@ afterEach(async () => {
       }
     }),
   );
+  for (const dir of dirs.splice(0))
+    rmSync(dir, { recursive: true, force: true });
 });
 it('WORKBENCH-START-001 serves the built workbench on loopback', async () => {
   const url = await ready(boot('0'));

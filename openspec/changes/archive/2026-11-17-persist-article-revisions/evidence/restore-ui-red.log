@@ -1,0 +1,195 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-restore.spec.ts
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2248 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-BKwJHbn8.css    8.47 kB │ gzip:   2.54 kB
+apps/web/dist/assets/index-_0gKlJrN.js   758.29 kB │ gzip: 236.45 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 282ms
+
+Running 5 tests using 4 workers
+
+(node:40491) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40490) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40492) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40489) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [chromium] › tests/e2e/article-restore.spec.ts:25:1 › REVISION-CONFLICT-004 typing or composition invalidates a restore confirmation (30.1s)
+  ✘  1 [chromium] › tests/e2e/article-restore.spec.ts:47:1 › REVISION-CONFLICT-004 a late restore response preserves newer typing and requires reconciliation (30.1s)
+  ✘  4 [chromium] › tests/e2e/article-restore.spec.ts:38:1 › REVISION-CONFLICT-004 a remote save rejects restore and keeps local content (30.2s)
+  ✘  2 [chromium] › tests/e2e/article-restore.spec.ts:15:1 › REVISION-RESTORE-003 restores a reviewed version as a new head and retains old history (30.1s)
+(node:40752) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  5 [chromium] › tests/e2e/article-restore.spec.ts:57:1 › REVISION-RESTORE-003 an unknown restore survives reload and reconciles once (30.1s)
+
+
+  1) [chromium] › tests/e2e/article-restore.spec.ts:15:1 › REVISION-RESTORE-003 restores a reviewed version as a new head and retains old history
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('region', { name: '版本历史' }).getByRole('button', { name: '查看并恢复版本 #2', exact: true })
+
+
+       9 |   await page.getByRole('button',{name:'版本历史',exact:true}).click();
+      10 |   const panel=page.getByRole('region',{name:'版本历史'});
+    > 11 |   await panel.getByRole('button',{name:'查看并恢复版本 #2',exact:true}).click();
+         |                                                                  ^
+      12 |   await expect(panel.getByRole('region',{name:'待恢复版本'})).toContainText('值得保留的第一版');
+      13 |   return {editor,panel};
+      14 | }
+        at prepare (<repo>/tests/e2e/article-restore.spec.ts:11:66)
+        at <repo>/tests/e2e/article-restore.spec.ts:16:24
+
+    Error Context: test-results/article-restore-REVISION-R-e1dfe-ead-and-retains-old-history-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-restore-REVISION-R-e1dfe-ead-and-retains-old-history-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-restore-REVISION-R-e1dfe-ead-and-retains-old-history-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/article-restore.spec.ts:25:1 › REVISION-CONFLICT-004 typing or composition invalidates a restore confirmation
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('region', { name: '版本历史' }).getByRole('button', { name: '查看并恢复版本 #2', exact: true })
+
+
+       9 |   await page.getByRole('button',{name:'版本历史',exact:true}).click();
+      10 |   const panel=page.getByRole('region',{name:'版本历史'});
+    > 11 |   await panel.getByRole('button',{name:'查看并恢复版本 #2',exact:true}).click();
+         |                                                                  ^
+      12 |   await expect(panel.getByRole('region',{name:'待恢复版本'})).toContainText('值得保留的第一版');
+      13 |   return {editor,panel};
+      14 | }
+        at prepare (<repo>/tests/e2e/article-restore.spec.ts:11:66)
+        at <repo>/tests/e2e/article-restore.spec.ts:26:24
+
+    Error Context: test-results/article-restore-REVISION-C-9b00a-ates-a-restore-confirmation-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-restore-REVISION-C-9b00a-ates-a-restore-confirmation-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-restore-REVISION-C-9b00a-ates-a-restore-confirmation-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/article-restore.spec.ts:38:1 › REVISION-CONFLICT-004 a remote save rejects restore and keeps local content
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('region', { name: '版本历史' }).getByRole('button', { name: '查看并恢复版本 #2', exact: true })
+
+
+       9 |   await page.getByRole('button',{name:'版本历史',exact:true}).click();
+      10 |   const panel=page.getByRole('region',{name:'版本历史'});
+    > 11 |   await panel.getByRole('button',{name:'查看并恢复版本 #2',exact:true}).click();
+         |                                                                  ^
+      12 |   await expect(panel.getByRole('region',{name:'待恢复版本'})).toContainText('值得保留的第一版');
+      13 |   return {editor,panel};
+      14 | }
+        at prepare (<repo>/tests/e2e/article-restore.spec.ts:11:66)
+        at <repo>/tests/e2e/article-restore.spec.ts:39:24
+
+    Error Context: test-results/article-restore-REVISION-C-2ac08-ore-and-keeps-local-content-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-restore-REVISION-C-2ac08-ore-and-keeps-local-content-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-restore-REVISION-C-2ac08-ore-and-keeps-local-content-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/article-restore.spec.ts:47:1 › REVISION-CONFLICT-004 a late restore response preserves newer typing and requires reconciliation
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('region', { name: '版本历史' }).getByRole('button', { name: '查看并恢复版本 #2', exact: true })
+
+
+       9 |   await page.getByRole('button',{name:'版本历史',exact:true}).click();
+      10 |   const panel=page.getByRole('region',{name:'版本历史'});
+    > 11 |   await panel.getByRole('button',{name:'查看并恢复版本 #2',exact:true}).click();
+         |                                                                  ^
+      12 |   await expect(panel.getByRole('region',{name:'待恢复版本'})).toContainText('值得保留的第一版');
+      13 |   return {editor,panel};
+      14 | }
+        at prepare (<repo>/tests/e2e/article-restore.spec.ts:11:66)
+        at <repo>/tests/e2e/article-restore.spec.ts:48:24
+
+    Error Context: test-results/article-restore-REVISION-C-f65d3-and-requires-reconciliation-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-restore-REVISION-C-f65d3-and-requires-reconciliation-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-restore-REVISION-C-f65d3-and-requires-reconciliation-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests/e2e/article-restore.spec.ts:57:1 › REVISION-RESTORE-003 an unknown restore survives reload and reconciles once
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('region', { name: '版本历史' }).getByRole('button', { name: '查看并恢复版本 #2', exact: true })
+
+
+       9 |   await page.getByRole('button',{name:'版本历史',exact:true}).click();
+      10 |   const panel=page.getByRole('region',{name:'版本历史'});
+    > 11 |   await panel.getByRole('button',{name:'查看并恢复版本 #2',exact:true}).click();
+         |                                                                  ^
+      12 |   await expect(panel.getByRole('region',{name:'待恢复版本'})).toContainText('值得保留的第一版');
+      13 |   return {editor,panel};
+      14 | }
+        at prepare (<repo>/tests/e2e/article-restore.spec.ts:11:66)
+        at <repo>/tests/e2e/article-restore.spec.ts:59:24
+
+    Error Context: test-results/article-restore-REVISION-R-fde71--reload-and-reconciles-once-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-restore-REVISION-R-fde71--reload-and-reconciles-once-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-restore-REVISION-R-fde71--reload-and-reconciles-once-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5 failed
+    [chromium] › tests/e2e/article-restore.spec.ts:15:1 › REVISION-RESTORE-003 restores a reviewed version as a new head and retains old history
+    [chromium] › tests/e2e/article-restore.spec.ts:25:1 › REVISION-CONFLICT-004 typing or composition invalidates a restore confirmation
+    [chromium] › tests/e2e/article-restore.spec.ts:38:1 › REVISION-CONFLICT-004 a remote save rejects restore and keeps local content
+    [chromium] › tests/e2e/article-restore.spec.ts:47:1 › REVISION-CONFLICT-004 a late restore response preserves newer typing and requires reconciliation
+    [chromium] › tests/e2e/article-restore.spec.ts:57:1 › REVISION-RESTORE-003 an unknown restore survives reload and reconciles once
+ ELIFECYCLE  Command failed with exit code 1.

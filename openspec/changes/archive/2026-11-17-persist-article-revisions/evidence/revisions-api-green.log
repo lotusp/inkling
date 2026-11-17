@@ -1,0 +1,12 @@
+
+> inkling@0.1.0 test <repo>
+> vitest run tests/api/article-revisions.test.ts tests/api/article-persistence.test.ts tests/integration/article-store.test.ts
+
+
+ RUN  v5.1.0 <repo>
+
+
+ Test Files  3 passed (3)
+      Tests  12 passed (12)
+   Start at  11:22:05
+   Duration  622ms (tests 55%, import 32%, transform 12%, worker 1%)

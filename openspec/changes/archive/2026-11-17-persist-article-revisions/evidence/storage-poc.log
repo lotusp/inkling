@@ -1,0 +1,21 @@
+{"node":"v22.22.2","platform":"darwin","arch":"arm64","driver":"13.2.0"}
+PASS files: reopen preserves content and head
+PASS files: same mutation returns original result
+PASS files: same key different payload rejected
+PASS files: stale tab cannot overwrite
+PASS files: injected precommit write failure leaves prior head
+PASS files: SIGKILL before-commit, reopen and retry consistent
+PASS files: SIGKILL after-commit, reopen and retry consistent
+PASS files: content hash detects tampering without auto overwrite
+{"sqlite":"3.54.1","pragmas":{"journal_mode":"wal","synchronous":2,"fullfsync":1,"locking_mode":"exclusive","foreign_keys":1}}
+PASS sqlite: reopen preserves content and head
+PASS sqlite: same mutation returns original result
+PASS sqlite: same key different payload rejected
+PASS sqlite: stale tab cannot overwrite
+PASS sqlite: injected precommit write failure leaves prior head
+PASS sqlite: SIGKILL before-commit, reopen and retry consistent
+PASS sqlite: SIGKILL after-commit, reopen and retry consistent
+PASS sqlite: content hash detects tampering without auto overwrite
+PASS sqlite: second process rejected, lock released on close
+{"smokeTiming":[{"kind":"files","saves":30,"payloadBytes":60174,"medianMs":21.05,"p95Ms":26.94},{"kind":"sqlite","saves":30,"payloadBytes":60174,"medianMs":6.06,"p95Ms":8.66}],"note":"Small local sample; not a comparative performance benchmark or power-loss proof."}
+RESULT 17 checks passed

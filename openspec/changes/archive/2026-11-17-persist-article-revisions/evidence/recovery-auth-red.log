@@ -1,0 +1,62 @@
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2240 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.46 kB │ gzip:   0.32 kB
+apps/web/dist/assets/index-bukrPK1k.css    6.46 kB │ gzip:   2.12 kB
+apps/web/dist/assets/index-D4VVvJNU.js   739.96 kB │ gzip: 231.24 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 298ms
+
+Running 1 test using 1 worker
+
+(node:9139) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-recovery.spec.ts:53:1 › WORKSPACE-AUTH-003 real service restart and new access link preserve offline typing (8.9s)
+
+
+  1) [chromium] › tests/e2e/article-recovery.spec.ts:53:1 › WORKSPACE-AUTH-003 real service restart and new access link preserve offline typing
+
+    Error: expect(page).toHaveURL(expected) failed
+
+    Expected: "http://127.0.0.1:51794/"
+    Received: "http://127.0.0.1:51794/#access=<redacted>"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveURL" with timeout 5000ms
+        14 × locator resolved to <html lang="zh-CN">…</html>
+           - unexpected value "http://127.0.0.1:51794/#access=<redacted>"
+
+
+      62 |   const url = await workspace.restart();
+      63 |   await page.goto(url);
+    > 64 |   await expect(page).toHaveURL(workspace.origin + '/');
+         |                      ^
+      65 |   await expect(page.getByText('工作空间已连接', { exact: true })).toBeVisible();
+      66 |   await page.getByRole('button', { name: '重试保存', exact: true }).click();
+      67 |   await expect(editor).toHaveText('服务停止后继续写下的洞见');
+        at <repo>/tests/e2e/article-recovery.spec.ts:64:22
+
+    Error Context: test-results/article-recovery-WORKSPACE-393f9-ink-preserve-offline-typing-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-recovery-WORKSPACE-393f9-ink-preserve-offline-typing-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-recovery-WORKSPACE-393f9-ink-preserve-offline-typing-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/article-recovery.spec.ts:53:1 › WORKSPACE-AUTH-003 real service restart and new access link preserve offline typing

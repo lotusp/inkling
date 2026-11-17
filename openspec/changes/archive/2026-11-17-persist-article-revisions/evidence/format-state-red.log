@@ -1,0 +1,62 @@
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2238 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.46 kB │ gzip:   0.32 kB
+apps/web/dist/assets/index-M4OF6dzJ.css    5.89 kB │ gzip:   1.99 kB
+apps/web/dist/assets/index-g1CBS4eM.js   730.74 kB │ gzip: 228.36 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 329ms
+
+Running 3 tests using 3 workers
+
+(node:94973) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:94974) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:94975) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [chromium] › tests/e2e/article-formats.spec.ts:98:1 › WORKBENCH-EDIT-004 title composition defers saves until composition ends (2.1s)
+  ✓  2 [chromium] › tests/e2e/article-formats.spec.ts:5:1 › ARTICLE-SCHEMA-011 every supported format survives editor load and another save (3.9s)
+  ✓  1 [chromium] › tests/e2e/article-formats.spec.ts:56:1 › ARTICLE-SCHEMA-011 an overlong title cannot be acknowledged by an older save (4.4s)
+
+
+  1) [chromium] › tests/e2e/article-formats.spec.ts:98:1 › WORKBENCH-EDIT-004 title composition defers saves until composition ends
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      108 |   // A server read drains earlier browser events without a timing-based sleep.
+      109 |   await page.request.get('/api/workspace');
+    > 110 |   expect(writes).toBe(0);
+          |                  ^
+      111 |   await expect(page.getByText('已保存', { exact: true })).not.toBeVisible();
+      112 |   await title.dispatchEvent('compositionend', { data: '尚在选词' });
+      113 |   await page.clock.runFor(1500);
+        at <repo>/tests/e2e/article-formats.spec.ts:110:18
+
+    Error Context: test-results/article-formats-WORKBENCH--1cf6c-aves-until-composition-ends-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-formats-WORKBENCH--1cf6c-aves-until-composition-ends-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-formats-WORKBENCH--1cf6c-aves-until-composition-ends-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/article-formats.spec.ts:98:1 › WORKBENCH-EDIT-004 title composition defers saves until composition ends
+  2 passed (7.0s)

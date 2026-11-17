@@ -1,0 +1,62 @@
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2244 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.46 kB │ gzip:   0.31 kB
+apps/web/dist/assets/index-s_4LejIp.css    7.46 kB │ gzip:   2.32 kB
+apps/web/dist/assets/index-nwceRdX6.js   748.38 kB │ gzip: 233.56 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 318ms
+
+Running 1 test using 1 worker
+
+(node:27508) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-discard.spec.ts:3:1 › ARTICLE-CONFLICT-006 discards only the explicitly confirmed recovery copy (7.7s)
+
+
+  1) [chromium] › tests/e2e/article-discard.spec.ts:3:1 › ARTICLE-CONFLICT-006 discards only the explicitly confirmed recovery copy
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('region', { name: '待恢复草稿' }).getByRole('button', { name: '放弃此副本', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('region', { name: '待恢复草稿' }).getByRole('button', { name: '放弃此副本', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: '待恢复草稿' }).getByRole('button', { name: '放弃此副本', exact: true })
+
+
+      10 |   await page.reload();
+      11 |   const panel = page.getByRole('region', { name: '待恢复草稿' });
+    > 12 |   await expect(panel.getByRole('button', { name: '放弃此副本', exact: true })).toBeVisible();
+         |                                                                           ^
+      13 |   await panel.getByRole('button', { name: '放弃此副本', exact: true }).click();
+      14 |   await panel.getByRole('button', { name: '取消放弃', exact: true }).click();
+      15 |   await expect(panel).toContainText('准备放弃的浏览器草稿');
+        at <repo>/tests/e2e/article-discard.spec.ts:12:75
+
+    Error Context: test-results/article-discard-ARTICLE-CO-a1c35-tly-confirmed-recovery-copy-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-discard-ARTICLE-CO-a1c35-tly-confirmed-recovery-copy-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-discard-ARTICLE-CO-a1c35-tly-confirmed-recovery-copy-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/article-discard.spec.ts:3:1 › ARTICLE-CONFLICT-006 discards only the explicitly confirmed recovery copy

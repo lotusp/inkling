@@ -1,0 +1,34 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-versions.spec.ts
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2248 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-BKwJHbn8.css    8.47 kB │ gzip:   2.54 kB
+apps/web/dist/assets/index-_0gKlJrN.js   758.29 kB │ gzip: 236.45 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 337ms
+
+Running 2 tests using 2 workers
+
+(node:39106) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39107) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › tests/e2e/article-versions.spec.ts:45:1 › REVISION-HISTORY-001 a lost naming response retries the same revision and does not include later typing (2.9s)
+  ✓  1 [chromium] › tests/e2e/article-versions.spec.ts:3:1 › REVISION-HISTORY-001 saves and names the clicked draft; REVISION-COMPARE-002 compares without changing the editor (3.1s)
+
+  2 passed (5.7s)

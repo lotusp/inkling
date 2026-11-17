@@ -58,7 +58,7 @@ openspec/changes/<change-id>/
 
 默认分支沿用当前仓库 `master`，开发分支为 `codex/<change-id>`。同一时刻只允许一个未归档 change；未来想法留在[开发顺序](#建议的首批-change)，不要先批量创建 changes。每次开始读取 Git 状态和 `openspec list --json`，恢复未完成工作优先。
 
-单 change 可以有多个提交、多个测试切片。默认在同一工作区推进，不开并行功能 worktree。结构检查只看当前工作区的 active change，无法发现其他工作区或他人分支；串行约定仍需执行者遵守。
+单 change 按步骤提交：每完成 tasks 中一个可独立验证的编号任务（或预先拆出的子步骤），检查通过、更新进度后立即 commit，再进入下一步；设计与规范产物也各自提交。Red → Green 默认在同一步内完成，不把全部实现拖到最终一次提交。默认在同一工作区推进，不开并行功能 worktree。结构检查只看当前工作区的 active change，无法发现其他工作区或他人分支；串行约定仍需执行者遵守。
 
 三个动作分别是：
 
@@ -139,7 +139,7 @@ Harness 自身的回归命令为 `node --test scripts/harness/check.test.mjs` �
 
 ## 建议的首批 change
 
-完整候选清单集中维护在 [V1 Change 路线图](v1-change-roadmap.md)：建议 17 条，含已完成的 `bootstrap-local-workbench`。下一条为 `persist-article-revisions`，先确定正文和存储权威，完成保存、冲突提示、版本恢复。随后补文章管理、技术编辑器和模型运行基础，再接文章 Chat 与候选修改。
+完整候选清单集中维护在 [V1 Change 路线图](v1-change-roadmap.md)：建议 17 条，C01 `bootstrap-local-workbench` 已交付，C02 `persist-article-revisions` 已实现并归档。C02 完成 G3 后，下一条候选为 C03 `manage-article-library`，随后补技术编辑器和模型运行基础，再接文章 Chat 与候选修改；当前不预建下一条 change。
 
 路线图不是已创建的 changes。每条形成可运行且可验收的切片，完成后再细化下一项；范围覆盖仍以 [V1 功能清单](../product/v1-scope.md)为准。
 
