@@ -11,3 +11,4 @@ export const AuthSession = z.object({
   expiresAt: z.number().int().positive(),
 });
 export * from './article';
+export * from './revision';

@@ -1,5 +1,10 @@
 import {
   ArticleDocument,
+  RevisionQuery,
+  NameRevisionCommand,
+  type RevisionPage,
+  type RevisionDetail,
+  type NameRevisionResult,
   EnsureArticleCommand,
   Id,
   SaveArticleCommand,
@@ -13,6 +18,13 @@ export interface ArticleRepository {
   read(articleId: string): ArticleSnapshot;
   save(articleId: string, command: SaveArticleCommand): SaveResult;
   mutation(id: string): unknown;
+  revisions(articleId: string, query: RevisionQuery): RevisionPage;
+  revision(articleId: string, revisionId: string): RevisionDetail;
+  name(
+    articleId: string,
+    revisionId: string,
+    command: NameRevisionCommand,
+  ): NameRevisionResult;
 }
 export class ArticleService {
   constructor(private readonly repository: ArticleRepository) {}
@@ -29,6 +41,19 @@ export class ArticleService {
     const command = SaveArticleCommand.parse(input);
     ArticleDocument.parse(command.document);
     return this.repository.save(Id.parse(id), command);
+  }
+  revisions(id: unknown, query: unknown) {
+    return this.repository.revisions(Id.parse(id), RevisionQuery.parse(query));
+  }
+  revision(id: unknown, revisionId: unknown) {
+    return this.repository.revision(Id.parse(id), Id.parse(revisionId));
+  }
+  name(id: unknown, revisionId: unknown, input: unknown) {
+    return this.repository.name(
+      Id.parse(id),
+      Id.parse(revisionId),
+      NameRevisionCommand.parse(input),
+    );
   }
   mutation(id: unknown) {
     return this.repository.mutation(Id.parse(id));

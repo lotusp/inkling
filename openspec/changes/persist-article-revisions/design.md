@@ -2,7 +2,7 @@
 
 ## Context and boundaries
 
-状态：C02 设计，尚未接入产品。授权范围为存储验证、详细设计和 G1 计划；不会以 POC 代替产品实现。决策见 [DEC-0004](../../../docs/decisions/0004-article-storage-and-revisions.md)，实验见 [POC 记录](../../../docs/validation/article-storage-poc.md)。
+状态：C02 实施中，已按用户后续授权接入产品；实际完成情况见 progress.md，POC 不代替产品验收。决策见 [DEC-0004](../../../docs/decisions/0004-article-storage-and-revisions.md)，实验见 [POC 记录](../../../docs/validation/article-storage-poc.md)。
 
 | 模块 | 本次职责 |
 | --- | --- |
@@ -78,7 +78,7 @@ C02 不引入段落稳定 ID。整稿 CAS 已能保证保存安全；C07 若需�
 | GET /api/articles/:id | document、headRevisionId、headSeq、contentHash、容量信息 |
 | PUT /api/articles/:id/content | mutationId、baseRevisionId、document → SaveResult |
 | GET /api/mutations/:id | 已提交的原结果或明确 not_found；只在已认证且库健康时可用于重试决策 |
-| GET /api/articles/:id/revisions?beforeSeq=&limit= | 倒序分页元数据，每页默认 50、上限 100；标识当前/自动/命名/恢复来源 |
+| GET /api/articles/:id/revisions?beforeSeq=&limit=&all= | 倒序 keyset 分页元数据，每页默认 50、上限 100；all=true 显示全部，否则仅恢复点/命名记录；标识当前/自动/命名/恢复来源 |
 | GET /api/articles/:id/revisions/:revisionId | 指定版本 document/hash；不存在或不属于文章返回 404 |
 | PUT /api/articles/:id/revisions/:revisionId/name | mutationId、name（1–80 Unicode code points）→ 命名结果；允许显式重命名 |
 | POST /api/articles/:id/restore | mutationId、baseRevisionId、sourceRevisionId → 新修订的 SaveResult |

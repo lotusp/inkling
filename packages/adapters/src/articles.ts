@@ -3,6 +3,12 @@ import { createHash, randomUUID } from 'node:crypto';
 import { ArticleError, canonical, type ArticleRepository } from '@inkling/core';
 import {
   ArticleDocument,
+  RevisionInfo,
+  RevisionDetail,
+  NameRevisionResult,
+  type RevisionQuery,
+  type RevisionPage,
+  type NameRevisionCommand,
   ArticleSnapshot,
   SaveResult,
   type SaveArticleCommand,
@@ -191,6 +197,110 @@ export class SqliteArticles implements ArticleRepository {
       document,
     };
   }
+
+  private revisionInfo(value: unknown): RevisionInfo {
+    const r = row(value);
+    return RevisionInfo.parse({
+      articleId: r.article_id,
+      revisionId: r.id,
+      seq: r.seq,
+      parentRevisionId: r.parent_revision_id,
+      kind: r.kind,
+      restoredFromRevisionId: r.restored_from_revision_id,
+      createdAt: r.created_at,
+      automaticAt: r.automatic_at ?? null,
+      name: r.name ?? null,
+      current: r.id === r.head_revision_id,
+    });
+  }
+  revisions(articleId: string, query: RevisionQuery): RevisionPage {
+    this.read(articleId);
+    const rows = this.db
+      .prepare(
+        `SELECT r.*,m.name,m.automatic_at,a.head_revision_id FROM article_revisions r JOIN articles a ON a.id=r.article_id LEFT JOIN revision_markers m ON m.revision_id=r.id WHERE r.article_id=? AND r.seq<? AND (? OR m.automatic_at IS NOT NULL OR m.name IS NOT NULL) ORDER BY r.seq DESC LIMIT ?`,
+      )
+      .all(
+        articleId,
+        query.beforeSeq ?? Number.MAX_SAFE_INTEGER,
+        query.all ? 1 : 0,
+        query.limit + 1,
+      );
+    const items = rows.slice(0, query.limit).map((r) => this.revisionInfo(r));
+    return {
+      items,
+      nextBeforeSeq:
+        rows.length > query.limit ? (items.at(-1)?.seq ?? null) : null,
+    };
+  }
+  revision(articleId: string, revisionId: string): RevisionDetail {
+    const r = row(
+      this.db
+        .prepare(
+          'SELECT r.*,m.name,m.automatic_at,a.head_revision_id FROM article_revisions r JOIN articles a ON a.id=r.article_id LEFT JOIN revision_markers m ON m.revision_id=r.id WHERE r.article_id=? AND r.id=?',
+        )
+        .get(articleId, revisionId),
+    );
+    let document: ArticleDocument;
+    try {
+      document = ArticleDocument.parse(JSON.parse(string(r.document_json)));
+    } catch {
+      throw new ArticleError(
+        'STORAGE_CORRUPT',
+        500,
+        '历史正文格式损坏，已停止读取。',
+      );
+    }
+    if (hash(document) !== r.content_hash)
+      throw new ArticleError('STORAGE_CORRUPT', 500, '历史正文校验失败。');
+    return {
+      ...this.revisionInfo(r),
+      document,
+      contentHash: string(r.content_hash),
+    };
+  }
+  name(
+    articleId: string,
+    revisionId: string,
+    command: NameRevisionCommand,
+  ): NameRevisionResult {
+    return this.db
+      .transaction(() => {
+        const requestHash = hash({
+            operation: 'name',
+            articleId,
+            revisionId,
+            ...command,
+          }),
+          old = this.replay(command.mutationId, requestHash);
+        if (old !== undefined) return NameRevisionResult.parse(old);
+        this.read(articleId);
+        this.revision(articleId, revisionId);
+        const updatedAt = this.now();
+        this.db
+          .prepare(
+            'INSERT INTO revision_markers VALUES(?,?,NULL,?,?) ON CONFLICT(revision_id) DO UPDATE SET name=excluded.name,updated_at=excluded.updated_at',
+          )
+          .run(articleId, revisionId, command.name, updatedAt);
+        const result = {
+          mutationId: command.mutationId,
+          articleId,
+          revisionId,
+          name: command.name,
+          updatedAt,
+        };
+        this.remember(
+          command.mutationId,
+          articleId,
+          'name',
+          requestHash,
+          result,
+          revisionId,
+        );
+        return result;
+      })
+      .immediate();
+  }
+
   save(articleId: string, command: SaveArticleCommand): SaveResult {
     return this.db
       .transaction(() => {

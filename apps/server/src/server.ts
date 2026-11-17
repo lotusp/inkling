@@ -83,6 +83,24 @@ export function createServer(
       '/api/articles/:id/content',
       async (request) => service().save(request.params.id, request.body),
     );
+    app.get<{ Params: { id: string } }>(
+      '/api/articles/:id/revisions',
+      async (request) => service().revisions(request.params.id, request.query),
+    );
+    app.get<{ Params: { id: string; revisionId: string } }>(
+      '/api/articles/:id/revisions/:revisionId',
+      async (request) =>
+        service().revision(request.params.id, request.params.revisionId),
+    );
+    app.put<{ Params: { id: string; revisionId: string } }>(
+      '/api/articles/:id/revisions/:revisionId/name',
+      async (request) =>
+        service().name(
+          request.params.id,
+          request.params.revisionId,
+          request.body,
+        ),
+    );
     app.get<{ Params: { id: string } }>('/api/mutations/:id', async (request) =>
       service().mutation(request.params.id),
     );
