@@ -311,6 +311,7 @@ export function useArticle(
       await persist();
     } finally {
       busy.current = false;
+      setEditVersion((value) => value + 1);
     }
   }, [editor, display, persist]);
   const recover = useCallback(
@@ -422,6 +423,35 @@ export function useArticle(
     },
     [editor, display, persist, setTitle],
   );
+  const keepServer = useCallback(async () => {
+    if (busy.current || !head.current || !identity.current) return;
+    busy.current = true;
+    setRecovering(true);
+    try {
+      await connectWorkspace();
+      const current = ArticleSnapshot.parse(
+        await api('/api/articles/' + head.current.articleId),
+      );
+      await writes.current;
+      identity.current = {
+        ...identity.current,
+        clientId: await ownDraftClient(true),
+      };
+      display(current);
+      choosing.current = false;
+      setRecoveries([]);
+      setBackup('idle');
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : '无法核对服务器版本，请保留副本。',
+      );
+    } finally {
+      busy.current = false;
+      setRecovering(false);
+    }
+  }, [display]);
   const changed = useCallback(() => {
     if (!editor || !head.current || choosing.current) return;
     const document: ArticleDocument = {
@@ -514,6 +544,7 @@ export function useArticle(
     recoveries,
     recovering,
     recover,
+    keepServer,
     editable: snapshot !== null && recoveries.length === 0 && !recovering,
     dirty: status !== 'clean' && status !== 'empty' && status !== 'loading',
   };

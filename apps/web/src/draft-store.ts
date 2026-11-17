@@ -112,13 +112,19 @@ function parseRecord(value: unknown): DraftRecord {
 
 const lockName = (id: string) => 'inkling:draft-client:' + id;
 let owner: Promise<string> | undefined;
+let releaseOwner: (() => void) | undefined;
 // One lock per document lifetime. StrictMode mounts reuse it; duplicate tabs cannot.
-export function ownDraftClient(): Promise<string> {
+export function ownDraftClient(fresh = false): Promise<string> {
+  if (fresh) {
+    releaseOwner?.();
+    releaseOwner = undefined;
+    owner = undefined;
+  }
   owner ??= (async () => {
     if (!navigator.locks) throw new Error('浏览器不支持草稿隔离锁。');
     let candidate: string | null = null;
     try {
-      candidate = sessionStorage.getItem('inkling-draft-client');
+      if (!fresh) candidate = sessionStorage.getItem('inkling-draft-client');
     } catch {
       /* An ephemeral ID still safely isolates this tab. */
     }
@@ -128,7 +134,10 @@ export function ownDraftClient(): Promise<string> {
         void navigator.locks
           .request(lockName(id), { ifAvailable: true }, async (lock) => {
             resolve(Boolean(lock));
-            if (lock) await new Promise<void>(() => {});
+            if (lock)
+              await new Promise<void>((resolveRelease) => {
+                releaseOwner = resolveRelease;
+              });
           })
           .catch(reject);
       });

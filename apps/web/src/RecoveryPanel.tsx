@@ -15,11 +15,13 @@ export function RecoveryPanel({
   busy,
   message,
   recover,
+  keepServer,
 }: {
   choices: RecoveryChoice[];
   busy: boolean;
   message: string;
   recover: (choice: RecoveryChoice) => Promise<void>;
+  keepServer: () => Promise<void>;
 }) {
   if (!choices.length) return null;
   return (
@@ -44,6 +46,10 @@ export function RecoveryPanel({
         </div>
       ))}
       {message && <p role="alert">{message}</p>}
+      <p>也可以使用下方的服务器版本继续写作，未选择的副本会保留供以后恢复。</p>
+      <button disabled={busy} onClick={() => void keepServer()}>
+        保留副本，使用服务器版本
+      </button>
     </section>
   );
 }

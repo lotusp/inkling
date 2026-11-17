@@ -167,6 +167,7 @@ export function App() {
               busy={article.recovering}
               message={article.message}
               recover={article.recover}
+              keepServer={article.keepServer}
             />
             <div className={`editor-wrap ${format?.length ? '' : 'is-empty'}`}>
               <EditorContent editor={editor} />

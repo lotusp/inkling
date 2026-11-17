@@ -5,8 +5,12 @@ let csrfToken: string | undefined;
 export function currentCsrf() {
   return csrfToken;
 }
-export function connectWorkspace() {
-  if (pending) return pending;
+export function connectWorkspace(): Promise<string> {
+  if (pending) {
+    if (new URLSearchParams(window.location.hash.slice(1)).has('access'))
+      return pending.catch(() => undefined).then(() => connectWorkspace());
+    return pending;
+  }
   const token = new URLSearchParams(window.location.hash.slice(1)).get(
     'access',
   );
@@ -42,6 +46,16 @@ export function useAccess() {
     'checking' | 'connected' | 'disconnected'
   >('checking');
   const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    const changed = () => {
+      if (new URLSearchParams(window.location.hash.slice(1)).has('access')) {
+        setStatus('checking');
+        setAttempt((value) => value + 1);
+      }
+    };
+    window.addEventListener('hashchange', changed);
+    return () => window.removeEventListener('hashchange', changed);
+  }, []);
   useEffect(() => {
     let active = true;
     void connectWorkspace()

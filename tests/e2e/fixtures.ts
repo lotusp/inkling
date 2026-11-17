@@ -8,6 +8,8 @@ interface WorkspaceFixture {
   dir: string;
   origin: string;
   url: string;
+  stop: () => Promise<void>;
+  restart: () => Promise<string>;
 }
 export const test = base.extend<{
   workspace: WorkspaceFixture;
@@ -18,19 +20,24 @@ export const test = base.extend<{
   autoConnect: [true, { option: true }],
   workspace: async ({ browserName }, use) => {
     const dir = mkdtempSync(join(tmpdir(), `inkling-${browserName}-`));
-    const child = spawn(
-      process.execPath,
-      ['apps/server/dist/main.js', '--workspace', dir],
-      { env: { ...process.env, PORT: '0' }, stdio: ['ignore', 'pipe', 'pipe'] },
-    );
-    try {
-      const url = await new Promise<string>((resolve, reject) => {
+    let child: ReturnType<typeof spawn>;
+    const launch = async (port: string) => {
+      const launched = spawn(
+        process.execPath,
+        ['apps/server/dist/main.js', '--workspace', dir],
+        {
+          env: { ...process.env, PORT: port },
+          stdio: ['ignore', 'pipe', 'pipe'],
+        },
+      );
+      child = launched;
+      return await new Promise<string>((resolve, reject) => {
         let output = '';
         const timer = setTimeout(
           () => reject(new Error('Test workspace startup timed out')),
           8000,
         );
-        child.stdout.on('data', (s: Buffer) => {
+        launched.stdout.on('data', (s: Buffer) => {
           output += s.toString();
           const link = output.match(
             /http:\/\/127\.0\.0\.1:\d+\/#access=[a-f0-9]{64}/,
@@ -40,18 +47,34 @@ export const test = base.extend<{
             resolve(link);
           }
         });
-        child.once('exit', (code) => {
+        launched.once('exit', (code) => {
           clearTimeout(timer);
           reject(new Error(`Test workspace exited: ${code}`));
         });
       });
-      await use({ dir, origin: new URL(url).origin, url });
-    } finally {
-      if (child.exitCode === null && child.signalCode === null) {
+    };
+    const stop = async () => {
+      if (child && child.exitCode === null && child.signalCode === null) {
         const stopped = once(child, 'exit');
         child.kill('SIGTERM');
         await stopped;
       }
+    };
+    try {
+      const url = await launch('0');
+      const origin = new URL(url).origin;
+      await use({
+        dir,
+        origin,
+        url,
+        stop,
+        restart: async () => {
+          await stop();
+          return launch(new URL(origin).port);
+        },
+      });
+    } finally {
+      await stop();
       rmSync(dir, { recursive: true, force: true });
     }
   },
