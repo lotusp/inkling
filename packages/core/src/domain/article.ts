@@ -21,3 +21,37 @@ export function canonical(value: unknown): string {
     '}'
   );
 }
+
+export interface HistoryPolicy {
+  warningBytes: number;
+  limitBytes: number;
+}
+export const DEFAULT_HISTORY_POLICY: Readonly<HistoryPolicy> = Object.freeze({
+  warningBytes: 64 * 1024 * 1024,
+  limitBytes: 256 * 1024 * 1024,
+});
+export function validateHistoryPolicy(
+  policy: HistoryPolicy,
+): Readonly<HistoryPolicy> {
+  if (
+    !Number.isSafeInteger(policy.warningBytes) ||
+    !Number.isSafeInteger(policy.limitBytes) ||
+    policy.warningBytes <= 0 ||
+    policy.limitBytes < policy.warningBytes
+  )
+    throw new Error('Invalid article history policy');
+  return Object.freeze({ ...policy });
+}
+export function checkHistoryCapacity(
+  used: number,
+  additional: number,
+  policy: HistoryPolicy,
+) {
+  if (used + additional > policy.limitBytes)
+    throw new ArticleError(
+      'HISTORY_LIMIT',
+      507,
+      '历史容量已达上限，请先下载恢复稿。',
+      { usedBytes: used, limitBytes: policy.limitBytes },
+    );
+}

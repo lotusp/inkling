@@ -15,7 +15,14 @@ if (mode === 'full')
   db.pragma(
     `max_page_count=${Number(db.pragma('page_count', { simple: true })) + 1}`,
   );
-const service = new ArticleService(new SqliteArticles(db, seed.workspaceId));
+const service = new ArticleService(
+  new SqliteArticles(
+    db,
+    seed.workspaceId,
+    Date.now,
+    mode === 'quota' ? { warningBytes: 300, limitBytes: 1000 } : undefined,
+  ),
+);
 if (mode === 'corrupt') {
   const first = service.save(seed.article.articleId, {
     mutationId: randomUUID(),

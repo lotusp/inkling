@@ -18,7 +18,7 @@
 | ARTICLE-CRASH-010 | 事务中断 | 进程 | tests/process/article-crash.test.ts | 隔离 workspace，提交各边界进程 SIGKILL | 重开 head/revision/mutation 一致，提交后可查询去重 |
 | ARTICLE-SCHEMA-011 | 结构与容量校验 | 契约 + API | tests/unit/article-document.test.ts；tests/api/article-persistence.test.ts；tests/e2e/article-formats.spec.ts | 未知版本/attrs/节点、恶意协议、最大深度/字节 | 已支持格式通过，非法输入拒绝且不改原稿 |
 | ARTICLE-CORRUPT-012 | 损坏处理 | 集成 + 进程 | tests/integration/article-corruption.test.ts；tests/e2e/article-corruption.spec.ts | 内容 hash 错、数据库头损坏的独立副本 | 写入阻断，不自动重建或回退；有效旧版可救援 |
-| ARTICLE-QUOTA-013 | 历史容量 | 集成 + UI | tests/integration/article-store.test.ts；tests/e2e/article-versions.spec.ts | 可注入的小容量测试策略，默认值另核对 | 到阈值提示，到上限拒绝增正文，无自动删除 |
+| ARTICLE-QUOTA-013 | 历史容量 | 集成 + UI | tests/integration/article-quota.test.ts；tests/e2e/article-quota.spec.ts | 可注入的小容量测试策略，默认值另核对 | 到阈值提示，到上限拒绝增正文，无自动删除 |
 | REVISION-HISTORY-001 | 命名与自动恢复点 | 单元 + API + UI | tests/integration/article-revisions.test.ts；tests/api/article-revisions.test.ts；tests/e2e/article-versions.spec.ts | 可控 clock，初始/首次保存/5分钟/命名 | 恢复点策略正确，分页与命名去重，不改变正文 |
 | REVISION-COMPARE-002 | 版本差异 | 单元 + UI | tests/unit/document-diff.test.ts；tests/e2e/article-versions.spec.ts | 纯格式变化、列表、代码换行、标题变化 | 指定版本差异可见，编辑器不变，越界版本拒绝 |
 | REVISION-RESTORE-003 | 恢复产生新版本 | 集成 + UI | tests/api/article-revisions.test.ts；tests/e2e/article-restore.spec.ts | 已保存新旧稿 | 新 head、parent/source 正确，历史保留，重试仅一份 |

@@ -213,6 +213,16 @@ export const ArticleSnapshot = z.object({
   contentHash: z.string(),
   document: ArticleDocument,
   revisionBytes: z.number().nonnegative(),
+  historyWarningBytes: z
+    .number()
+    .int()
+    .positive()
+    .default(64 * 1024 * 1024),
+  historyLimitBytes: z
+    .number()
+    .int()
+    .positive()
+    .default(256 * 1024 * 1024),
 });
 export type ArticleSnapshot = z.infer<typeof ArticleSnapshot>;
 export const SaveResult = z.object({

@@ -1,0 +1,82 @@
+
+> inkling@0.1.0 test <repo>
+> vitest run tests/integration/article-quota.test.ts
+
+
+ RUN  v5.1.0 <repo>
+
+ ❯ tests/integration/article-quota.test.ts (2 tests | 2 failed) 106ms
+   × ARTICLE-QUOTA-013 warns at the exact threshold, rejects additional history and still allows naming, no-op and replay 76ms
+   × ARTICLE-QUOTA-013 production thresholds are 64 MiB and 256 MiB 29ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/article-quota.test.ts > ARTICLE-QUOTA-013 warns at the exact threshold, rejects additional history and still allows naming, no-op and replay
+AssertionError: expected { …(6) } to match object { revisionBytes: 177, …(2) }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "historyLimitBytes": 270,
+-   "historyWarningBytes": 177,
+    "revisionBytes": 177,
+  }
+
+ ❯ tests/integration/article-quota.test.ts:14:20
+     12|   const command={mutationId:randomUUID(),baseRevisionId:article.headRe…
+     13|   const first=service.save(article.articleId,command),snapshot=service…
+     14|   expect(snapshot).toMatchObject({revisionBytes:policy.warningBytes,hi…
+       |                    ^
+     15|   const second=service.save(article.articleId,{mutationId:randomUUID()…
+     16|   expect(service.read(article.articleId).revisionBytes).toBe(policy.li…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/article-quota.test.ts > ARTICLE-QUOTA-013 production thresholds are 64 MiB and 256 MiB
+AssertionError: expected { …(6) } to match object { historyWarningBytes: 67108864, …(1) }
+(9 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "historyLimitBytes": 268435456,
+-   "historyWarningBytes": 67108864,
++   "articleId": "0de53844-5a1b-4836-9756-f6f566c06e64",
++   "contentHash": "26cf6996156297b52b757f2b46642c2e918a15f24d6e105e5d7362cf51c78157",
++   "document": {
++     "doc": {
++       "content": [
++         {
++           "type": "paragraph",
++         },
++       ],
++       "type": "doc",
++     },
++     "schemaVersion": 1,
++     "title": "",
++   },
++   "headRevisionId": "8c8ed86a-237d-45e4-8b4a-8a5c0fbeae08",
++   "headSeq": 1,
++   "revisionBytes": 84,
+  }
+
+ ❯ tests/integration/article-quota.test.ts:29:47
+     27| it('ARTICLE-QUOTA-013 production thresholds are 64 MiB and 256 MiB',()…
+     28|   const f=storageFixture();cleanup.push(f.close);
+     29|   expect(f.service.read(f.article.articleId)).toMatchObject({historyWa…
+       |                                               ^
+     30| });
+     31|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  13:33:28
+   Duration  344ms (tests 48%, import 33%, transform 18%, worker 1%)
+
+ ELIFECYCLE  Test failed. See above for more details.

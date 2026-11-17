@@ -22,6 +22,7 @@ import { RecoveryPanel } from './RecoveryPanel';
 import { ConflictPanel } from './ConflictPanel';
 import { VersionPanel } from './VersionPanel';
 import { DamagedArticlePanel } from './DamagedArticlePanel';
+import { HistoryCapacity } from './HistoryCapacity';
 import './styles.css';
 
 export function App() {
@@ -172,6 +173,9 @@ export function App() {
               disabled={!article.editable}
               maxLength={400}
             />
+            {article.snapshot && (
+              <HistoryCapacity article={article.snapshot} />
+            )}
             {article.damagedArticleId && (
               <DamagedArticlePanel articleId={article.damagedArticleId} />
             )}

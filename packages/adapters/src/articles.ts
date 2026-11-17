@@ -1,6 +1,14 @@
 import type Database from 'better-sqlite3';
 import { createHash, randomUUID } from 'node:crypto';
-import { ArticleError, canonical, type ArticleRepository } from '@inkling/core';
+import {
+  ArticleError,
+  canonical,
+  DEFAULT_HISTORY_POLICY,
+  validateHistoryPolicy,
+  checkHistoryCapacity,
+  type HistoryPolicy,
+  type ArticleRepository,
+} from '@inkling/core';
 import {
   ArticleDocument,
   RevisionInfo,
@@ -46,11 +54,14 @@ export function migrateArticles(db: Database.Database) {
 }
 export class SqliteArticles implements ArticleRepository {
   private readonly damaged = new Set<string>();
+  private readonly historyPolicy: Readonly<HistoryPolicy>;
   constructor(
     private readonly db: Database.Database,
     private readonly workspaceId: string,
     private readonly now: () => number = Date.now,
+    historyPolicy: HistoryPolicy = DEFAULT_HISTORY_POLICY,
   ) {
+    this.historyPolicy = validateHistoryPolicy(historyPolicy);
     // Validate existing history once at startup; quarantine is derived again on reopen.
     for (const value of this.db
       .prepare(
@@ -235,6 +246,8 @@ export class SqliteArticles implements ArticleRepository {
       headRevisionId: string(r.head_revision_id),
       headSeq: number(r.head_seq),
       revisionBytes: number(r.revision_bytes),
+      historyWarningBytes: this.historyPolicy.warningBytes,
+      historyLimitBytes: this.historyPolicy.limitBytes,
       contentHash: string(r.content_hash),
       document,
     };
@@ -259,7 +272,7 @@ export class SqliteArticles implements ArticleRepository {
     row(this.db.prepare('SELECT id FROM articles WHERE id=?').get(articleId));
     const rows = this.db
       .prepare(
-        `SELECT r.*,m.name,m.automatic_at,a.head_revision_id FROM article_revisions r JOIN articles a ON a.id=r.article_id LEFT JOIN revision_markers m ON m.revision_id=r.id WHERE r.article_id=? AND r.seq<? AND (? OR m.automatic_at IS NOT NULL OR m.name IS NOT NULL) ORDER BY r.seq DESC LIMIT ?`,
+        `SELECT r.id,r.article_id,r.seq,r.parent_revision_id,r.kind,r.restored_from_revision_id,r.created_at,m.name,m.automatic_at,a.head_revision_id FROM article_revisions r JOIN articles a ON a.id=r.article_id LEFT JOIN revision_markers m ON m.revision_id=r.id WHERE r.article_id=? AND r.seq<? AND (? OR m.automatic_at IS NOT NULL OR m.name IS NOT NULL) ORDER BY r.seq DESC LIMIT ?`,
       )
       .all(
         articleId,
@@ -375,12 +388,11 @@ export class SqliteArticles implements ArticleRepository {
         if (changed) {
           const json = canonical(document),
             bytes = Buffer.byteLength(json);
-          if (current.revisionBytes + bytes > 256 * 1024 * 1024)
-            throw new ArticleError(
-              'HISTORY_LIMIT',
-              507,
-              '历史容量已达上限，请先下载恢复稿。',
-            );
+          checkHistoryCapacity(
+            current.revisionBytes,
+            bytes,
+            this.historyPolicy,
+          );
           this.db
             .prepare(
               'INSERT INTO article_revisions VALUES(?,?,?,?,?,?,?,?,?,?)',
