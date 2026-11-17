@@ -1,6 +1,6 @@
 # Inkling development entry
 
-本项目是个人中文技术写作协作助手。当前已有本地工作台工程基础；临时正文尚未持久化，AI 与发布尚未接入。docs/prototypes 中的演示仍使用模拟状态。
+本项目是个人中文技术写作协作助手。当前 C02 开发分支已有工作空间、访问保护和正文自动保存；离线恢复与版本 UI 仍在实施，AI 与发布尚未接入。docs/prototypes 中的演示仍使用模拟状态。
 
 先读取 [开发 Harness](docs/engineering/harness.md)，再按任务读取：
 

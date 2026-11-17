@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import { migrateArticles, SqliteArticles } from './articles';
 import { randomUUID } from 'node:crypto';
 import {
   chmodSync,
@@ -99,7 +100,9 @@ export class SqliteWorkspace {
       chmodSync(file, 0o600);
       if (
         existed &&
-        (db.pragma('user_version', { simple: true }) !== 1 ||
+        (![1, 2].includes(
+          Number(db.pragma('user_version', { simple: true })),
+        ) ||
           db.pragma('application_id', { simple: true }) !== APPLICATION_ID)
       )
         throw new WorkspaceError(
@@ -137,6 +140,7 @@ export class SqliteWorkspace {
           db?.pragma('user_version=1');
         }).immediate();
       }
+      migrateArticles(db);
       const foreignErrors = db.pragma('foreign_key_check');
       if (
         db.pragma('quick_check', { simple: true }) !== 'ok' ||
@@ -166,6 +170,9 @@ export class SqliteWorkspace {
         { cause: error },
       );
     }
+  }
+  articles() {
+    return new SqliteArticles(this.db, this.id);
   }
   close() {
     this.db.close();

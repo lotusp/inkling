@@ -1,11 +1,13 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+test.use({ autoConnect: false, autoCreateArticle: false });
 test('WORKSPACE-AUTH-003 connects from local link and removes its credential', async ({
   page,
   request,
+  workspace,
 }) => {
-  const dir = process.env.INKLING_E2E_WORKSPACE;
+  const dir = workspace.dir;
   if (!dir) throw new Error('Missing test workspace');
   const info = JSON.parse(
     readFileSync(join(dir, 'runtime-access.json'), 'utf8'),

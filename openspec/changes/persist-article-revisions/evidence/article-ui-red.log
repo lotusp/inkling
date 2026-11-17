@@ -1,0 +1,49 @@
+[WebServer] (node:83642) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:83665) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] (node:83727) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:83733) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-save.spec.ts:4:1 › ARTICLE-SAVE-002 Chinese draft is saved and reopened with formatting (30.1s)
+
+
+  1) [chromium] › tests/e2e/article-save.spec.ts:4:1 › ARTICLE-SAVE-002 Chinese draft is saved and reopened with formatting
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '开始写作', exact: true })
+
+
+       7 |  const response=await request.post('/api/local/access',{headers:{'x-inkling-local-secret':info.secret},data:{}});const access=await response.json() as {url:string};
+       8 |  await page.goto(access.url);await expect(page.getByText('工作空间已连接',{exact:true})).toBeVisible();
+    >  9 |  await page.getByRole('button',{name:'开始写作',exact:true}).click();
+         |                                                          ^
+      10 |  await page.getByRole('textbox',{name:'文章标题',exact:true}).fill('可靠保存我的想法');
+      11 |  const editor=page.getByRole('textbox',{name:'文章正文',exact:true});await editor.fill('中文正文必须保留。');
+      12 |  await page.getByRole('button',{name:'二级标题',exact:true}).click();
+        at <repo>/tests/e2e/article-save.spec.ts:9:58
+
+    Error Context: test-results/article-save-ARTICLE-SAVE--051b7-nd-reopened-with-formatting-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-save-ARTICLE-SAVE--051b7-nd-reopened-with-formatting-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-save-ARTICLE-SAVE--051b7-nd-reopened-with-formatting-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/article-save.spec.ts:4:1 › ARTICLE-SAVE-002 Chinese draft is saved and reopened with formatting

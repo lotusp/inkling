@@ -1,16 +1,17 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 test('WORKBENCH-START-001 opens the workbench with real service status', async ({
   page,
 }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: '写作工作台' })).toBeVisible();
   await expect(page.getByRole('status')).toContainText('本地服务已连接');
+  await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await page.screenshot({
     path: 'test-results/workbench-desktop.png',
     fullPage: true,
   });
 });
-test('WORKBENCH-EDIT-004 edits Chinese text and basic formatting without claiming persistence', async ({
+test('WORKBENCH-EDIT-004 edits Chinese text and basic formatting and preserves it after reload', async ({
   page,
 }) => {
   page.on('dialog', (dialog) => dialog.accept());
@@ -24,12 +25,12 @@ test('WORKBENCH-EDIT-004 edits Chinese text and basic formatting without claimin
   await editor.press('ControlOrMeta+A');
   await page.getByRole('button', { name: '加粗', exact: true }).click();
   await expect(editor.locator('strong')).toContainText('技术选择');
-  await expect(
-    page.getByText('尚未保存 · 刷新后内容会清空', { exact: true }),
-  ).toBeVisible();
+  await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await page.reload();
-  await expect(page.getByLabel('文章标题')).toHaveValue('');
-  await expect(page.getByRole('textbox', { name: '文章正文' })).toHaveText('');
+  await expect(page.getByLabel('文章标题')).toHaveValue('我的第一篇技术文章');
+  await expect(
+    page.getByRole('textbox', { name: '文章正文' }).locator('strong'),
+  ).toContainText('技术选择');
 });
 test('WORKBENCH-EDIT-004 composition events do not submit or reset text', async ({
   page,

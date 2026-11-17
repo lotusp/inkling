@@ -14,6 +14,15 @@ importers:
       '@fission-ai/openspec':
         specifier: 1.16.1
         version: 1.16.1(@types/node@22.20.5)
+      '@inkling/adapters':
+        specifier: workspace:*
+        version: link:packages/adapters
+      '@inkling/contracts':
+        specifier: workspace:*
+        version: link:packages/contracts
+      '@inkling/core':
+        specifier: workspace:*
+        version: link:packages/core
       '@playwright/test':
         specifier: 1.65.1
         version: 1.65.1
@@ -77,6 +86,9 @@ importers:
       '@inkling/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@inkling/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       better-sqlite3:
         specifier: 13.2.0
         version: 13.2.0
@@ -110,6 +122,12 @@ importers:
 
   packages/adapters:
     dependencies:
+      '@inkling/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@inkling/core':
+        specifier: workspace:*
+        version: link:../core
       better-sqlite3:
         specifier: 13.2.0
         version: 13.2.0
@@ -119,6 +137,12 @@ importers:
       zod:
         specifier: 4.6.7
         version: 4.6.7
+
+  packages/core:
+    dependencies:
+      '@inkling/contracts':
+        specifier: workspace:*
+        version: link:../contracts
 
 packages:
 

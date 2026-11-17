@@ -6,6 +6,7 @@ import { randomBytes } from 'node:crypto';
 import { writeFileSync, renameSync, rmSync, lstatSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AccessOptions } from './access';
+import { ArticleService } from '@inkling/core';
 
 async function main() {
   const { values } = parseArgs({
@@ -13,6 +14,7 @@ async function main() {
     strict: true,
   });
   let workspace: SqliteWorkspace | undefined;
+  let articles: ArticleService | undefined;
   const rawPort = process.env.PORT ?? '4317';
   if (!/^\d+$/.test(rawPort) || Number(rawPort) > 65535)
     throw new Error('PORT 必须是 0–65535 的整数。');
@@ -30,6 +32,7 @@ async function main() {
   let accessFile: string | undefined;
   const app = createServer({
     access,
+    articles: () => articles,
     webRoot: fileURLToPath(new URL('../../web/dist/', import.meta.url)),
   });
   app.addHook('onClose', async () => {
@@ -57,6 +60,8 @@ async function main() {
         process.env.INKLING_WORKSPACE ??
         defaultWorkspacePath(),
     );
+    articles = new ArticleService(workspace.articles());
+    access.workspaceInfo = () => articles?.workspace();
     access.origin = address;
     access.workspaceId = workspace.id;
     const file = join(workspace.path, 'runtime-access.json');

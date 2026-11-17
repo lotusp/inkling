@@ -1,6 +1,6 @@
 # 本地开发与检查
 
-更新日期：2026-11-17。适用：当前 C02 开发分支；已接入工作空间身份与访问保护，文章持久化仍在实施。现阶段可编辑临时标题与正文、查看服务状态；尚无内容保存或 AI 调用，刷新会清空内容。
+更新日期：2026-11-17。适用：当前 C02 开发分支；已接入工作空间身份与访问保护，文章持久化仍在实施。现阶段已接入单稿自动保存、格式与重开；离线恢复副本、版本 UI 和 AI 调用仍未完成。
 
 ## 环境与安装
 
@@ -20,7 +20,7 @@ corepack pnpm start
 
 ## 工作空间与本机接入
 
-默认数据目录为 `~/Library/Application Support/Inkling/workspaces/default/`，不在源码仓库内。当前 SQLite 保存工作空间身份；正文保存按 C02 后续步骤接入。SQLite 嵌入应用进程，无需独立数据库服务。
+默认数据目录为 `~/Library/Application Support/Inkling/workspaces/default/`，不在源码仓库内。当前 SQLite 保存工作空间身份、正文与内部修订。连接工作空间后，首次点击“开始写作”；看到“已保存”后可重开。SQLite 嵌入应用进程，无需独立数据库服务。
 
 不同端口也不能让两个服务同时写同一目录。程序正常退出或崩溃后 SQLite 释放锁；遇到不兼容、损坏或符号链接时拒绝打开，不会自动清空原数据。
 
@@ -52,7 +52,7 @@ corepack pnpm exec playwright install chromium
 corepack pnpm test:e2e
 ```
 
-verify 依次执行格式、lint、类型、依赖边界、构建、API/进程/架构测试、Harness 回归、文档和 OpenSpec 检查。浏览器测试启动独立的 4329 端口服务，结束后停止它，不复用已有工作台实例，工作空间使用本机临时目录，不接触个人默认目录。首次使用需安装对应 Chromium；Linux CI 安装时加 `--with-deps`。
+verify 依次执行格式、lint、类型、依赖边界、构建、API/进程/架构测试、Harness 回归、文档和 OpenSpec 检查。浏览器测试为每个测试启动独立的临时端口服务与工作空间，结束后关闭并清理，不复用已有实例或接触个人默认目录。首次使用需安装对应 Chromium；Linux CI 安装时加 `--with-deps`。
 
 有针对性地定位问题时可以运行：
 
@@ -70,7 +70,7 @@ GitHub Actions 复用 verify 和 E2E，不调用模型、不发布应用。CI �
 
 ## 模块与工具选择
 
-当前有 `apps/web`、`apps/server`、`packages/contracts` 和 `packages/adapters`。contracts 导出健康响应 schema，web 校验真实响应，server 提供它；工作空间存储已放入 packages/adapters，正文业务用例随实现建立 core。
+当前有 `apps/web`、`apps/server`、`packages/contracts` 和 `packages/adapters`。contracts 导出健康响应 schema，web 校验真实响应，server 提供它；工作空间存储已放入 packages/adapters，正文用例已进入 packages/core。
 
 React 19 与 Tiptap 3 提供编辑，Vite 8 构建 Web，Fastify 5 提供本机服务，esbuild 打包服务入口，Zod 4 负责契约。完整精确版本见各 package.json 和 pnpm-lock.yaml。TypeScript 使用 6.0.3：当前 typescript-eslint 的支持范围小于 6.1，因此没有机械采用 TypeScript 7。
 
@@ -80,6 +80,6 @@ dependency-cruiser 使用 package.json 的 workspaces 识别公开包导入；pn
 
 ## 当前限制
 
-正文仅在编辑器内存中；有内容时浏览器会尝试显示离开提醒，这不是数据备份。没有导入、保存、自动恢复、模型、版本或发布实现。健康接口的“已连接”只表示本机服务可用。
+正文在线自动保存；未确认提交的内容当前仍只在内存中，离开提醒不是数据备份。暂时没有浏览器离线恢复副本、版本 UI、导入、模型或发布实现。健康接口的“已连接”只表示本机服务可用。
 
 浏览器测试覆盖中文文本及组合事件，不能代替真实中文输入法候选窗验证。构建会提示编辑器主包较大，这一条 bootstrap 尚未做加载性能优化。SQLite 存储选择已完成 POC；模型框架仍待验证。

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useHealth } from './use-health';
 import { useAccess } from './access';
+import { useArticle } from './use-article';
 import './styles.css';
 
 export function App() {
@@ -26,6 +27,7 @@ export function App() {
   const health = useHealth();
   const access = useAccess();
   const editor = useEditor({
+    editable: false,
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3] },
@@ -43,6 +45,12 @@ export function App() {
       },
     },
   });
+  const article = useArticle(
+    editor,
+    title,
+    setTitle,
+    access.status === 'connected',
+  );
   const format = useEditorState({
     editor,
     selector: ({ editor }) => ({
@@ -53,7 +61,7 @@ export function App() {
       length: editor?.getText().replace(/\s/g, '').length ?? 0,
     }),
   });
-  const hasText = Boolean(title.trim() || format?.length);
+  const hasText = article.dirty;
   useEffect(() => {
     if (!hasText) return;
     const confirmLeave = (event: BeforeUnloadEvent) => {
@@ -122,7 +130,7 @@ export function App() {
                   key={label}
                   aria-label={label}
                   aria-pressed={active ?? false}
-                  disabled={!editor}
+                  disabled={!editor || !article.snapshot}
                   onClick={run}
                 >
                   <Icon size={17} aria-hidden="true" />
@@ -132,6 +140,12 @@ export function App() {
             <span className="format-note">慢慢想，清楚地写。</span>
           </div>
           <article className="writing-sheet">
+            {article.status === 'empty' && (
+              <button onClick={() => void article.create()}>开始写作</button>
+            )}
+            {!article.snapshot && access.status !== 'connected' && (
+              <p>请先打开终端提供的本机访问链接。</p>
+            )}
             <div className="document-eyebrow">
               <span />
               从一个值得追问的问题开始
@@ -142,7 +156,8 @@ export function App() {
               placeholder="给这个想法一个标题"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              maxLength={200}
+              disabled={!article.snapshot}
+              maxLength={400}
             />
             <div className={`editor-wrap ${format?.length ? '' : 'is-empty'}`}>
               <EditorContent editor={editor} />
@@ -158,7 +173,24 @@ export function App() {
             </div>
             <div className="save-notice">
               <CircleAlert size={15} aria-hidden="true" />
-              <span>尚未保存 · 刷新后内容会清空</span>
+              <span>
+                {article.status === 'clean'
+                  ? '已保存'
+                  : article.status === 'saving'
+                    ? '保存中…'
+                    : article.status === 'loading'
+                      ? '正在打开稿件…'
+                      : article.status === 'empty'
+                        ? '创建稿件后开始写作'
+                        : '尚未保存'}
+              </span>
+              {(article.status === 'error' ||
+                article.status === 'conflict') && (
+                <>
+                  <span>{article.message}</span>
+                  <button onClick={() => void article.save()}>重试保存</button>
+                </>
+              )}
             </div>
           </article>
         </main>

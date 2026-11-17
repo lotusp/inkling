@@ -7,6 +7,7 @@ export interface AccessOptions {
   localSecret: string;
   now?: () => number;
   browserOrigin?: string;
+  workspaceInfo?: () => unknown;
 }
 const random = () => randomBytes(32).toString('hex');
 function equal(a: unknown, b: string) {
@@ -143,7 +144,11 @@ export function registerAccess(app: FastifyInstance, options: AccessOptions) {
       url: `${options.browserOrigin ?? options.origin}/#access=${token}`,
     };
   });
-  app.get('/api/workspace', async () => ({ workspaceId: options.workspaceId }));
+  app.get(
+    '/api/workspace',
+    async () =>
+      options.workspaceInfo?.() ?? { workspaceId: options.workspaceId },
+  );
   app.addHook('onClose', async () => {
     tokens.clear();
     sessions.clear();

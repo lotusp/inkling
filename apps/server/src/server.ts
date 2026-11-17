@@ -4,9 +4,16 @@ import { HealthResponse } from '@inkling/contracts';
 
 import { registerAccess, type AccessOptions } from './access';
 export type { AccessOptions } from './access';
+import { ArticleError, type ArticleService } from '@inkling/core';
 export function createServer(
-  options: { webRoot?: string; access?: AccessOptions } = {},
+  options: {
+    webRoot?: string;
+    access?: AccessOptions;
+    articles?: () => ArticleService | undefined;
+  } = {},
 ) {
+  if (options.articles && !options.access)
+    throw new Error('Article routes require local access protection');
   const app = Fastify({
     logger: false,
     forceCloseConnections: true,
@@ -20,6 +27,66 @@ export function createServer(
     }
   });
   if (options.access) registerAccess(app, options.access);
+  app.setErrorHandler((error, _request, reply) => {
+    if (error instanceof ArticleError)
+      return reply.code(error.status).send({
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        retryable: error.status === 503,
+      });
+    if (error instanceof Error && error.name === 'ZodError')
+      return reply.code(422).send({
+        code: 'UNSUPPORTED_DOCUMENT',
+        message: '请求或正文格式不受支持。',
+        retryable: false,
+      });
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      String(error.code).startsWith('SQLITE_')
+    )
+      return reply.code(error.code === 'SQLITE_FULL' ? 507 : 503).send({
+        code:
+          error.code === 'SQLITE_FULL' ? 'STORAGE_FULL' : 'STORAGE_UNAVAILABLE',
+        message: '保存未确认，请保留输入并重试。',
+        retryable: true,
+      });
+    return reply
+      .code(
+        error instanceof Error &&
+          'statusCode' in error &&
+          typeof error.statusCode === 'number'
+          ? error.statusCode
+          : 500,
+      )
+      .send({ code: 'REQUEST_FAILED', message: '请求未完成。' });
+  });
+  if (options.articles) {
+    const service = () => {
+      const articles = options.articles?.();
+      if (!articles)
+        throw new ArticleError(
+          'WORKSPACE_NOT_READY',
+          503,
+          '工作空间尚未就绪。',
+        );
+      return articles;
+    };
+    app.post('/api/articles/ensure-current', async (request) =>
+      service().ensure(request.body),
+    );
+    app.get<{ Params: { id: string } }>('/api/articles/:id', async (request) =>
+      service().read(request.params.id),
+    );
+    app.put<{ Params: { id: string } }>(
+      '/api/articles/:id/content',
+      async (request) => service().save(request.params.id, request.body),
+    );
+    app.get<{ Params: { id: string } }>('/api/mutations/:id', async (request) =>
+      service().mutation(request.params.id),
+    );
+  }
   app.get('/api/health', async (_request, reply) => {
     if (options.access && !options.access.workspaceId)
       return reply.code(503).send({ code: 'WORKSPACE_NOT_READY' });
