@@ -9,6 +9,7 @@ import {
 } from '@inkling/contracts';
 import { api, ApiError } from './api';
 import { connectWorkspace } from './access';
+import { downloadRescue } from './draft-rescue';
 import {
   listDrafts,
   ownDraftClient,
@@ -146,6 +147,8 @@ export function useArticle(
               article.articleId,
             );
           } catch {
+            // Preserve unreadable/blocked records; never overwrite their client key.
+            identity.current = null;
             setBackup('unavailable');
           }
           if (active) {
@@ -306,7 +309,9 @@ export function useArticle(
         error instanceof ApiError && error.code === 'REVISION_CONFLICT';
       setStatus(conflicted.current ? 'conflict' : 'error');
       setMessage(
-        error instanceof Error ? error.message : '保存未确认，请保留输入。',
+        error instanceof ApiError
+          ? error.message
+          : '无法确认保存。本地服务恢复后请重试；服务停止期间刷新页面无法打开工作台。',
       );
       await persist();
     } finally {
@@ -452,6 +457,23 @@ export function useArticle(
       setRecovering(false);
     }
   }, [display]);
+  const download = useCallback(() => {
+    if (!head.current || !editor) return;
+    downloadRescue({
+      workspaceId: identity.current?.workspaceId ?? null,
+      clientId: identity.current?.clientId ?? null,
+      ack: head.current,
+      draft: {
+        document: {
+          schemaVersion: 1,
+          title: titleRef.current,
+          doc: editor.getJSON(),
+        },
+        seq: editSeq.current,
+      },
+      pending: inFlight.current,
+    });
+  }, [editor]);
   const changed = useCallback(() => {
     if (!editor || !head.current || choosing.current) return;
     const document: ArticleDocument = {
@@ -545,6 +567,7 @@ export function useArticle(
     recovering,
     recover,
     keepServer,
+    download,
     editable: snapshot !== null && recoveries.length === 0 && !recovering,
     dirty: status !== 'clean' && status !== 'empty' && status !== 'loading',
   };

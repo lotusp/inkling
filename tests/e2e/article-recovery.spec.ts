@@ -285,6 +285,25 @@ test('ARTICLE-LOCAL-007 an offline draft survives reload and is restored only by
   await expect(page.getByRole('region', { name: '待恢复草稿' })).toBeVisible();
   await expect(editor).toHaveText('服务端已保存的起点');
   await expect(editor).not.toBeEditable();
+  await page.screenshot({
+    path: 'test-results/recovery-choices-desktop.png',
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 375, height: 900 });
+  await expect(page.locator('.app-header')).toHaveCount(1);
+  await page.evaluate(() => new Promise(requestAnimationFrame));
+  await page.getByRole('status').scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: 'test-results/recovery-choices-mobile-bottom.png',
+  });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.evaluate(() => new Promise(requestAnimationFrame));
+  await page.screenshot({ path: 'test-results/recovery-choices-mobile.png' });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
   await page.getByRole('button', { name: '恢复此草稿', exact: true }).click();
   await expect(editor).toHaveText('断线后产生的新洞见');
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();

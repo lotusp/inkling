@@ -13,7 +13,7 @@
 | ARTICLE-RACE-005 | 旧响应晚到 | UI | tests/e2e/article-save-races.spec.ts | 延迟真实保存响应，继续输入新字符 | 保留新内容和副本，不误显 clean |
 | ARTICLE-CONFLICT-006 | 两个标签页冲突 | API + UI | tests/e2e/article-conflict.spec.ts | 同 browser context 的两个页面 | 第二份写冲突，两边可查看，合并仍 CAS |
 | ARTICLE-LOCAL-007 | 断线/重开恢复 | UI | tests/e2e/article-recovery.spec.ts | 已持久 IDB、在途/最新 draft、服务中断 | 先查 mutation/head，选择恢复；多副本隔离；旧基线不自动上传 |
-| ARTICLE-IDB-008 | 浏览器副本失效 | UI | tests/e2e/article-recovery.spec.ts | 通过 adapter 故障点返回 IDB 配额/不可用 | 提示失败、可下载内存救援稿，不声称已保存副本 |
+| ARTICLE-IDB-008 | 浏览器副本失效 | UI | tests/e2e/article-recovery-failures.spec.ts | 浏览器原生 IDB 调用边界注入配额/不可用/事务 abort，保留真实 UI 与服务器 | 提示失败、可下载内存救援稿，不声称已保存副本；未知记录不覆盖 |
 | ARTICLE-WRITE-009 | 数据库写失败 | 集成 + UI | tests/integration/article-store.test.ts；tests/e2e/article-save.spec.ts | 只读 SQLite 连接、SQLITE_FULL 故障注入、合法权限失败夹具 | 事务前后状态一致；显示失败并保留输入 |
 | ARTICLE-CRASH-010 | 事务中断 | 进程 | tests/process/article-crash.test.ts | 隔离 workspace，提交各边界进程 SIGKILL | 重开 head/revision/mutation 一致，提交后可查询去重 |
 | ARTICLE-SCHEMA-011 | 结构与容量校验 | 契约 + API | tests/unit/article-document.test.ts；tests/api/article-persistence.test.ts；tests/e2e/article-formats.spec.ts | 未知版本/attrs/节点、恶意协议、最大深度/字节 | 已支持格式通过，非法输入拒绝且不改原稿 |
@@ -25,7 +25,7 @@
 | REVISION-CONFLICT-004 | 恢复与新输入竞争 | UI + API | tests/e2e/article-conflict.spec.ts | 恢复面板期间本页输入/其他标签先保存 | 旧确认失效或 409，不覆盖新稿 |
 | WORKSPACE-OPEN-001 | 目录/初始化/schema | 进程 | tests/process/workspace-access.test.ts | 缺省新目录、已存在较新格式、非 SQLite 文件 | 幂等初始化/拒绝兼容错误，不覆写已有文件 |
 | WORKSPACE-LOCK-002 | 多服务与退出 | 进程 | tests/process/workspace-access.test.ts | 同目录不同端口两进程，正常退出/SIGKILL | 第二进程失败；原进程结束后可正常重开 |
-| WORKSPACE-AUTH-003 | 本机接入与重新认证 | API + UI + 进程 | tests/api/workspace-access.test.ts；tests/process/workspace-access.test.ts | 有效/过期/重复 token、重启、local:access | 一次交换、cookie、fragment 清除；重新接入不丢 IDB |
+| WORKSPACE-AUTH-003 | 本机接入与重新认证 | API + UI + 进程 | tests/api/workspace-access.test.ts；tests/process/workspace-access.test.ts；tests/e2e/article-recovery.spec.ts | 有效/过期/重复 token、真实服务重启、local:access | 一次交换、cookie、fragment 清除；重新接入不丢 IDB |
 | WORKSPACE-CSRF-004 | 跨源防护 | API + UI | tests/api/workspace-access.test.ts；tests/e2e/workspace-access.spec.ts | 攻击源页面、missing/null Origin、错误 CSRF | 敏感读写被拒绝，合法本机和开发代理通过 |
 | WORKSPACE-PATH-005 | 路径与资源边界 | API | tests/api/workspace-access.test.ts | 路径穿越、跨文章 revision、恶意链接 | 拒绝越界，无外部文件变化或脚本执行 |
 | WORKBENCH-EDIT-004 | 原编辑器持久化回归 | UI + 手工 IME | tests/e2e/workbench.spec.ts；tests/e2e/article-formats.spec.ts；macOS 中文输入法检查 | 当前所有按钮、中文候选、刷新 | 格式功能保留，刷新由清空变为恢复，不抢输入焦点 |

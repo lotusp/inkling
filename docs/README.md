@@ -1,6 +1,6 @@
 # Inkling 产品知识库
 
-更新日期：2026-11-17。当前阶段：C02 正文持久化实施中，已有在线自动保存与重开；离线恢复、版本 UI 与 AI 协作尚未完成。MVP 目标为单台 Mac 本地运行。此目录保存产品为什么存在、依据什么做决定、计划如何实现，以及实际验证了什么。
+更新日期：2026-11-17。当前阶段：C02 正文持久化实施中，已有在线自动保存、重开、浏览器草稿恢复与救援下载；冲突合并、版本 UI 与 AI 协作尚未完成。MVP 目标为单台 Mac 本地运行。此目录保存产品为什么存在、依据什么做决定、计划如何实现，以及实际验证了什么。
 
 ## 从这里开始
 
@@ -28,7 +28,7 @@
 | 实现架构 | [单台 Mac 本地架构](architecture/local-macos-mvp.md) | 当前 MVP 提案，Pi 优先 POC，尚未冻结、未实现 |
 | 文章保存设计 | [DEC-0004](decisions/0004-article-storage-and-revisions.md)、[存储 POC](validation/article-storage-poc.md) | JSON 正文 + SQLite 已接入开发分支；完整 change 尚未通过 G2 |
 | 框架选择 | [框架复评](research/framework-evaluation.md) | 需同任务 POC 验证；不是依赖清单 |
-| 本地工程 | [运行与检查](engineering/local-development.md) | 本机服务、持久编辑、真实工程检查；离线恢复与 AI 待接入 |
+| 本地工程 | [运行与检查](engineering/local-development.md) | 本机服务、持久编辑、草稿恢复、真实工程检查；AI 待接入 |
 | 开发方法 | [Harness](engineering/harness.md)、[DEC-0003](decisions/0003-openspec-atdd-harness.md) | OpenSpec、ATDD 与首批应用检查已建立 |
 | V1 Change 路线图 | [Change 拆分与依赖](engineering/v1-change-roadmap.md) | 建议 17 条，bootstrap 已完成，文章持久化正在分步骤实现 |
 | 代码规范 | [架构边界](engineering/code-architecture.md)、[日常规范](engineering/development-rules.md) | 新代码应遵循；模块随实现建立 |

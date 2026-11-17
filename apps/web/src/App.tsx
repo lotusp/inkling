@@ -222,7 +222,15 @@ export function App() {
                     ? '浏览器恢复副本已更新'
                     : article.backup === 'pending'
                       ? '正在更新浏览器恢复副本…'
-                      : '浏览器恢复副本不可用，请勿关闭页面；尚未保存的输入可能丢失。'}
+                      : '浏览器恢复副本不可用。未保存内容仅留在本页，请先重试保存或下载救援稿。'}
+                </div>
+              )}
+            {article.snapshot &&
+              article.recoveries.length === 0 &&
+              (article.dirty || article.backup === 'unavailable') && (
+                <div className="rescue-actions">
+                  <button onClick={article.download}>下载救援稿</button>
+                  <span>包含正文与恢复信息的 JSON，不含访问凭证。</span>
                 </div>
               )}
           </article>

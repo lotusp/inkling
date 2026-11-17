@@ -1,5 +1,6 @@
 import type { DocumentNode } from '@inkling/contracts';
 import type { RecoveryChoice } from './draft-store';
+import { downloadRescue } from './draft-rescue';
 function preview(doc: DocumentNode) {
   const stack = [doc];
   let text = '';
@@ -42,6 +43,9 @@ export function RecoveryPanel({
           </p>
           <button disabled={busy} onClick={() => void recover(choice)}>
             {busy ? '正在核对…' : '恢复此草稿'}
+          </button>
+          <button onClick={() => downloadRescue(choice.record)}>
+            下载此副本
           </button>
         </div>
       ))}
