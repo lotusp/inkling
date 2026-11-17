@@ -5,7 +5,7 @@ context: |
   同时只推进一个 active change；Living Spec 只记录已完成交付的行为。
   G1/G2/G3 检查产物与证据，不需要多人签署。继续遵守当前用户授权范围。
   产物用中文；Requirement / Scenario / SHALL / WHEN / THEN 等解析关键字保留英文。
-  文章存储已由 C02 POC 设计选定 JSON + SQLite（DEC-0004），产品实现尚待验收。模型与运行框架仍待 POC，不因候选架构文档而冻结依赖。
+  C02 已交付 JSON + SQLite 文章保存与修订（DEC-0004），经过 Mac/Linux 验收并已归档。模型与运行框架仍待 POC，不因候选架构文档而冻结依赖。
 rules:
   proposal:
     - 明确用户结果、非目标、涉及 capability 和影响范围。
