@@ -1,0 +1,261 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-navigation.spec.ts --workers=2 --timeout=12000
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2251 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-Aloy4iO7.css    8.57 kB │ gzip:   2.57 kB
+apps/web/dist/assets/index-DVYxAlLR.js   764.74 kB │ gzip: 238.18 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 333ms
+
+Running 7 tests using 2 workers
+
+(node:56012) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56013) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-navigation.spec.ts:58:1 › LIBRARY-SWITCH-005 save before switching flushes the newest input (12.2s)
+  ✘  2 [chromium] › tests/e2e/article-navigation.spec.ts:36:1 › LIBRARY-OPEN-004 clean navigation is per tab and reload follows the last explicit open (12.1s)
+(node:56156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56157) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [chromium] › tests/e2e/article-navigation.spec.ts:115:1 › LIBRARY-SWITCH-005 unknown save stays recoverable across two navigations without duplicating its request (12.1s)
+  ✘  4 [chromium] › tests/e2e/article-navigation.spec.ts:73:1 › LIBRARY-SWITCH-005 late save waits before leaving and cannot replace the next editor (12.1s)
+(node:56264) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56265) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  6 [chromium] › tests/e2e/article-navigation.spec.ts:177:1 › LIBRARY-SWITCH-005 composition blocks navigation and requires a fresh action after selection (12.1s)
+  ✘  5 [chromium] › tests/e2e/article-navigation.spec.ts:153:1 › LIBRARY-SWITCH-005 failed draft protection prevents navigation and keeps rescue available (12.1s)
+(node:56377) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  7 [chromium] › tests/e2e/article-navigation.spec.ts:194:1 › LIBRARY-SWITCH-005 lost open response retries the same operation and freezes input only during navigation (12.1s)
+
+
+  1) [chromium] › tests/e2e/article-navigation.spec.ts:36:1 › LIBRARY-OPEN-004 clean navigation is per tab and reload follows the last explicit open
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '文章库', exact: true })
+
+
+      25 | }
+      26 | async function choose(page: Page, title = '第二篇') {
+    > 27 |   await page.getByRole('button', { name: '文章库', exact: true }).click();
+         |                                                                ^
+      28 |   await page
+      29 |     .getByRole('button', { name: '打开：' + title, exact: true })
+      30 |     .click();
+        at choose (<repo>/tests/e2e/article-navigation.spec.ts:27:64)
+        at <repo>/tests/e2e/article-navigation.spec.ts:45:9
+
+    Error Context: test-results/article-navigation-LIBRARY-0b93a-lows-the-last-explicit-open-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-navigation-LIBRARY-0b93a-lows-the-last-explicit-open-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-navigation-LIBRARY-0b93a-lows-the-last-explicit-open-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/article-navigation.spec.ts:58:1 › LIBRARY-SWITCH-005 save before switching flushes the newest input
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '文章库', exact: true })
+
+
+      25 | }
+      26 | async function choose(page: Page, title = '第二篇') {
+    > 27 |   await page.getByRole('button', { name: '文章库', exact: true }).click();
+         |                                                                ^
+      28 |   await page
+      29 |     .getByRole('button', { name: '打开：' + title, exact: true })
+      30 |     .click();
+        at choose (<repo>/tests/e2e/article-navigation.spec.ts:27:64)
+        at <repo>/tests/e2e/article-navigation.spec.ts:64:9
+
+    Error Context: test-results/article-navigation-LIBRARY-a4bb2-ng-flushes-the-newest-input-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-navigation-LIBRARY-a4bb2-ng-flushes-the-newest-input-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-navigation-LIBRARY-a4bb2-ng-flushes-the-newest-input-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/article-navigation.spec.ts:73:1 › LIBRARY-SWITCH-005 late save waits before leaving and cannot replace the next editor
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '文章库', exact: true })
+
+
+      25 | }
+      26 | async function choose(page: Page, title = '第二篇') {
+    > 27 |   await page.getByRole('button', { name: '文章库', exact: true }).click();
+         |                                                                ^
+      28 |   await page
+      29 |     .getByRole('button', { name: '打开：' + title, exact: true })
+      30 |     .click();
+        at choose (<repo>/tests/e2e/article-navigation.spec.ts:27:64)
+        at <repo>/tests/e2e/article-navigation.spec.ts:99:9
+
+    Error Context: test-results/article-navigation-LIBRARY-a491d-not-replace-the-next-editor-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-navigation-LIBRARY-a491d-not-replace-the-next-editor-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-navigation-LIBRARY-a491d-not-replace-the-next-editor-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/article-navigation.spec.ts:115:1 › LIBRARY-SWITCH-005 unknown save stays recoverable across two navigations without duplicating its request
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '文章库', exact: true })
+
+
+      25 | }
+      26 | async function choose(page: Page, title = '第二篇') {
+    > 27 |   await page.getByRole('button', { name: '文章库', exact: true }).click();
+         |                                                                ^
+      28 |   await page
+      29 |     .getByRole('button', { name: '打开：' + title, exact: true })
+      30 |     .click();
+        at choose (<repo>/tests/e2e/article-navigation.spec.ts:27:64)
+        at <repo>/tests/e2e/article-navigation.spec.ts:129:9
+
+    Error Context: test-results/article-navigation-LIBRARY-9d15e-out-duplicating-its-request-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-navigation-LIBRARY-9d15e-out-duplicating-its-request-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-navigation-LIBRARY-9d15e-out-duplicating-its-request-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests/e2e/article-navigation.spec.ts:153:1 › LIBRARY-SWITCH-005 failed draft protection prevents navigation and keeps rescue available
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '文章库', exact: true })
+
+
+      25 | }
+      26 | async function choose(page: Page, title = '第二篇') {
+    > 27 |   await page.getByRole('button', { name: '文章库', exact: true }).click();
+         |                                                                ^
+      28 |   await page
+      29 |     .getByRole('button', { name: '打开：' + title, exact: true })
+      30 |     .click();
+        at choose (<repo>/tests/e2e/article-navigation.spec.ts:27:64)
+        at <repo>/tests/e2e/article-navigation.spec.ts:165:9
+
+    Error Context: test-results/article-navigation-LIBRARY-4ce9b--and-keeps-rescue-available-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-navigation-LIBRARY-4ce9b--and-keeps-rescue-available-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-navigation-LIBRARY-4ce9b--and-keeps-rescue-available-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › tests/e2e/article-navigation.spec.ts:177:1 › LIBRARY-SWITCH-005 composition blocks navigation and requires a fresh action after selection
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '文章库', exact: true })
+
+
+      25 | }
+      26 | async function choose(page: Page, title = '第二篇') {
+    > 27 |   await page.getByRole('button', { name: '文章库', exact: true }).click();
+         |                                                                ^
+      28 |   await page
+      29 |     .getByRole('button', { name: '打开：' + title, exact: true })
+      30 |     .click();
+        at choose (<repo>/tests/e2e/article-navigation.spec.ts:27:64)
+        at <repo>/tests/e2e/article-navigation.spec.ts:183:9
+
+    Error Context: test-results/article-navigation-LIBRARY-45c6d-resh-action-after-selection-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-navigation-LIBRARY-45c6d-resh-action-after-selection-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-navigation-LIBRARY-45c6d-resh-action-after-selection-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [chromium] › tests/e2e/article-navigation.spec.ts:194:1 › LIBRARY-SWITCH-005 lost open response retries the same operation and freezes input only during navigation
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.click: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '文章库', exact: true })
+
+
+      25 | }
+      26 | async function choose(page: Page, title = '第二篇') {
+    > 27 |   await page.getByRole('button', { name: '文章库', exact: true }).click();
+         |                                                                ^
+      28 |   await page
+      29 |     .getByRole('button', { name: '打开：' + title, exact: true })
+      30 |     .click();
+        at choose (<repo>/tests/e2e/article-navigation.spec.ts:27:64)
+        at <repo>/tests/e2e/article-navigation.spec.ts:211:9
+
+    Error Context: test-results/article-navigation-LIBRARY-40fc3-nput-only-during-navigation-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-navigation-LIBRARY-40fc3-nput-only-during-navigation-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-navigation-LIBRARY-40fc3-nput-only-during-navigation-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7 failed
+    [chromium] › tests/e2e/article-navigation.spec.ts:36:1 › LIBRARY-OPEN-004 clean navigation is per tab and reload follows the last explicit open
+    [chromium] › tests/e2e/article-navigation.spec.ts:58:1 › LIBRARY-SWITCH-005 save before switching flushes the newest input
+    [chromium] › tests/e2e/article-navigation.spec.ts:73:1 › LIBRARY-SWITCH-005 late save waits before leaving and cannot replace the next editor
+    [chromium] › tests/e2e/article-navigation.spec.ts:115:1 › LIBRARY-SWITCH-005 unknown save stays recoverable across two navigations without duplicating its request
+    [chromium] › tests/e2e/article-navigation.spec.ts:153:1 › LIBRARY-SWITCH-005 failed draft protection prevents navigation and keeps rescue available
+    [chromium] › tests/e2e/article-navigation.spec.ts:177:1 › LIBRARY-SWITCH-005 composition blocks navigation and requires a fresh action after selection
+    [chromium] › tests/e2e/article-navigation.spec.ts:194:1 › LIBRARY-SWITCH-005 lost open response retries the same operation and freezes input only during navigation
+ ELIFECYCLE  Command failed with exit code 1.

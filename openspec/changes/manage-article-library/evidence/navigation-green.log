@@ -1,0 +1,39 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-navigation.spec.ts --workers=2
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2252 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-Aloy4iO7.css    8.57 kB │ gzip:   2.57 kB
+apps/web/dist/assets/index-BB7oJdQD.js   769.46 kB │ gzip: 239.32 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 326ms
+
+Running 7 tests using 2 workers
+
+(node:56872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56871) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/article-navigation.spec.ts:58:1 › LIBRARY-SWITCH-005 save before switching flushes the newest input (1.5s)
+  ✓  2 [chromium] › tests/e2e/article-navigation.spec.ts:36:1 › LIBRARY-OPEN-004 clean navigation is per tab and reload follows the last explicit open (1.7s)
+  ✓  4 [chromium] › tests/e2e/article-navigation.spec.ts:115:1 › LIBRARY-SWITCH-005 unknown save stays recoverable across two navigations without duplicating its request (3.9s)
+  ✓  3 [chromium] › tests/e2e/article-navigation.spec.ts:73:1 › LIBRARY-SWITCH-005 late save waits before leaving and cannot replace the next editor (4.7s)
+  ✓  5 [chromium] › tests/e2e/article-navigation.spec.ts:153:1 › LIBRARY-SWITCH-005 failed draft protection prevents navigation and keeps rescue available (756ms)
+  ✓  6 [chromium] › tests/e2e/article-navigation.spec.ts:177:1 › LIBRARY-SWITCH-005 composition blocks navigation and requires a fresh action after selection (758ms)
+  ✓  7 [chromium] › tests/e2e/article-navigation.spec.ts:194:1 › LIBRARY-SWITCH-005 lost open response retries the same operation and freezes input only during navigation (924ms)
+
+  7 passed (9.7s)

@@ -17,7 +17,8 @@ import {
 } from 'lucide-react';
 import { useHealth } from './use-health';
 import { useAccess } from './access';
-import { useArticle } from './use-article';
+import { useArticle, type ArticleSession } from './use-article';
+import { ArticleNavigation } from './ArticleNavigation';
 import { RecoveryPanel } from './RecoveryPanel';
 import { ConflictPanel } from './ConflictPanel';
 import { VersionPanel } from './VersionPanel';
@@ -26,6 +27,30 @@ import { HistoryCapacity } from './HistoryCapacity';
 import './styles.css';
 
 export function App() {
+  const [session, setSession] = useState<{
+    generation: number;
+    initial?: ArticleSession;
+  }>({ generation: 0 });
+  return (
+    <Workbench
+      key={session.generation}
+      initial={session.initial}
+      navigate={(initial) =>
+        setSession((previous) => ({
+          generation: previous.generation + 1,
+          initial,
+        }))
+      }
+    />
+  );
+}
+function Workbench({
+  initial,
+  navigate,
+}: {
+  initial?: ArticleSession;
+  navigate: (session: ArticleSession) => void;
+}) {
   const [title, setTitle] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -55,6 +80,7 @@ export function App() {
     title,
     setTitle,
     access.status === 'connected',
+    initial,
   );
   const format = useEditorState({
     editor,
@@ -128,6 +154,9 @@ export function App() {
           {focused ? '显示讨论' : '专注写作'}
         </button>
       </header>
+      {access.status === 'connected' && (
+        <ArticleNavigation article={article} navigate={navigate} />
+      )}
       <div className={`workspace ${focused ? 'is-focused' : ''}`}>
         <main className="document-pane">
           <div className="format-bar" role="toolbar" aria-label="正文格式">
@@ -182,7 +211,7 @@ export function App() {
             )}
             <RecoveryPanel
               choices={article.recoveries}
-              busy={article.recovering}
+              busy={article.recovering || article.navigationLocked}
               message={article.message}
               recover={article.recover}
               keepServer={article.keepServer}

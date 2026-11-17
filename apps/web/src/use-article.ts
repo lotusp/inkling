@@ -24,6 +24,10 @@ import {
   type PendingSave,
   type RecoveryChoice,
 } from './draft-store';
+export interface ArticleSession {
+  workspaceId: string;
+  article: ArticleSnapshot;
+}
 export interface RestoreReview {
   source: RevisionDetail;
   baseRevisionId: string;
@@ -35,12 +39,15 @@ export function useArticle(
   title: string,
   setTitle: (value: string) => void,
   connected: boolean,
+  initial?: ArticleSession,
 ) {
   const [snapshot, setSnapshot] = useState<ArticleSnapshot | null>(null);
   const [status, setStatus] = useState<
     'loading' | 'empty' | 'clean' | 'dirty' | 'saving' | 'error' | 'conflict'
   >('loading');
   const [message, setMessage] = useState('');
+  const navigating = useRef(false);
+  const [navigationLocked, setNavigationLocked] = useState(false);
   const [damagedArticleId, setDamagedArticleId] = useState<string | null>(null);
   const loadingArticleId = useRef<string | null>(null);
   const [editVersion, setEditVersion] = useState(0);
@@ -158,7 +165,12 @@ export function useArticle(
     let active = true;
     void (async () => {
       try {
-        const workspace = WorkspaceInfo.parse(await api('/api/workspace'));
+        const workspace = initial
+          ? {
+              workspaceId: initial.workspaceId,
+              currentArticleId: initial.article.articleId,
+            }
+          : WorkspaceInfo.parse(await api('/api/workspace'));
         if (!active) return;
         try {
           const clientId = await ownDraftClient();
@@ -169,9 +181,11 @@ export function useArticle(
         }
         if (workspace.currentArticleId) {
           loadingArticleId.current = workspace.currentArticleId;
-          const article = ArticleSnapshot.parse(
-            await api('/api/articles/' + workspace.currentArticleId),
-          );
+          const article =
+            initial?.article ??
+            ArticleSnapshot.parse(
+              await api('/api/articles/' + workspace.currentArticleId),
+            );
           let choices: RecoveryChoice[] = [];
           try {
             choices = await listDrafts(
@@ -201,7 +215,7 @@ export function useArticle(
     return () => {
       active = false;
     };
-  }, [connected, editor, display, loadAttempt]);
+  }, [connected, editor, display, loadAttempt, initial]);
   const create = useCallback(async () => {
     try {
       setStatus('loading');
@@ -218,174 +232,182 @@ export function useArticle(
       setMessage(error instanceof Error ? error.message : '创建失败。');
     }
   }, [display]);
-  const save = useCallback(async () => {
-    if (!head.current) {
-      setLoadAttempt((value) => value + 1);
-      return;
-    }
-    if (
-      busy.current ||
-      choosing.current ||
-      conflicted.current ||
-      !head.current ||
-      !latest.current ||
-      !valid.current ||
-      composing.current ||
-      editor?.view.composing
-    )
-      return;
-    if (editSeq.current === savedSeq.current && !inFlight.current) {
-      setStatus('clean');
-      return;
-    }
-    const article = head.current;
-    busy.current = true;
-    setStatus('saving');
-    let pending = inFlight.current;
-    try {
-      if (!pending) {
-        const command: SaveArticleCommand = {
-          mutationId: crypto.randomUUID(),
-          baseRevisionId: article.headRevisionId,
-          document: latest.current,
-        };
-        const seq = editSeq.current;
-        pending = {
-          command,
-          seq,
-          requestHash: await requestHash(article.articleId, command),
-        };
-        inFlight.current = pending;
+  const save = useCallback(
+    async (forNavigation = false) => {
+      if (navigating.current && !forNavigation) return;
+      if (!head.current) {
+        setLoadAttempt((value) => value + 1);
+        return;
       }
-      // Persist the immutable request before sending; newer typing stays in draft.
-      await persist();
-      let result: SaveResult | undefined;
-      if (pending.reconcile) {
-        await connectWorkspace();
-        try {
-          result = SaveResult.parse(
-            await api('/api/mutations/' + pending.command.mutationId),
-          );
-        } catch (error) {
-          if (!(error instanceof ApiError && error.status === 404)) throw error;
-          const current = ArticleSnapshot.parse(
-            await api('/api/articles/' + article.articleId),
-          );
-          if (current.headRevisionId !== pending.command.baseRevisionId)
-            throw new ApiError(
-              409,
-              'REVISION_CONFLICT',
-              '稿件已有新版本，请先比较两份内容。',
-            );
-        }
-      }
-      result ??= SaveResult.parse(
-        await api(
-          '/api/articles/' +
-            article.articleId +
-            (pending.restoreSourceRevisionId ? '/restore' : '/content'),
-          pending.restoreSourceRevisionId ? 'POST' : 'PUT',
-          pending.restoreSourceRevisionId
-            ? {
-                mutationId: pending.command.mutationId,
-                baseRevisionId: pending.command.baseRevisionId,
-                sourceRevisionId: pending.restoreSourceRevisionId,
-              }
-            : pending.command,
-        ),
-      );
       if (
-        result.mutationId !== pending.command.mutationId ||
-        result.articleId !== article.articleId
+        busy.current ||
+        choosing.current ||
+        conflicted.current ||
+        !head.current ||
+        !latest.current ||
+        !valid.current ||
+        composing.current ||
+        editor?.view.composing
       )
-        throw new Error('保存确认与当前请求不匹配。');
-      const next = ArticleSnapshot.parse(
-        await api('/api/articles/' + article.articleId),
-      );
-      if (next.headRevisionId !== result.appliedRevisionId) {
-        inFlight.current = null;
-        savedSeq.current = pending.seq;
-        if (
-          editSeq.current === pending.seq &&
-          valid.current &&
-          !composing.current &&
-          !editor?.view.composing
-        ) {
-          display(next);
-        } else {
-          conflicted.current = true;
-          head.current = {
-            ...article,
-            headRevisionId: result.appliedRevisionId,
-            headSeq: result.appliedSeq,
-            contentHash: result.contentHash,
-            document: pending.command.document,
-          };
-          setSnapshot(next);
-          setStatus('conflict');
-          setMessage('另一标签页已更新稿件，当前新输入已保留，请先比较。');
-        }
-        await persist();
-        return result;
-      }
-      if (pending.restoreSourceRevisionId) {
-        inFlight.current = null;
-        if (
-          editSeq.current === pending.seq &&
-          valid.current &&
-          !composing.current &&
-          !editor?.view.composing
-        ) {
-          display(next);
-        } else {
-          head.current = next;
-          setSnapshot(next);
-          savedSeq.current = -1;
-          conflicted.current = true;
-          setStatus('conflict');
-          setMessage('旧稿已恢复为新版本，等待期间的新输入已保留，请先比较。');
-        }
-        await persist();
-        return result;
-      }
-      head.current = next;
-      setSnapshot(next);
-      savedSeq.current = pending.seq;
-      inFlight.current = null;
-      if (!valid.current) {
-        setStatus('error');
-        setMessage('正文结构或标题长度不符合保存要求。');
-      } else if (
-        editSeq.current === pending.seq &&
-        !composing.current &&
-        !editor?.view.composing
-      ) {
-        setMessage('');
+        return;
+      if (editSeq.current === savedSeq.current && !inFlight.current) {
         setStatus('clean');
-        dirtySince.current = null;
-      } else setStatus('dirty');
-      await persist();
-      return result;
-    } catch (error) {
-      if (error instanceof ApiError && error.code === 'STORAGE_CORRUPT')
-        setDamagedArticleId(article.articleId);
-      if (pending) pending.reconcile = true;
-      conflicted.current =
-        error instanceof ApiError && error.code === 'REVISION_CONFLICT';
-      setStatus(conflicted.current ? 'conflict' : 'error');
-      setMessage(
-        error instanceof ApiError
-          ? error.message
-          : '无法确认保存。本地服务恢复后请重试；服务停止期间刷新页面无法打开工作台。',
-      );
-      await persist();
-    } finally {
-      busy.current = false;
-      setEditVersion((value) => value + 1);
-    }
-  }, [editor, display, persist]);
+        return;
+      }
+      const article = head.current;
+      busy.current = true;
+      setStatus('saving');
+      let pending = inFlight.current;
+      try {
+        if (!pending) {
+          const command: SaveArticleCommand = {
+            mutationId: crypto.randomUUID(),
+            baseRevisionId: article.headRevisionId,
+            document: latest.current,
+          };
+          const seq = editSeq.current;
+          pending = {
+            command,
+            seq,
+            requestHash: await requestHash(article.articleId, command),
+          };
+          inFlight.current = pending;
+        }
+        // Persist the immutable request before sending; newer typing stays in draft.
+        await persist();
+        let result: SaveResult | undefined;
+        if (pending.reconcile) {
+          await connectWorkspace();
+          try {
+            result = SaveResult.parse(
+              await api('/api/mutations/' + pending.command.mutationId),
+            );
+          } catch (error) {
+            if (!(error instanceof ApiError && error.status === 404))
+              throw error;
+            const current = ArticleSnapshot.parse(
+              await api('/api/articles/' + article.articleId),
+            );
+            if (current.headRevisionId !== pending.command.baseRevisionId)
+              throw new ApiError(
+                409,
+                'REVISION_CONFLICT',
+                '稿件已有新版本，请先比较两份内容。',
+              );
+          }
+        }
+        result ??= SaveResult.parse(
+          await api(
+            '/api/articles/' +
+              article.articleId +
+              (pending.restoreSourceRevisionId ? '/restore' : '/content'),
+            pending.restoreSourceRevisionId ? 'POST' : 'PUT',
+            pending.restoreSourceRevisionId
+              ? {
+                  mutationId: pending.command.mutationId,
+                  baseRevisionId: pending.command.baseRevisionId,
+                  sourceRevisionId: pending.restoreSourceRevisionId,
+                }
+              : pending.command,
+          ),
+        );
+        if (
+          result.mutationId !== pending.command.mutationId ||
+          result.articleId !== article.articleId
+        )
+          throw new Error('保存确认与当前请求不匹配。');
+        const next = ArticleSnapshot.parse(
+          await api('/api/articles/' + article.articleId),
+        );
+        if (next.headRevisionId !== result.appliedRevisionId) {
+          inFlight.current = null;
+          savedSeq.current = pending.seq;
+          if (
+            editSeq.current === pending.seq &&
+            valid.current &&
+            !composing.current &&
+            !editor?.view.composing
+          ) {
+            display(next);
+          } else {
+            conflicted.current = true;
+            head.current = {
+              ...article,
+              headRevisionId: result.appliedRevisionId,
+              headSeq: result.appliedSeq,
+              contentHash: result.contentHash,
+              document: pending.command.document,
+            };
+            setSnapshot(next);
+            setStatus('conflict');
+            setMessage('另一标签页已更新稿件，当前新输入已保留，请先比较。');
+          }
+          await persist();
+          return result;
+        }
+        if (pending.restoreSourceRevisionId) {
+          inFlight.current = null;
+          if (
+            editSeq.current === pending.seq &&
+            valid.current &&
+            !composing.current &&
+            !editor?.view.composing
+          ) {
+            display(next);
+          } else {
+            head.current = next;
+            setSnapshot(next);
+            savedSeq.current = -1;
+            conflicted.current = true;
+            setStatus('conflict');
+            setMessage(
+              '旧稿已恢复为新版本，等待期间的新输入已保留，请先比较。',
+            );
+          }
+          await persist();
+          return result;
+        }
+        head.current = next;
+        setSnapshot(next);
+        savedSeq.current = pending.seq;
+        inFlight.current = null;
+        if (!valid.current) {
+          setStatus('error');
+          setMessage('正文结构或标题长度不符合保存要求。');
+        } else if (
+          editSeq.current === pending.seq &&
+          !composing.current &&
+          !editor?.view.composing
+        ) {
+          setMessage('');
+          setStatus('clean');
+          dirtySince.current = null;
+        } else setStatus('dirty');
+        await persist();
+        return result;
+      } catch (error) {
+        if (error instanceof ApiError && error.code === 'STORAGE_CORRUPT')
+          setDamagedArticleId(article.articleId);
+        if (pending) pending.reconcile = true;
+        conflicted.current =
+          error instanceof ApiError && error.code === 'REVISION_CONFLICT';
+        setStatus(conflicted.current ? 'conflict' : 'error');
+        setMessage(
+          error instanceof ApiError
+            ? error.message
+            : '无法确认保存。本地服务恢复后请重试；服务停止期间刷新页面无法打开工作台。',
+        );
+        await persist();
+      } finally {
+        busy.current = false;
+        setEditVersion((value) => value + 1);
+      }
+    },
+    [editor, display, persist],
+  );
   const flushForVersion = useCallback(async () => {
     if (
+      navigating.current ||
       busy.current ||
       choosing.current ||
       conflicted.current ||
@@ -408,6 +430,7 @@ export function useArticle(
   const reviewRestore = useCallback(
     async (sourceRevisionId: string): Promise<RestoreReview> => {
       if (
+        navigating.current ||
         busy.current ||
         choosing.current ||
         conflicted.current ||
@@ -454,6 +477,7 @@ export function useArticle(
         )
           throw new Error('草稿已变化，请重新查看并确认恢复。');
         if (
+          navigating.current ||
           busy.current ||
           choosing.current ||
           conflicted.current ||
@@ -491,6 +515,7 @@ export function useArticle(
   );
   const compare = useCallback(async () => {
     if (
+      navigating.current ||
       busy.current ||
       !head.current ||
       !conflicted.current ||
@@ -533,6 +558,7 @@ export function useArticle(
   }, [editor, persist, resetConfirmation]);
   const prepareMerge = useCallback(() => {
     if (
+      navigating.current ||
       busy.current ||
       !comparison ||
       !latest.current ||
@@ -554,6 +580,7 @@ export function useArticle(
   const confirmMerge = useCallback(async () => {
     const ticket = confirmation.current;
     if (
+      navigating.current ||
       busy.current ||
       !ticket ||
       !comparison ||
@@ -591,6 +618,7 @@ export function useArticle(
   const recover = useCallback(
     async (choice: RecoveryChoice) => {
       if (
+        navigating.current ||
         busy.current ||
         composing.current ||
         editor?.view.composing ||
@@ -705,6 +733,7 @@ export function useArticle(
   );
   const keepServer = useCallback(async () => {
     if (
+      navigating.current ||
       busy.current ||
       !head.current ||
       !identity.current ||
@@ -745,7 +774,13 @@ export function useArticle(
   }, [display, editor, persist]);
   const discard = useCallback(
     async (choice: RecoveryChoice): Promise<boolean> => {
-      if (busy.current || !identity.current || !choosing.current) return false;
+      if (
+        navigating.current ||
+        busy.current ||
+        !identity.current ||
+        !choosing.current
+      )
+        return false;
       busy.current = true;
       setRecovering(true);
       try {
@@ -852,15 +887,29 @@ export function useArticle(
   useEffect(() => {
     editor?.view.dom.setAttribute(
       'aria-readonly',
-      String(snapshot === null || recoveries.length > 0 || recovering),
+      String(
+        snapshot === null ||
+          recoveries.length > 0 ||
+          recovering ||
+          navigationLocked,
+      ),
     );
     editor?.setEditable(
-      snapshot !== null && recoveries.length === 0 && !recovering,
+      snapshot !== null &&
+        recoveries.length === 0 &&
+        !recovering &&
+        !navigationLocked,
       false,
     );
-  }, [editor, snapshot, recoveries.length, recovering]);
+  }, [editor, snapshot, recoveries.length, recovering, navigationLocked]);
   useEffect(() => {
-    if (status !== 'dirty' || recoveries.length || recovering) return;
+    if (
+      status !== 'dirty' ||
+      recoveries.length ||
+      recovering ||
+      navigationLocked
+    )
+      return;
     clearTimeout(timer.current);
     const wait = Math.min(
       1200,
@@ -870,7 +919,15 @@ export function useArticle(
       void save();
     }, wait);
     return () => clearTimeout(timer.current);
-  }, [status, editVersion, save, snapshot, recoveries.length, recovering]);
+  }, [
+    status,
+    editVersion,
+    save,
+    snapshot,
+    recoveries.length,
+    recovering,
+    navigationLocked,
+  ]);
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
@@ -881,8 +938,83 @@ export function useArticle(
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
   }, [save]);
+  const navigationState = useCallback(() => {
+    if (composing.current || editor?.view.composing)
+      throw new Error('请先完成中文选词，再重新切换文章。');
+    if (busy.current || navigating.current)
+      throw new Error('正在保存或核对，请等待结束后再切换。');
+    if (!head.current && status !== 'empty')
+      throw new Error('请等待文章加载完成后再切换。');
+    return (
+      choosing.current ||
+      conflicted.current ||
+      !!inFlight.current ||
+      !valid.current ||
+      editSeq.current !== savedSeq.current
+    );
+  }, [editor, status]);
+  const prepareNavigation = useCallback(
+    async (mode: 'save' | 'keep') => {
+      navigationState();
+      navigating.current = true;
+      setNavigationLocked(true);
+      editor?.setEditable(false, false);
+      clearTimeout(timer.current);
+      resetConfirmation();
+      const seq = editSeq.current,
+        epoch = compositionEpoch.current;
+      const release = () => {
+        navigating.current = false;
+        setNavigationLocked(false);
+        editor?.setEditable(!!head.current && !choosing.current, false);
+        setEditVersion((value) => value + 1);
+      };
+      try {
+        if (mode === 'save') {
+          if (choosing.current || conflicted.current || !valid.current)
+            throw new Error('请先处理恢复副本或冲突，或选择保留草稿并切换。');
+          if (head.current) await save(true);
+          if (
+            inFlight.current ||
+            conflicted.current ||
+            editSeq.current !== savedSeq.current
+          )
+            throw new Error('尚未确认保存，已停止切换。可重试或保留草稿。');
+        } else if (
+          !choosing.current &&
+          head.current &&
+          (inFlight.current ||
+            conflicted.current ||
+            !valid.current ||
+            editSeq.current !== savedSeq.current)
+        ) {
+          if (!(await persist()))
+            throw new Error(
+              '恢复副本未能写入，已停止切换。请重试或下载救援稿。',
+            );
+        }
+        // Existing unselected recoveries must never be cleaned by a clean editor.
+        await writes.current;
+        if (
+          editSeq.current !== seq ||
+          compositionEpoch.current !== epoch ||
+          composing.current ||
+          editor?.view.composing
+        )
+          throw new Error('输入已变化，请完成选词后重新切换。');
+        return release;
+      } catch (error) {
+        release();
+        throw error;
+      }
+    },
+    [editor, navigationState, persist, resetConfirmation, save],
+  );
   return {
     snapshot,
+    navigationState,
+    prepareNavigation,
+    navigationLocked,
     damagedArticleId,
     flushForVersion,
     reviewRestore,
@@ -916,7 +1048,11 @@ export function useArticle(
       !composing.current,
     hasConflict: conflicted.current,
     document: latest.current,
-    editable: snapshot !== null && recoveries.length === 0 && !recovering,
+    editable:
+      snapshot !== null &&
+      recoveries.length === 0 &&
+      !recovering &&
+      !navigationLocked,
     dirty: status !== 'clean' && status !== 'empty' && status !== 'loading',
   };
 }

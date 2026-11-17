@@ -39,3 +39,7 @@ G1：`node scripts/harness/check.mjs manage-article-library --stage plan`、`cor
 ## Scope and fixtures
 
 只用临时工作空间与测试稿，不操作个人数据。旧 schema 使用固定旧版 DDL；迁移错误用 SQLite 约束/夹具注入，日志注明模拟边界。列表/生命周期调用真实 SQLite 和认证 API。旧版本程序拒绝 schema 3 属预期兼容边界；不执行自动降级、永久删除、模型或博客调用。
+
+## 导航切片具体边界
+
+article-navigation.spec.ts 覆盖两标签独立/重开、保存最新输入、实际未决响应等待、未知结果副本往返及重放、未选择恢复副本保留、IDB 容量拒绝、标题/正文组合输入阻断、冲突稿恢复、目标读取失败保持原稿与只在导航期间锁定输入、离线失败、固定 mutationId 重试。新增真实 IME 候选窗仍须手工，不用组合事件测试替代。
