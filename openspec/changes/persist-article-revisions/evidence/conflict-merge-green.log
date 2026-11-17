@@ -1,0 +1,43 @@
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2244 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.46 kB │ gzip:   0.31 kB
+apps/web/dist/assets/index-s_4LejIp.css    7.46 kB │ gzip:   2.32 kB
+apps/web/dist/assets/index-nwceRdX6.js   748.38 kB │ gzip: 233.56 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 269ms
+
+Running 11 tests using 4 workers
+
+(node:26534) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26533) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26535) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   3 [chromium] › tests/e2e/article-conflict.spec.ts:126:1 › ARTICLE-CONFLICT-006 explicitly confirms the edited merge and preserves it after reload (5.3s)
+  ✓   2 [chromium] › tests/e2e/article-conflict.spec.ts:4:1 › ARTICLE-CONFLICT-006 editing or composing invalidates a prepared merge (5.4s)
+  ✓   1 [chromium] › tests/e2e/article-conflict.spec.ts:79:1 › ARTICLE-CONFLICT-006 a lost merge acknowledgement keeps newer typing and retries once (6.9s)
+  ✓   4 [chromium] › tests/e2e/article-conflict.spec.ts:37:1 › ARTICLE-CONFLICT-006 a newer remote edit rejects a prepared merge until compared again (7.0s)
+  ✓   5 [chromium] › tests/e2e/article-conflict.spec.ts:154:1 › ARTICLE-CONFLICT-006 identifies a format-only difference (3.7s)
+  ✓   8 [chromium] › tests/e2e/article-save-races.spec.ts:4:1 › ARTICLE-RACE-005 reconciliation preserves newer local input and blocks overwrite (2.1s)
+  ✓   6 [chromium] › tests/e2e/article-conflict.spec.ts:170:1 › ARTICLE-CONFLICT-006 cannot compare from an unresolved failed mutation lookup (3.7s)
+  ✓   7 [chromium] › tests/e2e/article-conflict.spec.ts:223:1 › ARTICLE-CONFLICT-006 compares two real tab versions without replacing the editor (3.7s)
+  ✓  10 [chromium] › tests/e2e/article-save-races.spec.ts:105:1 › ARTICLE-RETRY-003 lost response reconciles a newer remote head before claiming clean (2.0s)
+  ✓  11 [chromium] › tests/e2e/article-save-races.spec.ts:165:1 › ARTICLE-RETRY-003 failed mutation lookup keeps the request unresolved (2.1s)
+  ✓   9 [chromium] › tests/e2e/article-save-races.spec.ts:72:1 › ARTICLE-RACE-005 late acknowledgement never replaces newer local input (3.4s)
+
+  11 passed (15.2s)

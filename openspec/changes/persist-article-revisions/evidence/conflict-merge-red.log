@@ -1,0 +1,62 @@
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2244 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.46 kB │ gzip:   0.32 kB
+apps/web/dist/assets/index-s_4LejIp.css    7.46 kB │ gzip:   2.32 kB
+apps/web/dist/assets/index-Bxu8EGND.js   746.72 kB │ gzip: 233.12 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 333ms
+
+Running 1 test using 1 worker
+
+(node:25528) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-conflict.spec.ts:4:1 › ARTICLE-CONFLICT-006 explicitly confirms the edited merge and preserves it after reload (9.0s)
+
+
+  1) [chromium] › tests/e2e/article-conflict.spec.ts:4:1 › ARTICLE-CONFLICT-006 explicitly confirms the edited merge and preserves it after reload
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: '准备保存合并稿', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: '准备保存合并稿', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: '准备保存合并稿', exact: true })
+
+
+       8 |   const editor = other.getByRole('textbox', { name: '文章正文', exact: true });
+       9 |   await editor.fill('实践依据与个人判断形成的合并稿');
+    > 10 |   await expect(other.getByRole('button', { name: '准备保存合并稿', exact: true })).toBeVisible();
+         |                                                                             ^
+      11 |   await other.getByRole('button', { name: '准备保存合并稿', exact: true }).click();
+      12 |   await other.getByRole('button', { name: '确认保存合并稿', exact: true }).click();
+      13 |   await expect(other.getByText('已保存', { exact: true })).toBeVisible();
+        at <repo>/tests/e2e/article-conflict.spec.ts:10:77
+
+    Error Context: test-results/article-conflict-ARTICLE-C-7e094-d-preserves-it-after-reload-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-conflict-ARTICLE-C-7e094-d-preserves-it-after-reload-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-conflict-ARTICLE-C-7e094-d-preserves-it-after-reload-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/article-conflict.spec.ts:4:1 › ARTICLE-CONFLICT-006 explicitly confirms the edited merge and preserves it after reload

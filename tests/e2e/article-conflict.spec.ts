@@ -1,6 +1,156 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import { test, expect } from './fixtures';
 
+test('ARTICLE-CONFLICT-006 editing or composing invalidates a prepared merge', async ({
+  page,
+  context,
+  workspace,
+}) => {
+  const other = await conflictingTabs(page, context, workspace.origin);
+  await other.getByRole('button', { name: '查看冲突', exact: true }).click();
+  const editor = other.getByRole('textbox', { name: '文章正文', exact: true });
+  const prepare = other.getByRole('button', {
+    name: '准备保存合并稿',
+    exact: true,
+  });
+  const confirm = other.getByRole('button', {
+    name: '确认保存合并稿',
+    exact: true,
+  });
+  await prepare.click();
+  await expect(confirm).toBeVisible();
+  await editor.fill('确认后又有了新想法');
+  await expect(confirm).not.toBeVisible();
+  await expect(other.getByText('草稿已变化，请重新确认合并。')).toBeVisible();
+  await prepare.click();
+  await editor.dispatchEvent('compositionstart', { data: '' });
+  await expect(confirm).not.toBeVisible();
+  await editor.dispatchEvent('compositionend', { data: '' });
+  await prepare.click();
+  await confirm.click();
+  await expect(other.getByText('已保存', { exact: true })).toBeVisible();
+  await other.reload();
+  await expect(editor).toHaveText('确认后又有了新想法');
+  await other.close();
+});
+
+test('ARTICLE-CONFLICT-006 a newer remote edit rejects a prepared merge until compared again', async ({
+  page,
+  context,
+  workspace,
+}) => {
+  const other = await conflictingTabs(page, context, workspace.origin);
+  const editor = other.getByRole('textbox', { name: '文章正文', exact: true });
+  await other.getByRole('button', { name: '查看冲突', exact: true }).click();
+  await other
+    .getByRole('button', { name: '准备保存合并稿', exact: true })
+    .click();
+  await page
+    .getByRole('textbox', { name: '文章正文', exact: true })
+    .fill('服务器又更新了一次');
+  await expect(page.getByText('已保存', { exact: true })).toBeVisible();
+  await other
+    .getByRole('button', { name: '确认保存合并稿', exact: true })
+    .click();
+  await expect(
+    other.getByText('稿件已有新版本，请先比较两份内容。'),
+  ).toBeVisible();
+  await expect(editor).toHaveText('本页尚未保存的判断');
+  await expect(
+    other.getByRole('region', { name: '冲突比较' }),
+  ).not.toBeVisible();
+  await other.getByRole('button', { name: '查看冲突', exact: true }).click();
+  await expect(
+    other.getByRole('region', { name: '服务器版本预览' }),
+  ).toContainText('服务器又更新了一次');
+  await editor.fill('基于两次更新重新整理的合并稿');
+  await other
+    .getByRole('button', { name: '准备保存合并稿', exact: true })
+    .click();
+  await other
+    .getByRole('button', { name: '确认保存合并稿', exact: true })
+    .click();
+  await expect(other.getByText('已保存', { exact: true })).toBeVisible();
+  await other.reload();
+  await expect(editor).toHaveText('基于两次更新重新整理的合并稿');
+  await other.close();
+});
+
+test('ARTICLE-CONFLICT-006 a lost merge acknowledgement keeps newer typing and retries once', async ({
+  page,
+  context,
+  workspace,
+}) => {
+  const other = await conflictingTabs(page, context, workspace.origin);
+  await other.getByRole('button', { name: '查看冲突', exact: true }).click();
+  const editor = other.getByRole('textbox', { name: '文章正文', exact: true });
+  await editor.fill('确认提交的合并稿');
+  await other
+    .getByRole('button', { name: '准备保存合并稿', exact: true })
+    .click();
+  let arrived = () => {},
+    release = () => {};
+  const committed = new Promise<void>((resolve) => {
+    arrived = resolve;
+  });
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let writes = 0;
+  await other.route('**/api/articles/*/content', async (route) => {
+    writes++;
+    if (writes === 1) {
+      await route.fetch();
+      arrived();
+      await gate;
+      await route.abort('failed');
+    } else await route.continue();
+  });
+  await other
+    .getByRole('button', { name: '确认保存合并稿', exact: true })
+    .click();
+  await committed;
+  await editor.fill('提交合并后继续输入的观点');
+  release();
+  await expect(
+    other.getByRole('button', { name: '重试保存', exact: true }),
+  ).toBeVisible();
+  await other.getByRole('button', { name: '重试保存', exact: true }).click();
+  await expect(other.getByText('已保存', { exact: true })).toBeVisible();
+  expect(writes).toBe(2);
+  await other.reload();
+  await expect(editor).toHaveText('提交合并后继续输入的观点');
+  await other.close();
+});
+
+test('ARTICLE-CONFLICT-006 explicitly confirms the edited merge and preserves it after reload', async ({
+  page,
+  context,
+  workspace,
+}) => {
+  const other = await conflictingTabs(page, context, workspace.origin);
+  await other.getByRole('button', { name: '查看冲突', exact: true }).click();
+  await expect(other.getByRole('region', { name: '冲突比较' })).toBeVisible();
+  const editor = other.getByRole('textbox', { name: '文章正文', exact: true });
+  await editor.fill('实践依据与个人判断形成的合并稿');
+  await expect(
+    other.getByRole('button', { name: '准备保存合并稿', exact: true }),
+  ).toBeVisible();
+  await other
+    .getByRole('button', { name: '准备保存合并稿', exact: true })
+    .click();
+  await other
+    .getByRole('button', { name: '确认保存合并稿', exact: true })
+    .click();
+  await expect(other.getByText('已保存', { exact: true })).toBeVisible();
+  await other.reload();
+  await expect(editor).toHaveText('实践依据与个人判断形成的合并稿');
+  await expect(
+    other.getByRole('region', { name: '冲突比较' }),
+  ).not.toBeVisible();
+  await other.close();
+});
+
 test('ARTICLE-CONFLICT-006 identifies a format-only difference', async ({
   page,
   context,

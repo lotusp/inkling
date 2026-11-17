@@ -195,6 +195,10 @@ export function App() {
               <ConflictPanel
                 local={article.document}
                 server={article.comparison}
+                canMerge={article.canMerge}
+                prepared={article.mergePrepared}
+                prepare={article.prepareMerge}
+                confirm={article.confirmMerge}
               />
             )}
             <div className="document-meta">

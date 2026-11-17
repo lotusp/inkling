@@ -43,6 +43,18 @@ export function useArticle(
   const [comparison, setComparison] = useState<ArticleSnapshot | null>(null);
   const [conflictBusy, setConflictBusy] = useState(false);
   const [conflictMessage, setConflictMessage] = useState('');
+  const [mergePrepared, setMergePrepared] = useState(false);
+  const confirmation = useRef<{
+    seq: number;
+    revisionId: string;
+    document: ArticleDocument;
+  } | null>(null);
+  const resetConfirmation = useCallback(() => {
+    const existed = confirmation.current !== null;
+    confirmation.current = null;
+    setMergePrepared(false);
+    return existed;
+  }, []);
   const identity = useRef<{ workspaceId: string; clientId: string } | null>(
     null,
   );
@@ -54,8 +66,9 @@ export function useArticle(
   const composing = useRef(false);
   const compositionStart = useCallback(() => {
     composing.current = true;
+    if (resetConfirmation()) setConflictMessage('草稿已变化，请重新确认合并。');
     setStatus((previous) => (previous === 'clean' ? 'dirty' : previous));
-  }, []);
+  }, [resetConfirmation]);
   const compositionEnd = useCallback(() => {
     composing.current = false;
     setEditVersion((version) => version + 1);
@@ -109,6 +122,7 @@ export function useArticle(
       valid.current = true;
       conflicted.current = false;
       setComparison(null);
+      resetConfirmation();
       head.current = article;
       latest.current = article.document;
       editSeq.current = 0;
@@ -125,7 +139,7 @@ export function useArticle(
       setStatus('clean');
       setMessage('');
     },
-    [editor, setTitle],
+    [editor, setTitle, resetConfirmation],
   );
   useEffect(() => {
     if (!connected || !editor || head.current) return;
@@ -337,6 +351,7 @@ export function useArticle(
     setConflictBusy(true);
     setConflictMessage('');
     setComparison(null);
+    resetConfirmation();
     try {
       const pending = inFlight.current;
       const { server, applied } = await inspectConflict(
@@ -364,7 +379,64 @@ export function useArticle(
       busy.current = false;
       setConflictBusy(false);
     }
-  }, [editor, persist]);
+  }, [editor, persist, resetConfirmation]);
+  const prepareMerge = useCallback(() => {
+    if (
+      busy.current ||
+      !comparison ||
+      !latest.current ||
+      !conflicted.current ||
+      inFlight.current ||
+      !valid.current ||
+      composing.current ||
+      editor?.view.composing
+    )
+      return;
+    confirmation.current = {
+      seq: editSeq.current,
+      revisionId: comparison.headRevisionId,
+      document: structuredClone(latest.current),
+    };
+    setMergePrepared(true);
+    setConflictMessage('');
+  }, [comparison, editor]);
+  const confirmMerge = useCallback(async () => {
+    const ticket = confirmation.current;
+    if (
+      busy.current ||
+      !ticket ||
+      !comparison ||
+      !editor ||
+      !conflicted.current ||
+      inFlight.current ||
+      composing.current ||
+      editor.view.composing ||
+      !valid.current
+    )
+      return;
+    const document = {
+      schemaVersion: 1,
+      title: titleRef.current,
+      doc: editor.getJSON(),
+    };
+    if (
+      ticket.seq !== editSeq.current ||
+      ticket.revisionId !== comparison.headRevisionId ||
+      stableJson(ticket.document) !== stableJson(document)
+    ) {
+      resetConfirmation();
+      setConflictMessage('草稿已变化，请重新确认合并。');
+      return;
+    }
+    // This explicit decision authorizes a new CAS save against the viewed head.
+    head.current = comparison;
+    savedSeq.current = -1;
+    conflicted.current = false;
+    setComparison(null);
+    resetConfirmation();
+    setMessage('');
+    await save();
+  }, [comparison, editor, resetConfirmation, save]);
   const recover = useCallback(
     async (choice: RecoveryChoice) => {
       if (
@@ -529,6 +601,8 @@ export function useArticle(
     };
     const parsed = ArticleDocument.safeParse(document);
     if (!parsed.success) {
+      if (resetConfirmation())
+        setConflictMessage('草稿已变化，请重新确认合并。');
       valid.current = false;
       editSeq.current++;
       latest.current = document;
@@ -546,13 +620,14 @@ export function useArticle(
     )
       return;
     if (!conflicted.current) setMessage('');
+    if (resetConfirmation()) setConflictMessage('草稿已变化，请重新确认合并。');
     latest.current = parsed.data;
     editSeq.current++;
     setEditVersion((x) => x + 1);
     dirtySince.current ??= Date.now();
     setStatus(conflicted.current ? 'conflict' : 'dirty');
     void persist();
-  }, [editor, persist]);
+  }, [editor, persist, resetConfirmation]);
   useEffect(() => {
     if (!editor) return;
     editor.on('update', changed);
@@ -618,6 +693,15 @@ export function useArticle(
     comparison,
     conflictBusy,
     conflictMessage,
+    mergePrepared,
+    prepareMerge,
+    confirmMerge,
+    canMerge:
+      comparison !== null &&
+      !conflictBusy &&
+      !inFlight.current &&
+      valid.current &&
+      !composing.current,
     hasConflict: conflicted.current,
     document: latest.current,
     editable: snapshot !== null && recoveries.length === 0 && !recovering,
