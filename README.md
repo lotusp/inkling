@@ -1,31 +1,48 @@
-# Inkling
+<h1 align="center">
+  <img src="docs/assets/inkling-logo.svg" width="324" height="108" alt="Inkling">
+</h1>
 
-面向个人中文技术作者的思考与写作伙伴，帮助作者整理实践、形成和检验判断、表达个人洞见，并积累可以再次使用的知识。
+<p align="center"><strong>个人中文技术写作工作台</strong></p>
 
-当前 C02 开发分支已接入本机工作空间、访问保护、中文正文自动保存/重开、浏览器草稿恢复、冲突比较/显式合并与救援下载。版本管理 UI 仍在开发，AI 协作与发布尚未接入。
+<p align="center">
+  <a href="#快速开始">快速开始</a> · <a href="#inkling-的特点">特点</a> · <a href="docs/README.md">项目文档</a>
+</p>
 
-当前定位以辅助个人思考、形成判断和表达洞见为核心。V1 覆盖正文与 Chat 协作、资料研究、作者风格、版本与记忆，以及首个真实博客的交付。
+Inkling 帮你把一次项目复盘、一项技术选型或一段实践笔记写成有自己判断的文章。当前版本在 Mac 上运行，打开浏览器就能开始写一篇稿件。
 
-MVP 在单台 Mac 本地运行，内容上云与多端协作按后续阶段推进。
+## Inkling 的特点
 
-- [产品知识库入口](docs/README.md)：阅读顺序、知识地图、文档状态与开发阶段指引
-- [本地运行与检查](docs/engineering/local-development.md)：安装、启动、停止、测试与当前限制
-- [开发 Harness](docs/engineering/harness.md)：OpenSpec、串行 change、ATDD、开发规范与归档闭环
-- [V1 功能范围与交付设计](docs/product/v1-scope.md)：完整首版的功能、深度、实施批次与验收
-- [交互原型 V2](docs/prototypes/README.md)：正文与 AI Chat 工作台、操作说明与可打开的预览
-- [单台 Mac 本地架构](docs/architecture/local-macos-mvp.md)：当前 MVP 的运行、存储、Agent 与恢复设计
-- [初步行业调研](docs/research/industry-overview.md)：相近产品、替代方案与机会
-- [设计哲学](docs/product/design-philosophy.md)：思考、作者主导、论证与表达的设计原则
-- [核心价值](docs/product/core-value.md)：目标用户、价值假设与验证方式
-- [知识组织与维护规则](docs/handbook/knowledge-management.md)：从调研、决策到实现、验证与复盘的知识沉淀
-- [个人技术写作协作设计](docs/product/thinking-partner-product-design.md)：Design Thinking、用户旅程、MVP 与 Roadmap
-- [行业调研与发布渠道评估](docs/research/industry-and-publishing.md)
-- [写作 Agent 功能与竞争分析](docs/research/writing-agent-competitive-analysis.md)：13 个写作产品的功能、卖点、优缺点与 Inkling 差异化假设
-- [产品与技术设计方案](docs/product/product-design.md)
-- [早期 Agent 技术架构](docs/architecture/agent-architecture.md)：LangGraph 候选与完整能力参考，实施范围以本地 MVP 为准
-- [Agent 框架复评](docs/research/framework-evaluation.md)：LangGraph、Pi、AI SDK、Mastra 与现有 Agent 产品的实现取舍
-- [开源 Agent 架构全景调研](docs/research/open-source-agent-landscape.md)：12 个 Agent、2 个应用平台、框架比较与 Inkling 设计取舍
-- [产品架构图](docs/diagrams/inkling-architecture.html)
-- [Agent 内部运行架构图](docs/diagrams/inkling-agent-runtime.html)
+- **为技术文章准备的编辑器**。用小标题、列表和代码块组织正文，点「专注写作」收起讨论侧栏。
+- **正文自动保存到本机**。停笔后自动保存，也可以按 `⌘S`。「已保存」表示标题和正文已写入工作空间，重开后可以接着写。
+- **服务中断时留住草稿**。已打开的编辑器可以继续写。看到「浏览器恢复副本已更新」后，可以在同一浏览器和地址重新打开时选择恢复副本。需要时还可以下载 JSON 救援稿。
+- **两份内容有冲突时由你合并**。另一个标签页先保存时，可以对照本页草稿与服务端版本，整理后明确确认合并。
+- **回看写作过程**。在「版本历史」给重要版本命名，也可以选择两份已保存的版本，查看标题、正文和格式差异。
 
-产品定位与知识组织更新：2026-11-13；本地 MVP 架构更新：2026-11-16，框架仍待验证。
+## 快速开始
+
+在 macOS 上准备 [`.node-version`](.node-version) 指定的 Node.js（22.22.2）和 Corepack。如果安装时需要编译 SQLite 驱动，可用 `xcode-select --install` 安装 Xcode 命令行工具。运行工作台无需注册账号、配置模型密钥或启动独立数据库。
+
+在当前开发分支的源码目录中运行：
+
+```bash
+corepack pnpm install --frozen-lockfile
+corepack pnpm start
+```
+
+1. **打开工作台**。在浏览器打开终端输出的「打开工作台」一次性链接。
+2. **写第一篇稿件**。点击「开始写作」，输入标题和正文。
+3. **确认保存**。看到「已保存」后刷新页面，就能继续编辑同一篇稿件。
+
+正文默认保存在 `~/Library/Application Support/Inkling/workspaces/default/`。按 `Ctrl+C` 停止服务。访问链接过期或需要重新接入时，保持服务运行，在另一个终端执行 `corepack pnpm local:access` 获取新链接。
+
+安装原生依赖、端口占用与自定义工作空间见[本地运行说明](docs/engineering/local-development.md)。
+
+## 项目状态与文档
+
+当前开发分支提供单篇稿件的本地预览。AI 协作与发布属于后续计划。
+
+- [产品知识库](docs/README.md)汇总产品设计、架构、调研和验证记录。
+- [V1 功能范围](docs/product/v1-scope.md)介绍首版计划与实施顺序。
+- [开发 Harness](docs/engineering/harness.md)说明 OpenSpec、开发检查与验收流程。
+
+项目采用 [MIT 许可证](LICENSE)。

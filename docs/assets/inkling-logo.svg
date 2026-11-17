@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 324 108" role="img" aria-labelledby="title">
+  <title id="title">Inkling</title>
+  <rect x=".5" y=".5" width="323" height="107" rx="22" fill="#f6f7f0" stroke="#e3e7db"/>
+  <g transform="translate(22 22)">
+    <rect width="64" height="64" rx="15" fill="#35543d"/>
+    <path fill="#f8f9f2" d="M49 15c-14.8-.6-26.7 7.7-28.9 20.5l-1.4 7.6-4.1 4.1a2 2 0 0 0 2.8 2.8l18.2-18.2a2 2 0 0 1 2.8 2.8l-6.8 6.8C42.6 38.6 50 28.8 49 15Z"/>
+    <circle cx="29" cy="49" r="2.8" fill="#bed39d"/>
+  </g>
+  <text x="108" y="69" fill="#35543d" font-family="Georgia, 'Times New Roman', serif" font-size="56" font-weight="700" textLength="192" lengthAdjust="spacingAndGlyphs">Inkling</text>
+</svg>
