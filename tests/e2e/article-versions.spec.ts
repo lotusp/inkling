@@ -76,3 +76,85 @@ test('REVISION-HISTORY-001 a lost naming response retries the same revision and 
   await page.reload();
   await expect(editor).toHaveText('命名后继续写的内容');
 });
+
+test('REVISION-HISTORY-001 naming flush pins the saved revision while the author continues typing', async ({
+  page,
+}) => {
+  let arrived = () => {},
+    release = () => {};
+  const waiting = new Promise<void>((r) => {
+      arrived = r;
+    }),
+    gate = new Promise<void>((r) => {
+      release = r;
+    });
+  let first = true;
+  await page.route('**/api/articles/*/content', async (route) => {
+    const response = await route.fetch();
+    if (first) {
+      first = false;
+      arrived();
+      await gate;
+    }
+    await route.fulfill({ response });
+  });
+  await page.getByRole('button', { name: '版本历史', exact: true }).click();
+  const panel = page.getByRole('region', { name: '版本历史' }),
+    editor = page.getByRole('textbox', { name: '文章正文', exact: true });
+  await panel.getByLabel('版本名称', { exact: true }).fill('等待期间仍固定');
+  await editor.fill('点击命名时的原稿');
+  await panel
+    .getByRole('button', { name: '保存并命名当前稿', exact: true })
+    .click();
+  await waiting;
+  await editor.fill('保存等待期间继续写的新稿');
+  release();
+  await expect(panel.getByRole('status')).toContainText('已命名版本 #2');
+  await expect(page.getByText('已保存', { exact: true })).toBeVisible();
+  await panel
+    .getByRole('button', { name: '查看并恢复版本 #2', exact: true })
+    .click();
+  await expect(panel.getByRole('region', { name: '待恢复版本' })).toContainText(
+    '点击命名时的原稿',
+  );
+  await expect(
+    panel.getByRole('region', { name: '待恢复版本' }),
+  ).not.toContainText('保存等待期间继续写的新稿');
+  await expect(editor).toHaveText('保存等待期间继续写的新稿');
+  await panel
+    .getByRole('region', { name: '待恢复版本' })
+    .screenshot({ path: 'test-results/restore-preview-desktop.png' });
+  await page.setViewportSize({ width: 375, height: 900 });
+  await panel
+    .getByRole('region', { name: '待恢复版本' })
+    .screenshot({ path: 'test-results/restore-preview-mobile.png' });
+});
+
+test('REVISION-COMPARE-002 restore preview contains long code lines within a narrow screen', async ({
+  page,
+}) => {
+  const editor = page.getByRole('textbox', { name: '文章正文', exact: true });
+  await editor.fill('const message = "' + 'long_code_'.repeat(60) + '";');
+  await page.getByRole('button', { name: '代码块', exact: true }).click();
+  await expect(page.getByText('已保存', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '版本历史', exact: true }).click();
+  const panel = page.getByRole('region', { name: '版本历史' });
+  await panel
+    .getByRole('button', { name: '查看并恢复版本 #2', exact: true })
+    .click();
+  await expect(
+    panel.getByRole('region', { name: '待恢复版本' }).locator('pre'),
+  ).toContainText('long_code_');
+  await page.setViewportSize({ width: 375, height: 900 });
+  await panel
+    .getByRole('region', { name: '待恢复版本' })
+    .scrollIntoViewIfNeeded();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await panel
+    .getByRole('region', { name: '待恢复版本' })
+    .screenshot({ path: 'test-results/restore-code-mobile.png' });
+});

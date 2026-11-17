@@ -627,3 +627,10 @@ svg {
     min-height: 60px;
   }
 }
+.restore-preview pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 12px;
+  background: #eef3e9;
+  border-radius: 8px;
+}

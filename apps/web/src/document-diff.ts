@@ -28,7 +28,11 @@ export function textChanges(before: string, after: string): TextChange[] {
     else out.push({ kind, text });
   };
   add('same', a.slice(0, prefix).join(''));
-  if (x.length * y.length <= 100_000) {
+  if (
+    x.length > 0 &&
+    y.length > 0 &&
+    (x.length + 1) * (y.length + 1) <= 100_000
+  ) {
     const table = Array.from(
       { length: x.length + 1 },
       () => new Uint32Array(y.length + 1),

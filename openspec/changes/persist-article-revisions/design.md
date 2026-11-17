@@ -6,7 +6,7 @@
 
 | 模块 | 本次职责 |
 | --- | --- |
-| apps/web | bootstrap/加载、编辑与保存协调器、IndexedDB 恢复副本、版本侧栏与差异、冲突及救援入口 |
+| apps/web | bootstrap/加载、编辑与保存协调器、IndexedDB 恢复副本、版本面板与差异、冲突及救援入口 |
 | apps/server | 生命周期、凭证与会话、Origin/CSRF、请求限制、HTTP 到用例转换 |
 | packages/contracts | 文章 DTO、严格正文 schema、请求/响应/错误；不依赖 ProseMirror 或存储驱动 |
 | packages/core/domain | 版本基线、命名和恢复规则、容量、正文值对象；不依赖 Node/React/SDK |
@@ -19,7 +19,7 @@
 
 ### 1. 数据权威、目录和启动
 
-选择 SQLite + JSON 主稿，使用 better-sqlite3 13.2.0、参数化 SQL 与按版本编号的事务迁移。依赖在正式实现时加入并锁定；当前 root package/lockfile 不变。
+选择 SQLite + JSON 主稿，使用 better-sqlite3 13.2.0、参数化 SQL 与按版本编号的事务迁移。该依赖已在正式实现中加入并锁定；精确安装配置见 package.json 与 lockfile。
 
 ```text
 ~/Library/Application Support/Inkling/workspaces/default/
@@ -179,6 +179,6 @@ better-sqlite3 是原生同步依赖：POC 只覆盖当前 Mac/Node，不代替 
 
 C02 实现会替换 WORKBENCH-EDIT-004 的刷新清空断言，保留格式与中文编辑验收。新增 contracts/core/adapters 进入现有架构边界检查。首次引入存储，没有旧生产数据迁移；任何预发布调试数据仍通过 schema 检查，不能随启动抹掉。
 
-工作台显示加载、保存、恢复与冲突入口；版本侧栏按需打开，不把编辑器换成数据库管理页面。只开发单稿使用链路，多文章导航留给 C03。
+工作台显示加载、保存、恢复与冲突入口；版本面板按需打开，不把编辑器换成数据库管理页面。只开发单稿使用链路，多文章导航留给 C03。
 
 实现任务、验收映射见 tasks/acceptance。进入实现时采用 ATDD，先记录真实缺失行为 Red，再交付切片。POC 通过仅支撑设计选择；不会填写 product evidence.json 为 passed，也不会归档或修改 Living Spec。

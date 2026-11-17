@@ -1,0 +1,60 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-versions.spec.ts --grep 'long code'
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2248 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-BKwJHbn8.css    8.47 kB │ gzip:   2.54 kB
+apps/web/dist/assets/index-BcTNNZwK.js   761.47 kB │ gzip: 237.15 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 321ms
+
+Running 1 test using 1 worker
+
+(node:45847) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-versions.spec.ts:133:1 › REVISION-COMPARE-002 restore preview contains long code lines within a narrow screen (2.5s)
+
+
+  1) [chromium] › tests/e2e/article-versions.spec.ts:133:1 › REVISION-COMPARE-002 restore preview contains long code lines within a narrow screen
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      142 |   await page.setViewportSize({width:375,height:900});
+      143 |   await panel.getByRole('region',{name:'待恢复版本'}).scrollIntoViewIfNeeded();
+    > 144 |   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+          |                                                                                     ^
+      145 |   await panel.getByRole('region',{name:'待恢复版本'}).screenshot({path:'test-results/restore-code-mobile.png'});
+      146 | });
+      147 |
+        at <repo>/tests/e2e/article-versions.spec.ts:144:85
+
+    Error Context: test-results/article-versions-REVISION--37c24-ines-within-a-narrow-screen-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-versions-REVISION--37c24-ines-within-a-narrow-screen-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-versions-REVISION--37c24-ines-within-a-narrow-screen-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/article-versions.spec.ts:133:1 › REVISION-COMPARE-002 restore preview contains long code lines within a narrow screen
+ ELIFECYCLE  Command failed with exit code 1.

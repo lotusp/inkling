@@ -45,6 +45,7 @@ test('REVISION-CONFLICT-004 typing or composition invalidates a restore confirma
   await panel
     .getByRole('button', { name: '查看并恢复版本 #2', exact: true })
     .click();
+  await expect(panel.getByRole('region', { name: '待恢复版本' })).toBeVisible();
   await editor.dispatchEvent('compositionstart', { data: '' });
   await panel
     .getByRole('button', { name: '确认恢复为新版本', exact: true })

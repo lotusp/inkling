@@ -49,3 +49,8 @@ it('REVISION-COMPARE-002 bounds large text diff work and retains all content', (
     { kind: 'added', text: b },
   ]);
 });
+it('REVISION-COMPARE-002 whole-block additions and removals preserve long code verbatim', () => {
+  const code = 'function example() {}\n'.repeat(10000);
+  expect(textChanges(code, '')).toEqual([{ kind: 'removed', text: code }]);
+  expect(textChanges('', code)).toEqual([{ kind: 'added', text: code }]);
+});

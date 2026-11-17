@@ -19,10 +19,10 @@
 | ARTICLE-SCHEMA-011 | 结构与容量校验 | 契约 + API | tests/unit/article-document.test.ts；tests/api/article-persistence.test.ts；tests/e2e/article-formats.spec.ts | 未知版本/attrs/节点、恶意协议、最大深度/字节 | 已支持格式通过，非法输入拒绝且不改原稿 |
 | ARTICLE-CORRUPT-012 | 损坏处理 | 集成 + 进程 | tests/integration/article-store.test.ts；tests/process/article-crash.test.ts | 内容 hash 错、数据库头损坏的独立副本 | 写入阻断，不自动重建或回退；有效旧版可救援 |
 | ARTICLE-QUOTA-013 | 历史容量 | 集成 + UI | tests/integration/article-store.test.ts；tests/e2e/article-versions.spec.ts | 可注入的小容量测试策略，默认值另核对 | 到阈值提示，到上限拒绝增正文，无自动删除 |
-| REVISION-HISTORY-001 | 命名与自动恢复点 | 单元 + API + UI | tests/integration/article-revisions.test.ts；tests/e2e/article-versions.spec.ts | 可控 clock，初始/首次保存/5分钟/命名 | 恢复点策略正确，分页与命名去重，不改变正文 |
+| REVISION-HISTORY-001 | 命名与自动恢复点 | 单元 + API + UI | tests/integration/article-revisions.test.ts；tests/api/article-revisions.test.ts；tests/e2e/article-versions.spec.ts | 可控 clock，初始/首次保存/5分钟/命名 | 恢复点策略正确，分页与命名去重，不改变正文 |
 | REVISION-COMPARE-002 | 版本差异 | 单元 + UI | tests/unit/document-diff.test.ts；tests/e2e/article-versions.spec.ts | 纯格式变化、列表、代码换行、标题变化 | 指定版本差异可见，编辑器不变，越界版本拒绝 |
-| REVISION-RESTORE-003 | 恢复产生新版本 | 集成 + UI | tests/integration/article-revisions.test.ts；tests/e2e/article-versions.spec.ts | 已保存新旧稿 | 新 head、parent/source 正确，历史保留，重试仅一份 |
-| REVISION-CONFLICT-004 | 恢复与新输入竞争 | UI + API | tests/e2e/article-conflict.spec.ts | 恢复面板期间本页输入/其他标签先保存 | 旧确认失效或 409，不覆盖新稿 |
+| REVISION-RESTORE-003 | 恢复产生新版本 | 集成 + UI | tests/api/article-revisions.test.ts；tests/e2e/article-restore.spec.ts | 已保存新旧稿 | 新 head、parent/source 正确，历史保留，重试仅一份 |
+| REVISION-CONFLICT-004 | 恢复与新输入竞争 | UI + API | tests/e2e/article-restore.spec.ts；tests/api/article-revisions.test.ts | 恢复面板期间本页输入/其他标签先保存 | 旧确认失效或 409，不覆盖新稿 |
 | WORKSPACE-OPEN-001 | 目录/初始化/schema | 进程 | tests/process/workspace-access.test.ts | 缺省新目录、已存在较新格式、非 SQLite 文件 | 幂等初始化/拒绝兼容错误，不覆写已有文件 |
 | WORKSPACE-LOCK-002 | 多服务与退出 | 进程 | tests/process/workspace-access.test.ts | 同目录不同端口两进程，正常退出/SIGKILL | 第二进程失败；原进程结束后可正常重开 |
 | WORKSPACE-AUTH-003 | 本机接入与重新认证 | API + UI + 进程 | tests/api/workspace-access.test.ts；tests/process/workspace-access.test.ts；tests/e2e/article-recovery.spec.ts | 有效/过期/重复 token、真实服务重启、local:access | 一次交换、cookie、fragment 清除；重新接入不丢 IDB |

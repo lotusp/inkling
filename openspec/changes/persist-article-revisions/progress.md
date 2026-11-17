@@ -38,10 +38,12 @@
 
 - 4.2：恢复接口与确认预览已接通，恢复与保存共用事务/CAS/去重和浏览器串行请求；新增修订记录来源/父版本，保留历史。接口 404 与 5 个 UI 缺失入口 Red 后，9 项接口/存储测试、12 项恢复/离线 E2E 通过；补测未提交恢复原样重试、取消/未保存阻断后，14 项恢复/副本故障/版本 E2E 通过，类型/lint 通过。覆盖本地输入/组合输入失效、远端冲突、迟到响应保留新输入、丢失响应刷新后核对。日志 restore-api-red/green.log、restore-ui-red/green.log、restore-boundaries-green.log。副本格式升为 v2 并兼容读 v1，避免旧前端误解释恢复意图；SQLite schema 无变化。
 
+- 4.3：可控时钟验证初始/首次变化/五分钟边界/恢复的标记，无变化保存不重置计时，命名不改自动标记；命名等待时新输入不改变目标，均 baseline-pass。窄屏长代码恢复预览有效 Red 后增加换行；完整回归首次发现测试未等预览完成就开始组合输入，补等待后 55 项 E2E 通过（revisions-full-first.log 保留首次结果）。大段整块增删比较自检补有界表分配保护及内容完整性单测，随后 verify 通过（46 项应用/架构 + 10 项 Harness），4 项受影响版本 E2E 再次通过。桌面/窄屏历史、确认与长代码预览均已看图。日志 revision-markers-baseline.log、revision-naming-baseline.log、restore-code-red.log、revisions-all-green.log、revisions-final-checks.log、revision-final-affected.log。手工候选窗指南在 local-development.md，用户约定稍后执行。
+
 ## 当前边界
 
-3.1 与 3.2 已完成：在线自动保存、浏览器草稿恢复/重连核对、救援下载、冲突比较/显式合并及确认放弃副本已实现；版本 UI 尚未实现。服务停止期间刷新不能打开页面，重启后可恢复；救援 JSON 当前无导入界面。Linux 原生驱动安装和手工 IME 未验证。本机依赖安装成功；pnpm 原生驱动需要允许构建且可能使用 Xcode Command Line Tools。
+3.1–4.3 已完成：在线自动保存、浏览器草稿恢复/重连核对、救援下载、冲突比较/显式合并、确认放弃副本，以及版本历史/命名/比较/恢复已实现。服务停止期间刷新不能打开页面，重启后可恢复；救援 JSON 当前无导入界面。Linux 原生驱动安装和手工 IME 未验证。本机依赖安装成功；pnpm 原生驱动需要允许构建且可能使用 Xcode Command Line Tools。
 
 ## 下一步
 
-进入 4.1a/4.1b 版本列表、命名和比较，再完成 4.2 恢复与 4.3 恢复点策略检查。2.3b 真实中文输入法候选窗检查仍待执行，自动组合事件测试不能替代。当前自动检查通过不表示完整 change 的 G2 完成；未 archive、merge 或 push。
+下一轮进入 5.1 的存储写失败/事务中断、5.2 损坏/容量、5.3 性能验证，再收集 6.* G2 证据。2.3b 真实中文输入法候选窗检查仍待执行，自动组合事件测试不能替代。当前自动检查通过不表示完整 change 的 G2 完成；未 archive、merge 或 push。
