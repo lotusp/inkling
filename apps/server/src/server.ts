@@ -94,6 +94,15 @@ export function createServer(
       '/api/articles/:id/open',
       async (request) => service().open(request.params.id, request.body),
     );
+    app.get<{ Params: { id: string } }>(
+      '/api/articles/:id/metadata',
+      async (request) => service().metadata(request.params.id),
+    );
+    app.put<{ Params: { id: string } }>(
+      '/api/articles/:id/metadata',
+      async (request) =>
+        service().updateMetadata(request.params.id, request.body),
+    );
     app.get<{ Params: { id: string } }>('/api/articles/:id', async (request) =>
       service().read(request.params.id),
     );

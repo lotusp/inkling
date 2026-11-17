@@ -3,6 +3,9 @@ import {
   CreateArticleCommand,
   OpenArticleCommand,
   ArticleListQuery,
+  UpdateArticleMetadataCommand,
+  type UpdateArticleMetadataResult,
+  type ArticleListItem,
   type ArticleListPage,
   RevisionQuery,
   RestoreRevisionCommand,
@@ -23,6 +26,11 @@ export interface ArticleRepository {
   create(command: CreateArticleCommand): ArticleSnapshot;
   open(articleId: string, command: OpenArticleCommand): ArticleSnapshot;
   list(query: ArticleListQuery): ArticleListPage;
+  metadata(articleId: string): ArticleListItem;
+  updateMetadata(
+    articleId: string,
+    command: UpdateArticleMetadataCommand,
+  ): UpdateArticleMetadataResult;
   read(articleId: string): ArticleSnapshot;
   save(articleId: string, command: SaveArticleCommand): SaveResult;
   restore(articleId: string, command: RestoreRevisionCommand): SaveResult;
@@ -51,6 +59,15 @@ export class ArticleService {
   }
   list(input: unknown) {
     return this.repository.list(ArticleListQuery.parse(input));
+  }
+  metadata(id: unknown) {
+    return this.repository.metadata(Id.parse(id));
+  }
+  updateMetadata(id: unknown, input: unknown) {
+    return this.repository.updateMetadata(
+      Id.parse(id),
+      UpdateArticleMetadataCommand.parse(input),
+    );
   }
   read(id: unknown) {
     return this.repository.read(Id.parse(id));

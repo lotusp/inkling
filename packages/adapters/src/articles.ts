@@ -12,6 +12,8 @@ import {
 import {
   ArticleDocument,
   ArticleListItem,
+  type UpdateArticleMetadataCommand,
+  UpdateArticleMetadataResult,
   type ArticleListQuery,
   type ArticleListPage,
   type CreateArticleCommand,
@@ -293,7 +295,7 @@ export class SqliteArticles implements ArticleRepository {
   list(query: ArticleListQuery): ArticleListPage {
     const values = this.db
       .prepare(
-        "SELECT article_id,title,state,metadata_version,created_at,updated_at FROM article_library WHERE state='active' AND (? IS NULL OR created_at < ? OR (created_at = ? AND article_id < ?)) ORDER BY created_at DESC,article_id DESC LIMIT ?",
+        "SELECT article_id,title,state,metadata_version,created_at,updated_at,(SELECT json_group_array(tag) FROM article_tags WHERE article_tags.article_id=article_library.article_id) tags_json FROM article_library WHERE state='active' AND (? IS NULL OR created_at < ? OR (created_at = ? AND article_id < ?)) ORDER BY created_at DESC,article_id DESC LIMIT ?",
       )
       .all(
         query.beforeCreatedAt ?? null,
@@ -302,17 +304,9 @@ export class SqliteArticles implements ArticleRepository {
         query.beforeId ?? null,
         query.limit + 1,
       );
-    const items = values.slice(0, query.limit).map((value) => {
-      const r = row(value);
-      return ArticleListItem.parse({
-        articleId: r.article_id,
-        title: r.title,
-        state: r.state,
-        metadataVersion: r.metadata_version,
-        createdAt: r.created_at,
-        updatedAt: r.updated_at,
-      });
-    });
+    const items = values
+      .slice(0, query.limit)
+      .map((value) => this.libraryItem(value));
     const last = items.at(-1);
     return {
       items,
@@ -321,6 +315,88 @@ export class SqliteArticles implements ArticleRepository {
           ? { createdAt: last.createdAt, articleId: last.articleId }
           : null,
     };
+  }
+  private libraryItem(value: unknown): ArticleListItem {
+    const r = row(value);
+    return ArticleListItem.parse({
+      articleId: r.article_id,
+      title: r.title,
+      state: r.state,
+      metadataVersion: r.metadata_version,
+      tags: JSON.parse(string(r.tags_json)),
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    });
+  }
+  metadata(articleId: string): ArticleListItem {
+    return this.libraryItem(
+      this.db
+        .prepare(
+          'SELECT article_id,title,state,metadata_version,created_at,updated_at,(SELECT json_group_array(tag) FROM article_tags WHERE article_tags.article_id=article_library.article_id) tags_json FROM article_library WHERE article_id=?',
+        )
+        .get(articleId),
+    );
+  }
+  updateMetadata(
+    articleId: string,
+    command: UpdateArticleMetadataCommand,
+  ): UpdateArticleMetadataResult {
+    return this.db
+      .transaction(() => {
+        const requestHash = hash({
+          operation: 'metadata',
+          articleId,
+          ...command,
+        });
+        const old = this.replay(command.mutationId, requestHash);
+        if (old !== undefined) return UpdateArticleMetadataResult.parse(old);
+        const current = this.metadata(articleId);
+        if (current.state !== 'active')
+          throw new ArticleError(
+            'ARTICLE_NOT_ACTIVE',
+            409,
+            '文章当前不可编辑，请刷新文章库。',
+          );
+        if (current.metadataVersion !== command.baseMetadataVersion)
+          throw new ArticleError(
+            'METADATA_CONFLICT',
+            409,
+            '标签已被更新，请查看最新标签后重新编辑。',
+          );
+        if (JSON.stringify(current.tags) !== JSON.stringify(command.tags)) {
+          this.db
+            .prepare('DELETE FROM article_tags WHERE article_id=?')
+            .run(articleId);
+          const insert = this.db.prepare(
+            'INSERT INTO article_tags VALUES(?,?)',
+          );
+          for (const tag of command.tags) insert.run(articleId, tag);
+          this.db
+            .prepare(
+              'UPDATE article_library SET metadata_version=metadata_version+1,updated_at=? WHERE article_id=?',
+            )
+            .run(this.now(), articleId);
+        }
+        const result = {
+          mutationId: command.mutationId,
+          metadata: this.metadata(articleId),
+        };
+        const revision = row(
+          this.db
+            .prepare('SELECT head_revision_id FROM articles WHERE id=?')
+            .get(articleId),
+        );
+        this.remember(
+          command.mutationId,
+          articleId,
+          'metadata',
+          requestHash,
+          result,
+          string(revision.head_revision_id),
+        );
+        return result;
+      })
+      .immediate();
   }
   read(articleId: string): ArticleSnapshot {
     this.assertHealthy(articleId);

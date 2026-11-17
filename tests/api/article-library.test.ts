@@ -366,3 +366,324 @@ it('LIBRARY-OPEN-004 a failed open mutation leaves recent selection and original
   expect(f.service.workspace().currentArticleId).toBe(b.article.articleId);
   expect(() => f.service.mutation(command.mutationId)).toThrow();
 });
+it('LIBRARY-RENAME-006 title-only save preserves body and rejects stale renaming baseline', async () => {
+  const f = await setup(),
+    { article } = await f.create('原题');
+  const document = {
+    ...article.document,
+    doc: {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: '个人洞见正文' }],
+        },
+      ],
+    },
+  };
+  const saved = f.service.save(article.articleId, {
+    mutationId: randomUUID(),
+    baseRevisionId: article.headRevisionId,
+    document,
+  });
+  const command = {
+    mutationId: randomUUID(),
+    baseRevisionId: saved.appliedRevisionId,
+    document: { ...document, title: '新的标题' },
+  };
+  const response = await f.app.inject({
+    method: 'PUT',
+    url: `/api/articles/${article.articleId}/content`,
+    headers: f.headers,
+    payload: command,
+  });
+  expect(response.statusCode).toBe(200);
+  expect(f.service.read(article.articleId).document).toEqual(command.document);
+  expect(f.service.read(article.articleId).headSeq).toBe(3);
+  expect(
+    (
+      await f.app.inject({
+        method: 'PUT',
+        url: `/api/articles/${article.articleId}/content`,
+        headers: f.headers,
+        payload: {
+          ...command,
+          mutationId: randomUUID(),
+          document: { ...document, title: '过期改名' },
+        },
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect(f.service.read(article.articleId).document).toEqual(command.document);
+});
+it('LIBRARY-TAGS-007 normalized tags use their own CAS and replay without affecting revisions or selection', async () => {
+  const f = await setup(),
+    { article } = await f.create('标签文章');
+  const other = await f.create('另一篇');
+  const url = `/api/articles/${article.articleId}/metadata`;
+  const get = await f.app.inject({ url, headers: f.headers });
+  expect(get.statusCode).toBe(200);
+  expect(get.json()).toMatchObject({
+    tags: [],
+    metadataVersion: 1,
+    title: '标签文章',
+  });
+  const command = {
+    mutationId: randomUUID(),
+    baseMetadataVersion: 1,
+    tags: [' 技术 ', 'e\u0301', 'é', '技术', 'API', 'api'],
+  };
+  const first = await f.app.inject({
+    method: 'PUT',
+    url,
+    headers: f.headers,
+    payload: command,
+  });
+  expect(first.statusCode).toBe(200);
+  expect(first.json()).toMatchObject({
+    mutationId: command.mutationId,
+    metadata: { tags: ['API', 'api', 'é', '技术'], metadataVersion: 2 },
+  });
+  const rename = f.service.save(article.articleId, {
+    mutationId: randomUUID(),
+    baseRevisionId: article.headRevisionId,
+    document: { ...article.document, title: '新标题' },
+  });
+  const second = await f.app.inject({
+    method: 'PUT',
+    url,
+    headers: f.headers,
+    payload: {
+      mutationId: randomUUID(),
+      baseMetadataVersion: 2,
+      tags: ['数据库'],
+    },
+  });
+  expect(second.statusCode).toBe(200);
+  const replay = await f.app.inject({
+    method: 'PUT',
+    url,
+    headers: f.headers,
+    payload: { ...command, tags: ['技术', 'é', 'api', 'API'] },
+  });
+  expect(replay.json()).toEqual(first.json());
+  const current = await f.app.inject({ url, headers: f.headers });
+  expect(current.json()).toMatchObject({
+    tags: ['数据库'],
+    metadataVersion: 3,
+    title: '新标题',
+  });
+  expect(f.service.read(article.articleId).headRevisionId).toBe(
+    rename.appliedRevisionId,
+  );
+  expect(f.service.workspace().currentArticleId).toBe(other.article.articleId);
+  expect(
+    f.db.prepare('SELECT COUNT(*) n FROM article_revisions').get(),
+  ).toEqual({ n: 3 });
+  const list = await f.app.inject({ url: '/api/articles', headers: f.headers });
+  expect(list.json<{ items: unknown[] }>().items).toContainEqual(
+    current.json(),
+  );
+  expect(
+    (
+      await f.app.inject({
+        method: 'PUT',
+        url,
+        headers: f.headers,
+        payload: { ...command, mutationId: randomUUID() },
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect(
+    (
+      await f.app.inject({
+        method: 'PUT',
+        url,
+        headers: f.headers,
+        payload: { ...command, tags: ['不同'] },
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect(
+    (
+      await f.app.inject({
+        method: 'PUT',
+        url: `/api/articles/${other.article.articleId}/metadata`,
+        headers: f.headers,
+        payload: command,
+      })
+    ).statusCode,
+  ).toBe(409);
+  const noChange = await f.app.inject({
+    method: 'PUT',
+    url,
+    headers: f.headers,
+    payload: {
+      mutationId: randomUUID(),
+      baseMetadataVersion: 3,
+      tags: ['数据库'],
+    },
+  });
+  expect(noChange.json()).toMatchObject({ metadata: { metadataVersion: 3 } });
+  const clear = await f.app.inject({
+    method: 'PUT',
+    url,
+    headers: f.headers,
+    payload: { mutationId: randomUUID(), baseMetadataVersion: 3, tags: [] },
+  });
+  expect(clear.json()).toMatchObject({
+    metadata: { tags: [], metadataVersion: 4 },
+  });
+});
+it('LIBRARY-TAGS-007 validates Unicode tags, bounds, state and access without partial writes', async () => {
+  const f = await setup(),
+    { article } = await f.create();
+  const url = `/api/articles/${article.articleId}/metadata`;
+  const command = {
+    mutationId: randomUUID(),
+    baseMetadataVersion: 1,
+    tags: ['😀'.repeat(30)],
+  };
+  expect(
+    (
+      await f.app.inject({
+        method: 'PUT',
+        url,
+        headers: f.headers,
+        payload: command,
+      })
+    ).statusCode,
+  ).toBe(200);
+  for (const tags of [
+    [' '],
+    ['x'.repeat(31)],
+    [7],
+    Array.from({ length: 11 }, (_, i) => String(i)),
+  ])
+    expect(
+      (
+        await f.app.inject({
+          method: 'PUT',
+          url,
+          headers: f.headers,
+          payload: {
+            ...command,
+            mutationId: randomUUID(),
+            baseMetadataVersion: 2,
+            tags,
+          },
+        })
+      ).statusCode,
+    ).toBe(422);
+  expect(
+    (
+      await f.app.inject({
+        method: 'PUT',
+        url,
+        headers: { host: f.headers.host },
+        payload: command,
+      })
+    ).statusCode,
+  ).toBe(401);
+  expect(
+    (await f.app.inject({ url, headers: { host: f.headers.host } })).statusCode,
+  ).toBe(401);
+  expect(
+    (
+      await f.app.inject({
+        method: 'PUT',
+        url,
+        headers: { ...f.headers, origin: 'https://other.example' },
+        payload: command,
+      })
+    ).statusCode,
+  ).toBe(403);
+  expect(
+    (
+      await f.app.inject({
+        method: 'PUT',
+        url: `/api/articles/${randomUUID()}/metadata`,
+        headers: f.headers,
+        payload: { ...command, mutationId: randomUUID() },
+      })
+    ).statusCode,
+  ).toBe(404);
+  f.db
+    .prepare("UPDATE article_library SET state='archived' WHERE article_id=?")
+    .run(article.articleId);
+  expect(
+    (
+      await f.app.inject({
+        method: 'PUT',
+        url,
+        headers: f.headers,
+        payload: {
+          ...command,
+          mutationId: randomUUID(),
+          baseMetadataVersion: 2,
+          tags: [],
+        },
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect(
+    (
+      await f.app.inject({
+        method: 'PUT',
+        url,
+        headers: f.headers,
+        payload: command,
+      })
+    ).statusCode,
+  ).toBe(200);
+  expect(
+    (await f.app.inject({ url, headers: f.headers })).json(),
+  ).toMatchObject({ metadataVersion: 2, tags: command.tags });
+});
+it('LIBRARY-TAGS-007 mutation failure rolls tags and metadata version back together', async () => {
+  const f = await setup(),
+    { article } = await f.create();
+  const url = `/api/articles/${article.articleId}/metadata`;
+  const old = await f.app.inject({
+    method: 'PUT',
+    url,
+    headers: f.headers,
+    payload: {
+      mutationId: randomUUID(),
+      baseMetadataVersion: 1,
+      tags: ['原标签'],
+    },
+  });
+  expect(old.statusCode).toBe(200);
+  f.db.exec(
+    "CREATE TEMP TRIGGER fail_metadata BEFORE INSERT ON mutations WHEN NEW.operation='metadata' BEGIN SELECT RAISE(ABORT,'test write failure'); END",
+  );
+  const command = {
+    mutationId: randomUUID(),
+    baseMetadataVersion: 2,
+    tags: ['新标签'],
+  };
+  const result = await f.app.inject({
+    method: 'PUT',
+    url,
+    headers: f.headers,
+    payload: command,
+  });
+  expect(result.statusCode).toBe(503);
+  expect(
+    (await f.app.inject({ url, headers: f.headers })).json(),
+  ).toMatchObject({ tags: ['原标签'], metadataVersion: 2 });
+  expect(() => f.service.mutation(command.mutationId)).toThrow();
+  expect(f.service.read(article.articleId)).toEqual(article);
+  f.db.exec('DROP TRIGGER fail_metadata');
+  expect(
+    (
+      await f.app.inject({
+        method: 'PUT',
+        url,
+        headers: f.headers,
+        payload: command,
+      })
+    ).statusCode,
+  ).toBe(200);
+});
