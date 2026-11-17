@@ -1,6 +1,7 @@
 import {
   ArticleDocument,
   RevisionQuery,
+  RestoreRevisionCommand,
   NameRevisionCommand,
   type RevisionPage,
   type RevisionDetail,
@@ -17,6 +18,7 @@ export interface ArticleRepository {
   ensure(mutationId: string): ArticleSnapshot;
   read(articleId: string): ArticleSnapshot;
   save(articleId: string, command: SaveArticleCommand): SaveResult;
+  restore(articleId: string, command: RestoreRevisionCommand): SaveResult;
   mutation(id: string): unknown;
   revisions(articleId: string, query: RevisionQuery): RevisionPage;
   revision(articleId: string, revisionId: string): RevisionDetail;
@@ -53,6 +55,12 @@ export class ArticleService {
       Id.parse(id),
       Id.parse(revisionId),
       NameRevisionCommand.parse(input),
+    );
+  }
+  restore(id: unknown, input: unknown) {
+    return this.repository.restore(
+      Id.parse(id),
+      RestoreRevisionCommand.parse(input),
     );
   }
   mutation(id: unknown) {

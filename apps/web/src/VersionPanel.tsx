@@ -9,12 +9,18 @@ import {
 } from '@inkling/contracts';
 import { api } from './api';
 import { RevisionComparison } from './RevisionComparison';
+import { DocumentPart } from './DocumentComparison';
+import type { RestoreReview } from './use-article';
 export function VersionPanel({
   article,
   flush,
+  reviewRestore,
+  confirmRestore,
 }: {
   article: ArticleSnapshot;
   flush: () => Promise<{ revisionId: string; seq: number }>;
+  reviewRestore: (source: string) => Promise<RestoreReview>;
+  confirmRestore: (review: RestoreReview) => Promise<unknown>;
 }) {
   const [items, setItems] = useState<RevisionInfo[]>([]),
     [all, setAll] = useState(false),
@@ -31,6 +37,7 @@ export function VersionPanel({
     seq: number;
     command: NameRevisionCommand;
   } | null>(null);
+  const [review, setReview] = useState<RestoreReview | null>(null);
   const generation = useRef(0),
     action = useRef(false);
   const path = '/api/articles/' + article.articleId;
@@ -180,6 +187,17 @@ export function VersionPanel({
             >
               命名版本 #{r.seq}
             </button>
+            <button
+              disabled={busy}
+              onClick={() =>
+                void run(async () => {
+                  setReview(null);
+                  setReview(await reviewRestore(r.revisionId));
+                })
+              }
+            >
+              查看并恢复版本 #{r.seq}
+            </button>
           </li>
         ))}
       </ol>
@@ -222,6 +240,34 @@ export function VersionPanel({
       >
         比较所选版本
       </button>
+      {review && (
+        <section aria-label="待恢复版本" className="restore-preview">
+          <h3>恢复版本 #{review.source.seq}</h3>
+          <p>
+            将在已查看基线之上新增版本，保留历史。继续输入或选词后需重新确认。
+          </p>
+          <h4>{review.source.document.title || '未命名文章'}</h4>
+          <DocumentPart node={review.source.document.doc} />
+          <button
+            disabled={busy}
+            onClick={() =>
+              void run(async () => {
+                await confirmRestore(review);
+                setReview(null);
+                setNotice(
+                  '恢复已提交；如等待期间继续输入，请先核对正文中的提示。',
+                );
+                await load();
+              })
+            }
+          >
+            确认恢复为新版本
+          </button>
+          <button disabled={busy} onClick={() => setReview(null)}>
+            取消恢复
+          </button>
+        </section>
+      )}
       {pair && <RevisionComparison left={pair[0]} right={pair[1]} />}
     </section>
   );

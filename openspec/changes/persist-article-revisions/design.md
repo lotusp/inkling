@@ -112,6 +112,8 @@ restore 使用相同原子边界：先核对 mutation，再验证当前 base 和
 
 outbox 同时保留：`ackRevisionId/ackDocument`、最多一个不可变 inFlight `{mutationId,baseRevisionId,document,editSeq,requestHash}`、最新 draft `{document,editSeq}`。首次发送前在一个 IDB 事务中持久化 inFlight；未决请求不改 payload、不换 ID，不允许第二个保存请求越过它。编辑期间的新输入只替换最新 draft，不修改 inFlight。
 
+浏览器副本写入格式升级为 v2（仍读取 v1）：pending 可携带 restoreSourceRevisionId 与已查看源正文，校验 hash 覆盖恢复意图；旧客户端拒绝未知 v2 而不会把恢复请求误作普通保存。恢复请求复用同一个串行保存通道、mutation 核对与副本持久化，HTTP 仅发送 source/base/id，服务端自行读取来源正文。恢复响应到达时已有新输入则保留输入并要求比较；重开后只有草稿序号仍等于恢复请求序号且确认提交时才加载已恢复稿。
+
 组合输入期间允许记录副本但不提交正文；compositionend 后正常调度。最后一次输入 1200 ms 后触发服务端保存，连续输入最长 10 s 触发一次（IME 正在组合时推迟），Ctrl/Cmd+S 立即调度。一个标签页最多一个在途保存；正常响应后如果 draft 更新，以新确认基线创建下一个请求。
 
 旧响应只能推进 ack：只有响应对应当前 inFlight 且最新 editSeq/content 也匹配时才显示 clean；否则保留 draft 并继续保存。不要 setContent 旧响应，不删除新草稿。mutation 查询返回成功但 head 已被其他标签页推进时，若有本地差异进入冲突；无本地差异可以加载最新 head。

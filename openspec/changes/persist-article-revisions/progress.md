@@ -36,6 +36,8 @@
 
 - 4.1b：历史/命名 UI、只读两版本比较已接通。有效缺失入口 Red 后，版本、冲突和 IME 共 14 项 E2E 通过；3 项差异单元检查通过，类型/lint 通过，请求清理整理后 2 项版本验收再次通过。桌面/375px 截图已查看，无横向溢出。名称固定 flush 结果，丢失响应重试不换目标/id；大稿差异使用有界算法。日志 revisions-ui-red.log、revisions-ui-green.log、revisions-ui-final.log、revisions-diff-green.log。
 
+- 4.2：恢复接口与确认预览已接通，恢复与保存共用事务/CAS/去重和浏览器串行请求；新增修订记录来源/父版本，保留历史。接口 404 与 5 个 UI 缺失入口 Red 后，9 项接口/存储测试、12 项恢复/离线 E2E 通过；补测未提交恢复原样重试、取消/未保存阻断后，14 项恢复/副本故障/版本 E2E 通过，类型/lint 通过。覆盖本地输入/组合输入失效、远端冲突、迟到响应保留新输入、丢失响应刷新后核对。日志 restore-api-red/green.log、restore-ui-red/green.log、restore-boundaries-green.log。副本格式升为 v2 并兼容读 v1，避免旧前端误解释恢复意图；SQLite schema 无变化。
+
 ## 当前边界
 
 3.1 与 3.2 已完成：在线自动保存、浏览器草稿恢复/重连核对、救援下载、冲突比较/显式合并及确认放弃副本已实现；版本 UI 尚未实现。服务停止期间刷新不能打开页面，重启后可恢复；救援 JSON 当前无导入界面。Linux 原生驱动安装和手工 IME 未验证。本机依赖安装成功；pnpm 原生驱动需要允许构建且可能使用 Xcode Command Line Tools。

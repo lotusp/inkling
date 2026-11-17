@@ -8,12 +8,13 @@ import {
 
 export interface PendingSave {
   command: SaveArticleCommand;
+  restoreSourceRevisionId?: string;
   seq: number;
   requestHash: string;
   reconcile?: boolean;
 }
 export interface DraftRecord {
-  version: 1;
+  version: 1 | 2;
   workspaceId: string;
   articleId: string;
   clientId: string;
@@ -43,11 +44,21 @@ export function stableJson(value: unknown): string {
 export async function requestHash(
   articleId: string,
   command: SaveArticleCommand,
+  restoreSourceRevisionId?: string,
 ) {
   const digest = await crypto.subtle.digest(
     'SHA-256',
     new TextEncoder().encode(
-      stableJson({ operation: 'save', articleId, ...command }),
+      stableJson(
+        restoreSourceRevisionId
+          ? {
+              operation: 'restore',
+              articleId,
+              ...command,
+              restoreSourceRevisionId,
+            }
+          : { operation: 'save', articleId, ...command },
+      ),
     ),
   );
   return [...new Uint8Array(digest)]
@@ -69,7 +80,7 @@ function parseRecord(value: unknown): DraftRecord {
     draft = object(r.draft),
     doc = object(draft.document);
   if (
-    r.version !== 1 ||
+    (r.version !== 1 && r.version !== 2) ||
     doc.schemaVersion !== 1 ||
     typeof doc.title !== 'string' ||
     !validDocumentNode(doc.doc)
@@ -90,13 +101,16 @@ function parseRecord(value: unknown): DraftRecord {
       seq: sequence(p.seq),
       requestHash: p.requestHash,
       reconcile: true,
+      ...(p.restoreSourceRevisionId !== undefined
+        ? { restoreSourceRevisionId: Id.parse(p.restoreSourceRevisionId) }
+        : {}),
     };
   }
   const seq = sequence(draft.seq);
   if (ack.articleId !== articleId || (pending && pending.seq > seq))
     throw new Error('恢复副本基线不一致。');
   return {
-    version: 1,
+    version: r.version,
     workspaceId: Id.parse(r.workspaceId),
     articleId,
     clientId: Id.parse(r.clientId),

@@ -221,6 +221,8 @@ export function App() {
               <VersionPanel
                 article={article.snapshot}
                 flush={article.flushForVersion}
+                reviewRestore={article.reviewRestore}
+                confirmRestore={article.confirmRestore}
               />
             )}
             <div className="document-meta">

@@ -12,6 +12,7 @@ import {
   ArticleSnapshot,
   SaveResult,
   type SaveArticleCommand,
+  type RestoreRevisionCommand,
   type WorkspaceInfo,
 } from '@inkling/contracts';
 const hash = (value: unknown) =>
@@ -302,9 +303,20 @@ export class SqliteArticles implements ArticleRepository {
   }
 
   save(articleId: string, command: SaveArticleCommand): SaveResult {
+    return this.commit(articleId, command);
+  }
+  restore(articleId: string, command: RestoreRevisionCommand): SaveResult {
+    return this.commit(articleId, command);
+  }
+  private commit(
+    articleId: string,
+    command: SaveArticleCommand | RestoreRevisionCommand,
+  ): SaveResult {
+    const restoring = 'sourceRevisionId' in command;
+    const operation = restoring ? 'restore' : 'save';
     return this.db
       .transaction(() => {
-        const requestHash = hash({ operation: 'save', articleId, ...command }),
+        const requestHash = hash({ operation, articleId, ...command }),
           old = this.replay(command.mutationId, requestHash);
         if (old !== undefined) return SaveResult.parse(old);
         const current = this.read(articleId);
@@ -318,13 +330,16 @@ export class SqliteArticles implements ArticleRepository {
               contentHash: current.contentHash,
             },
           );
-        const contentHash = hash(command.document),
-          changed = contentHash !== current.contentHash,
+        const document = restoring
+          ? this.revision(articleId, command.sourceRevisionId).document
+          : command.document;
+        const contentHash = hash(document),
+          changed = restoring || contentHash !== current.contentHash,
           time = this.now();
         const revisionId = changed ? randomUUID() : current.headRevisionId,
           seq = current.headSeq + (changed ? 1 : 0);
         if (changed) {
-          const json = canonical(command.document),
+          const json = canonical(document),
             bytes = Buffer.byteLength(json);
           if (current.revisionBytes + bytes > 256 * 1024 * 1024)
             throw new ArticleError(
@@ -334,13 +349,15 @@ export class SqliteArticles implements ArticleRepository {
             );
           this.db
             .prepare(
-              "INSERT INTO article_revisions VALUES(?,?,?,?,'save',NULL,?,?,?,?)",
+              'INSERT INTO article_revisions VALUES(?,?,?,?,?,?,?,?,?,?)',
             )
             .run(
               revisionId,
               articleId,
               seq,
               current.headRevisionId,
+              operation,
+              restoring ? command.sourceRevisionId : null,
               json,
               contentHash,
               bytes,
@@ -365,7 +382,7 @@ export class SqliteArticles implements ArticleRepository {
               )
               .get(articleId),
           );
-          if (seq === 2 || time - number(last.t) >= 5 * 60_000)
+          if (restoring || seq === 2 || time - number(last.t) >= 5 * 60_000)
             this.db
               .prepare('INSERT INTO revision_markers VALUES(?,?,?,NULL,?)')
               .run(articleId, revisionId, time, time);
@@ -382,7 +399,7 @@ export class SqliteArticles implements ArticleRepository {
         this.remember(
           command.mutationId,
           articleId,
-          'save',
+          operation,
           requestHash,
           result,
           revisionId,

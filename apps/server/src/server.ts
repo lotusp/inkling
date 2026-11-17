@@ -101,6 +101,10 @@ export function createServer(
           request.body,
         ),
     );
+    app.post<{ Params: { id: string } }>(
+      '/api/articles/:id/restore',
+      async (request) => service().restore(request.params.id, request.body),
+    );
     app.get<{ Params: { id: string } }>('/api/mutations/:id', async (request) =>
       service().mutation(request.params.id),
     );

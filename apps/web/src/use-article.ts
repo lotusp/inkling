@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import {
   ArticleDocument,
+  RevisionDetail,
   ArticleSnapshot,
   SaveResult,
   WorkspaceInfo,
@@ -23,6 +24,12 @@ import {
   type PendingSave,
   type RecoveryChoice,
 } from './draft-store';
+export interface RestoreReview {
+  source: RevisionDetail;
+  baseRevisionId: string;
+  seq: number;
+  epoch: number;
+}
 export function useArticle(
   editor: Editor | null,
   title: string,
@@ -65,8 +72,10 @@ export function useArticle(
   const valid = useRef(true);
   const conflicted = useRef(false);
   const composing = useRef(false);
+  const compositionEpoch = useRef(0);
   const compositionStart = useCallback(() => {
     composing.current = true;
+    compositionEpoch.current++;
     if (resetConfirmation()) setConflictMessage('草稿已变化，请重新确认合并。');
     setStatus((previous) => (previous === 'clean' ? 'dirty' : previous));
   }, [resetConfirmation]);
@@ -90,7 +99,7 @@ export function useArticle(
       return Promise.resolve(false);
     }
     const record: DraftRecord = structuredClone({
-      version: 1,
+      version: 2,
       ...identity.current,
       articleId: head.current.articleId,
       ack: head.current,
@@ -267,9 +276,17 @@ export function useArticle(
       }
       result ??= SaveResult.parse(
         await api(
-          '/api/articles/' + article.articleId + '/content',
-          'PUT',
-          pending.command,
+          '/api/articles/' +
+            article.articleId +
+            (pending.restoreSourceRevisionId ? '/restore' : '/content'),
+          pending.restoreSourceRevisionId ? 'POST' : 'PUT',
+          pending.restoreSourceRevisionId
+            ? {
+                mutationId: pending.command.mutationId,
+                baseRevisionId: pending.command.baseRevisionId,
+                sourceRevisionId: pending.restoreSourceRevisionId,
+              }
+            : pending.command,
         ),
       );
       if (
@@ -302,6 +319,26 @@ export function useArticle(
           setSnapshot(next);
           setStatus('conflict');
           setMessage('另一标签页已更新稿件，当前新输入已保留，请先比较。');
+        }
+        await persist();
+        return result;
+      }
+      if (pending.restoreSourceRevisionId) {
+        inFlight.current = null;
+        if (
+          editSeq.current === pending.seq &&
+          valid.current &&
+          !composing.current &&
+          !editor?.view.composing
+        ) {
+          display(next);
+        } else {
+          head.current = next;
+          setSnapshot(next);
+          savedSeq.current = -1;
+          conflicted.current = true;
+          setStatus('conflict');
+          setMessage('旧稿已恢复为新版本，等待期间的新输入已保留，请先比较。');
         }
         await persist();
         return result;
@@ -361,6 +398,90 @@ export function useArticle(
     if (!result) throw new Error('尚未确认保存，请保留输入并重试。');
     return { revisionId: result.appliedRevisionId, seq: result.appliedSeq };
   }, [editor, save]);
+  const reviewRestore = useCallback(
+    async (sourceRevisionId: string): Promise<RestoreReview> => {
+      if (
+        busy.current ||
+        choosing.current ||
+        conflicted.current ||
+        inFlight.current ||
+        !head.current ||
+        !valid.current ||
+        editSeq.current !== savedSeq.current ||
+        composing.current ||
+        editor?.view.composing
+      )
+        throw new Error('请先保存当前稿并完成选词或冲突处理，再查看恢复。');
+      const ticket = {
+        baseRevisionId: head.current.headRevisionId,
+        seq: editSeq.current,
+        epoch: compositionEpoch.current,
+      };
+      const source = RevisionDetail.parse(
+        await api(
+          '/api/articles/' +
+            head.current.articleId +
+            '/revisions/' +
+            sourceRevisionId,
+        ),
+      );
+      if (
+        ticket.seq !== editSeq.current ||
+        ticket.epoch !== compositionEpoch.current ||
+        ticket.baseRevisionId !== head.current?.headRevisionId
+      )
+        throw new Error('草稿已变化，请重新查看并确认恢复。');
+      return { ...ticket, source };
+    },
+    [editor],
+  );
+  const confirmRestore = useCallback(
+    async (ticket: RestoreReview) => {
+      const check = () => {
+        if (
+          ticket.seq !== editSeq.current ||
+          ticket.epoch !== compositionEpoch.current ||
+          ticket.baseRevisionId !== head.current?.headRevisionId ||
+          composing.current ||
+          editor?.view.composing
+        )
+          throw new Error('草稿已变化，请重新查看并确认恢复。');
+        if (
+          busy.current ||
+          choosing.current ||
+          conflicted.current ||
+          inFlight.current ||
+          !head.current ||
+          !valid.current ||
+          editSeq.current !== savedSeq.current
+        )
+          throw new Error('请先确认当前保存结果，再恢复旧稿。');
+      };
+      check();
+      const command: SaveArticleCommand = {
+        mutationId: crypto.randomUUID(),
+        baseRevisionId: ticket.baseRevisionId,
+        document: ticket.source.document,
+      };
+      const digest = await requestHash(
+        ticket.source.articleId,
+        command,
+        ticket.source.revisionId,
+      );
+      check();
+      inFlight.current = {
+        command,
+        seq: ticket.seq,
+        requestHash: digest,
+        restoreSourceRevisionId: ticket.source.revisionId,
+      };
+      const result = await save();
+      if (!result)
+        throw new Error('恢复尚未确认，请在正文保存提示中核对或重试。');
+      return result;
+    },
+    [editor, save],
+  );
   const compare = useCallback(async () => {
     if (
       busy.current ||
@@ -478,8 +599,11 @@ export function useArticle(
         let result: SaveResult | null = null;
         if (record.pending) {
           if (
-            (await requestHash(record.articleId, record.pending.command)) !==
-            record.pending.requestHash
+            (await requestHash(
+              record.articleId,
+              record.pending.command,
+              record.pending.restoreSourceRevisionId,
+            )) !== record.pending.requestHash
           )
             throw new Error('恢复副本中的保存请求校验失败，原数据已保留。');
           try {
@@ -516,7 +640,10 @@ export function useArticle(
             : null;
         const noLocalChanges =
           !stillPending &&
-          stableJson(record.draft.document) === stableJson(ack.document);
+          (stableJson(record.draft.document) === stableJson(ack.document) ||
+            (!!result &&
+              !!record.pending?.restoreSourceRevisionId &&
+              record.draft.seq === record.pending.seq));
         if (noLocalChanges) display(current);
         else {
           head.current = ack;
@@ -750,6 +877,8 @@ export function useArticle(
   return {
     snapshot,
     flushForVersion,
+    reviewRestore,
+    confirmRestore,
     status,
     message,
     create,

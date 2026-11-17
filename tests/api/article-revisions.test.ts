@@ -208,3 +208,107 @@ it('WORKSPACE-PATH-005 revision reads and names reject foreign IDs, invalid boun
     ).statusCode,
   ).toBe(403);
 });
+
+it('REVISION-RESTORE-003 restores as a new revision, preserves history and deduplicates before CAS', async () => {
+  const { app, headers, article } = await setup(),
+    path = `/api/articles/${article.articleId}`;
+  const saved = SaveResult.parse(
+    (
+      await app.inject({
+        method: 'PUT',
+        url: path + '/content',
+        headers,
+        payload: {
+          mutationId: randomUUID(),
+          baseRevisionId: article.headRevisionId,
+          document: { ...article.document, title: '新稿' },
+        },
+      })
+    ).json(),
+  );
+  const payload = {
+    mutationId: randomUUID(),
+    baseRevisionId: saved.appliedRevisionId,
+    sourceRevisionId: article.headRevisionId,
+  };
+  const restored = await app.inject({
+    method: 'POST',
+    url: path + '/restore',
+    headers,
+    payload,
+  });
+  expect(restored.statusCode).toBe(200);
+  const result = SaveResult.parse(restored.json());
+  expect(result.appliedSeq).toBe(3);
+  expect(
+    (
+      await app.inject({
+        url: path + `/revisions/${result.appliedRevisionId}`,
+        headers,
+      })
+    ).json(),
+  ).toMatchObject({
+    kind: 'restore',
+    parentRevisionId: saved.appliedRevisionId,
+    restoredFromRevisionId: article.headRevisionId,
+    document: article.document,
+  });
+  const again = await app.inject({
+    method: 'POST',
+    url: path + '/restore',
+    headers,
+    payload: {
+      mutationId: randomUUID(),
+      baseRevisionId: result.appliedRevisionId,
+      sourceRevisionId: article.headRevisionId,
+    },
+  });
+  expect(SaveResult.parse(again.json()).appliedSeq).toBe(4); // explicit same-content restore still records intent
+  expect(
+    (
+      await app.inject({
+        method: 'POST',
+        url: path + '/restore',
+        headers,
+        payload,
+      })
+    ).json(),
+  ).toEqual(restored.json());
+  expect(
+    (
+      await app.inject({
+        method: 'POST',
+        url: path + '/restore',
+        headers,
+        payload: { ...payload, mutationId: randomUUID() },
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect(
+    (
+      await app.inject({
+        method: 'POST',
+        url: path + '/restore',
+        headers,
+        payload: { ...payload, sourceRevisionId: saved.appliedRevisionId },
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect(
+    (await app.inject({ url: path + '/revisions?all=true', headers })).json(),
+  ).toMatchObject({ items: [{ seq: 4 }, { seq: 3 }, { seq: 2 }, { seq: 1 }] });
+  expect(
+    (
+      await app.inject({
+        method: 'POST',
+        url: path + '/restore',
+        headers,
+        payload: {
+          mutationId: randomUUID(),
+          baseRevisionId: SaveResult.parse(again.json()).appliedRevisionId,
+          sourceRevisionId: randomUUID(),
+        },
+      })
+    ).statusCode,
+  ).toBe(404);
+});
