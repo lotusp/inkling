@@ -4,9 +4,11 @@ import {
   ArticleTitle,
   type ArticleSnapshot,
   type ArticleListItem,
+  type ArticleSearchFilters,
 } from '@inkling/contracts';
 import { BookOpen, FilePlus2, RefreshCw, X } from 'lucide-react';
 import { api } from './api';
+import { ArticleSearchForm } from './ArticleSearchForm';
 export function ArticleLibrary({
   current,
   disabled,
@@ -31,7 +33,9 @@ export function ArticleLibrary({
   const [query, setQuery] = useState<{
     attempt: number;
     cursor: ArticleListPage['nextCursor'];
-  }>({ attempt: 0, cursor: null });
+    filters: ArticleSearchFilters;
+  }>({ attempt: 0, cursor: null, filters: { q: '', tag: '' } });
+  const generation = useRef(0);
   const [loading, setLoading] = useState(true),
     [loaded, setLoaded] = useState(false),
     [error, setError] = useState('');
@@ -40,9 +44,13 @@ export function ArticleLibrary({
   const composing = useRef(false);
   useEffect(() => {
     let active = true;
+    const requestGeneration = query.attempt;
+    const isCurrent = () => active && requestGeneration === generation.current;
     setLoading(true);
     setError('');
     const params = new URLSearchParams({ limit: '20' });
+    if (query.filters.q) params.set('q', query.filters.q);
+    if (query.filters.tag) params.set('tag', query.filters.tag);
     if (query.cursor) {
       params.set('beforeCreatedAt', String(query.cursor.createdAt));
       params.set('beforeId', query.cursor.articleId);
@@ -50,7 +58,7 @@ export function ArticleLibrary({
     void api('/api/articles?' + params.toString())
       .then((value) => {
         const result = ArticleListPage.parse(value);
-        if (!active) return;
+        if (!isCurrent()) return;
         setPage((previous) => ({
           items: query.cursor
             ? [
@@ -68,10 +76,10 @@ export function ArticleLibrary({
         setLoaded(true);
       })
       .catch(() => {
-        if (active) setError('文章库读取失败，请重试。');
+        if (isCurrent()) setError('文章库读取失败，请重试。');
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (isCurrent()) setLoading(false);
       });
     return () => {
       active = false;
@@ -79,8 +87,34 @@ export function ArticleLibrary({
   }, [query]);
   function load(cursor: ArticleListPage['nextCursor']) {
     setLoading(true);
-    setQuery((previous) => ({ attempt: previous.attempt + 1, cursor }));
+    generation.current++;
+    setQuery((previous) => ({
+      ...previous,
+      attempt: previous.attempt + 1,
+      cursor,
+    }));
   }
+  function applyFilters(filters: ArticleSearchFilters) {
+    generation.current++;
+    setLoading(true);
+    setError('');
+    if (filters.q !== query.filters.q || filters.tag !== query.filters.tag) {
+      setPage({ items: [], nextCursor: null });
+      setLoaded(false);
+    }
+    setQuery((previous) => ({
+      attempt: previous.attempt + 1,
+      cursor: null,
+      filters,
+    }));
+  }
+  const hasFilters = !!(query.filters.q || query.filters.tag);
+  const filterSummary = [
+    query.filters.q ? '标题“' + query.filters.q + '”' : '',
+    query.filters.tag ? '标签“' + query.filters.tag + '”' : '',
+  ]
+    .filter(Boolean)
+    .join(' · ');
   return (
     <section className="article-library" aria-label="文章列表">
       <div className="library-heading">
@@ -145,6 +179,12 @@ export function ArticleLibrary({
         </div>
         {titleError && <p role="alert">{titleError}</p>}
       </form>
+      <ArticleSearchForm apply={applyFilters} />
+      <p className="search-summary">
+        {hasFilters
+          ? '当前筛选：' + filterSummary
+          : '全部活动文章 · 可按标题或标签查找'}
+      </p>
       {error && (
         <div className="library-error">
           <p role="alert">{error}</p>
@@ -155,7 +195,11 @@ export function ArticleLibrary({
       )}
       {loading && <p role="status">正在读取文章…</p>}
       {loaded && !loading && !error && page.items.length === 0 && (
-        <p className="library-empty">还没有文章，从一个问题开始写作。</p>
+        <p className="library-empty">
+          {hasFilters
+            ? '没有匹配的文章，试试其他标题或标签。'
+            : '还没有文章，从一个问题开始写作。'}
+        </p>
       )}
       <ul className="library-items" aria-label="活动文章">
         {page.items.map((item) => {

@@ -1,0 +1,226 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-search.spec.ts --workers=3 --timeout=12000
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2255 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-BVWxYVoy.css   12.54 kB │ gzip:   3.37 kB
+apps/web/dist/assets/index-DOlFHcdf.js   782.18 kB │ gzip: 242.86 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 419ms
+
+Running 6 tests using 3 workers
+
+(node:88168) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:88169) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:88167) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-search.spec.ts:53:1 › LIBRARY-FIND-008 literal title and exact tag combine without altering current input (12.1s)
+  ✘  3 [chromium] › tests/e2e/article-search.spec.ts:127:1 › LIBRARY-FIND-008 a late page from the old query cannot append into a new query (12.2s)
+  ✘  2 [chromium] › tests/e2e/article-search.spec.ts:82:1 › LIBRARY-FIND-008 changing filters resets pagination and retains applied filters on refresh (12.2s)
+(node:88317) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:88318) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:88319) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 [chromium] › tests/e2e/article-search.spec.ts:165:1 › LIBRARY-FIND-008 query failure retries the same filter and invalid input leaves applied results intact (12.1s)
+  ✘  5 [chromium] › tests/e2e/article-search.spec.ts:196:3 › LIBRARY-FIND-008 按标题查找 composition blocks search and clear until a fresh action (12.1s)
+  ✘  6 [chromium] › tests/e2e/article-search.spec.ts:196:3 › LIBRARY-FIND-008 精确标签 composition blocks search and clear until a fresh action (12.1s)
+
+
+  1) [chromium] › tests/e2e/article-search.spec.ts:53:1 › LIBRARY-FIND-008 literal title and exact tag combine without altering current input
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.fill: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('textbox', { name: '按标题查找', exact: true })
+
+
+      47 | }
+      48 | async function search(page: Page, title: string, label = '') {
+    > 49 |   await q(page).fill(title);
+         |                 ^
+      50 |   await tag(page).fill(label);
+      51 |   await page.getByRole('button', { name: '查找文章', exact: true }).click();
+      52 | }
+        at search (<repo>/tests/e2e/article-search.spec.ts:49:17)
+        at <repo>/tests/e2e/article-search.spec.ts:64:9
+
+    Error Context: test-results/article-search-LIBRARY-FIN-c262f-hout-altering-current-input-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-search-LIBRARY-FIN-c262f-hout-altering-current-input-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-search-LIBRARY-FIN-c262f-hout-altering-current-input-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/article-search.spec.ts:82:1 › LIBRARY-FIND-008 changing filters resets pagination and retains applied filters on refresh
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.fill: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('textbox', { name: '按标题查找', exact: true })
+
+
+      47 | }
+      48 | async function search(page: Page, title: string, label = '') {
+    > 49 |   await q(page).fill(title);
+         |                 ^
+      50 |   await tag(page).fill(label);
+      51 |   await page.getByRole('button', { name: '查找文章', exact: true }).click();
+      52 | }
+        at search (<repo>/tests/e2e/article-search.spec.ts:49:17)
+        at <repo>/tests/e2e/article-search.spec.ts:90:9
+
+    Error Context: test-results/article-search-LIBRARY-FIN-1cdd0--applied-filters-on-refresh-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-search-LIBRARY-FIN-1cdd0--applied-filters-on-refresh-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-search-LIBRARY-FIN-1cdd0--applied-filters-on-refresh-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/article-search.spec.ts:127:1 › LIBRARY-FIND-008 a late page from the old query cannot append into a new query
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.fill: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('textbox', { name: '按标题查找', exact: true })
+
+
+      47 | }
+      48 | async function search(page: Page, title: string, label = '') {
+    > 49 |   await q(page).fill(title);
+         |                 ^
+      50 |   await tag(page).fill(label);
+      51 |   await page.getByRole('button', { name: '查找文章', exact: true }).click();
+      52 | }
+        at search (<repo>/tests/e2e/article-search.spec.ts:49:17)
+        at <repo>/tests/e2e/article-search.spec.ts:135:9
+
+    Error Context: test-results/article-search-LIBRARY-FIN-d4501-not-append-into-a-new-query-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-search-LIBRARY-FIN-d4501-not-append-into-a-new-query-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-search-LIBRARY-FIN-d4501-not-append-into-a-new-query-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/article-search.spec.ts:165:1 › LIBRARY-FIND-008 query failure retries the same filter and invalid input leaves applied results intact
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.fill: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('textbox', { name: '按标题查找', exact: true })
+
+
+      47 | }
+      48 | async function search(page: Page, title: string, label = '') {
+    > 49 |   await q(page).fill(title);
+         |                 ^
+      50 |   await tag(page).fill(label);
+      51 |   await page.getByRole('button', { name: '查找文章', exact: true }).click();
+      52 | }
+        at search (<repo>/tests/e2e/article-search.spec.ts:49:17)
+        at <repo>/tests/e2e/article-search.spec.ts:173:9
+
+    Error Context: test-results/article-search-LIBRARY-FIN-d2676-aves-applied-results-intact-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-search-LIBRARY-FIN-d2676-aves-applied-results-intact-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-search-LIBRARY-FIN-d2676-aves-applied-results-intact-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests/e2e/article-search.spec.ts:196:3 › LIBRARY-FIND-008 按标题查找 composition blocks search and clear until a fresh action
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.fill: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('textbox', { name: '按标题查找', exact: true })
+
+
+      207 |     });
+      208 |     const input = page.getByRole('textbox', { name: field, exact: true });
+    > 209 |     await input.fill(field === '按标题查找' ? '输入法' : '标签');
+          |                 ^
+      210 |     await input.dispatchEvent('compositionstart');
+      211 |     await page.getByRole('button', { name: '查找文章', exact: true }).click();
+      212 |     await expect(
+        at <repo>/tests/e2e/article-search.spec.ts:209:17
+
+    Error Context: test-results/article-search-LIBRARY-FIN-28a57--clear-until-a-fresh-action-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-search-LIBRARY-FIN-28a57--clear-until-a-fresh-action-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-search-LIBRARY-FIN-28a57--clear-until-a-fresh-action-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › tests/e2e/article-search.spec.ts:196:3 › LIBRARY-FIND-008 精确标签 composition blocks search and clear until a fresh action
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.fill: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('textbox', { name: '精确标签', exact: true })
+
+
+      207 |     });
+      208 |     const input = page.getByRole('textbox', { name: field, exact: true });
+    > 209 |     await input.fill(field === '按标题查找' ? '输入法' : '标签');
+          |                 ^
+      210 |     await input.dispatchEvent('compositionstart');
+      211 |     await page.getByRole('button', { name: '查找文章', exact: true }).click();
+      212 |     await expect(
+        at <repo>/tests/e2e/article-search.spec.ts:209:17
+
+    Error Context: test-results/article-search-LIBRARY-FIN-70849--clear-until-a-fresh-action-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-search-LIBRARY-FIN-70849--clear-until-a-fresh-action-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-search-LIBRARY-FIN-70849--clear-until-a-fresh-action-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    [chromium] › tests/e2e/article-search.spec.ts:53:1 › LIBRARY-FIND-008 literal title and exact tag combine without altering current input
+    [chromium] › tests/e2e/article-search.spec.ts:82:1 › LIBRARY-FIND-008 changing filters resets pagination and retains applied filters on refresh
+    [chromium] › tests/e2e/article-search.spec.ts:127:1 › LIBRARY-FIND-008 a late page from the old query cannot append into a new query
+    [chromium] › tests/e2e/article-search.spec.ts:165:1 › LIBRARY-FIND-008 query failure retries the same filter and invalid input leaves applied results intact
+    [chromium] › tests/e2e/article-search.spec.ts:196:3 › LIBRARY-FIND-008 按标题查找 composition blocks search and clear until a fresh action
+    [chromium] › tests/e2e/article-search.spec.ts:196:3 › LIBRARY-FIND-008 精确标签 composition blocks search and clear until a fresh action
+ ELIFECYCLE  Command failed with exit code 1.

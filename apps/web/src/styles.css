@@ -906,3 +906,57 @@ svg {
     gap: 24px;
   }
 }
+
+.library-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+}
+.search-field {
+  flex: 1 1 200px;
+  max-width: 360px;
+  min-width: 0;
+}
+.search-field label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.search-field input {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: white;
+  color: inherit;
+}
+.search-actions {
+  display: flex;
+  gap: 8px;
+}
+.search-actions button {
+  font-size: 13px;
+}
+.library-search [role='alert'] {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  color: #765d34;
+}
+.search-summary {
+  font-size: 12px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  margin: 0 0 16px;
+}
+@media (max-width: 700px) {
+  .search-field {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}
