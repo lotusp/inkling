@@ -19,6 +19,7 @@ import {
 import { useHealth } from './use-health';
 import { useAccess } from './access';
 import { useArticle } from './use-article';
+import { RecoveryPanel } from './RecoveryPanel';
 import './styles.css';
 
 export function App() {
@@ -130,7 +131,7 @@ export function App() {
                   key={label}
                   aria-label={label}
                   aria-pressed={active ?? false}
-                  disabled={!editor || !article.snapshot}
+                  disabled={!editor || !article.editable}
                   onClick={run}
                 >
                   <Icon size={17} aria-hidden="true" />
@@ -158,8 +159,14 @@ export function App() {
               onChange={(event) => setTitle(event.target.value)}
               onCompositionStart={article.compositionStart}
               onCompositionEnd={article.compositionEnd}
-              disabled={!article.snapshot}
+              disabled={!article.editable}
               maxLength={400}
+            />
+            <RecoveryPanel
+              choices={article.recoveries}
+              busy={article.recovering}
+              message={article.message}
+              recover={article.recover}
             />
             <div className={`editor-wrap ${format?.length ? '' : 'is-empty'}`}>
               <EditorContent editor={editor} />
@@ -206,6 +213,17 @@ export function App() {
                 </>
               )}
             </div>
+            {article.snapshot &&
+              article.recoveries.length === 0 &&
+              article.backup !== 'idle' && (
+                <div className="backup-notice" aria-live="polite">
+                  {article.backup === 'durable'
+                    ? '浏览器恢复副本已更新'
+                    : article.backup === 'pending'
+                      ? '正在更新浏览器恢复副本…'
+                      : '浏览器恢复副本不可用，请勿关闭页面；尚未保存的输入可能丢失。'}
+                </div>
+              )}
           </article>
         </main>
         <aside className="chat-pane" aria-label="写作讨论" hidden={focused}>

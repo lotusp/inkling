@@ -251,6 +251,43 @@ svg {
 .save-notice.is-saved {
   color: #466046;
 }
+.backup-notice {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #655333;
+}
+.recovery-panel {
+  margin: 22px 0;
+  padding: 20px;
+  border: 1px solid #c9d4c5;
+  border-radius: 12px;
+  background: #f6f8f3;
+  overflow-wrap: anywhere;
+}
+.recovery-panel h2 {
+  font-size: 18px;
+}
+.recovery-panel h3 {
+  font-size: 15px;
+}
+.recovery-panel p {
+  font-size: 13px;
+  line-height: 1.65;
+}
+.recovery-card {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+.recovery-panel button {
+  padding: 8px 12px;
+  border: 1px solid #b4c2ae;
+  border-radius: 6px;
+  background: white;
+  color: #365139;
+}
+.draft-preview {
+  white-space: pre-wrap;
+}
 .chat-pane {
   border-left: 1px solid var(--line);
   background: var(--soft);
