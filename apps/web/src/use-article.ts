@@ -21,20 +21,25 @@ export function useArticle(
   const [message, setMessage] = useState('');
   const [editVersion, setEditVersion] = useState(0);
   const valid = useRef(true);
+  const conflicted = useRef(false);
   const head = useRef<ArticleSnapshot | null>(null),
     latest = useRef<ArticleDocument | null>(null),
     editSeq = useRef(0),
     savedSeq = useRef(0),
     titleRef = useRef(title),
-    inFlight = useRef<{ command: SaveArticleCommand; seq: number } | null>(
-      null,
-    ),
+    inFlight = useRef<{
+      command: SaveArticleCommand;
+      seq: number;
+      reconcile?: boolean;
+    } | null>(null),
     busy = useRef(false),
     timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined),
     dirtySince = useRef<number | null>(null);
   titleRef.current = title;
   const display = useCallback(
     (article: ArticleSnapshot) => {
+      valid.current = true;
+      conflicted.current = false;
       head.current = article;
       latest.current = article.document;
       editSeq.current = 0;
@@ -96,6 +101,7 @@ export function useArticle(
   const save = useCallback(async () => {
     if (
       busy.current ||
+      conflicted.current ||
       !head.current ||
       !latest.current ||
       !valid.current ||
@@ -117,20 +123,54 @@ export function useArticle(
     busy.current = true;
     setStatus('saving');
     try {
-      const result = SaveResult.parse(
+      let result: SaveResult | undefined;
+      if (pending.reconcile) {
+        try {
+          result = SaveResult.parse(
+            await api('/api/mutations/' + pending.command.mutationId),
+          );
+        } catch (error) {
+          if (!(error instanceof ApiError && error.status === 404)) throw error;
+          const current = ArticleSnapshot.parse(
+            await api('/api/articles/' + article.articleId),
+          );
+          if (current.headRevisionId !== pending.command.baseRevisionId)
+            throw new ApiError(
+              409,
+              'REVISION_CONFLICT',
+              '稿件已有新版本，请先比较两份内容。',
+            );
+        }
+      }
+      result ??= SaveResult.parse(
         await api(
           '/api/articles/' + article.articleId + '/content',
           'PUT',
           pending.command,
         ),
       );
-      const next = {
-        ...article,
-        headRevisionId: result.appliedRevisionId,
-        headSeq: result.appliedSeq,
-        contentHash: result.contentHash,
-        document: pending.command.document,
-      };
+      if (
+        result.mutationId !== pending.command.mutationId ||
+        result.articleId !== article.articleId
+      )
+        throw new Error('保存确认与当前请求不匹配。');
+      const next = ArticleSnapshot.parse(
+        await api('/api/articles/' + article.articleId),
+      );
+      if (next.headRevisionId !== result.appliedRevisionId) {
+        inFlight.current = null;
+        savedSeq.current = pending.seq;
+        if (editSeq.current === pending.seq && valid.current) {
+          display(next);
+        } else {
+          conflicted.current = true;
+          head.current = next;
+          setSnapshot(next);
+          setStatus('conflict');
+          setMessage('另一标签页已更新稿件，当前新输入已保留，请先比较。');
+        }
+        return;
+      }
       head.current = next;
       setSnapshot(next);
       savedSeq.current = pending.seq;
@@ -143,18 +183,17 @@ export function useArticle(
         dirtySince.current = null;
       } else setStatus('dirty');
     } catch (error) {
-      setStatus(
-        error instanceof ApiError && error.code === 'REVISION_CONFLICT'
-          ? 'conflict'
-          : 'error',
-      );
+      pending.reconcile = true;
+      conflicted.current =
+        error instanceof ApiError && error.code === 'REVISION_CONFLICT';
+      setStatus(conflicted.current ? 'conflict' : 'error');
       setMessage(
         error instanceof Error ? error.message : '保存未确认，请保留输入。',
       );
     } finally {
       busy.current = false;
     }
-  }, [editor]);
+  }, [editor, display]);
   const changed = useCallback(() => {
     if (!editor || !head.current) return;
     const parsed = ArticleDocument.safeParse({
@@ -177,12 +216,12 @@ export function useArticle(
       !wasInvalid
     )
       return;
-    setMessage('');
+    if (!conflicted.current) setMessage('');
     latest.current = parsed.data;
     editSeq.current++;
     setEditVersion((x) => x + 1);
     dirtySince.current ??= Date.now();
-    setStatus((previous) => (previous === 'conflict' ? 'conflict' : 'dirty'));
+    setStatus(conflicted.current ? 'conflict' : 'dirty');
   }, [editor]);
   useEffect(() => {
     if (!editor) return;

@@ -84,3 +84,58 @@ it('ARTICLE-SCHEMA-011 rejects unknown nodes and unsafe links without changing h
     );
   }
 });
+it('ARTICLE-RETRY-003 returns original mutation result even after head advances', () => {
+  const { service } = open();
+  const first = service.ensure({ mutationId: randomUUID() });
+  const command = {
+    mutationId: randomUUID(),
+    baseRevisionId: first.headRevisionId,
+    document: { ...first.document, title: 'first' },
+  };
+  const original = service.save(first.articleId, command);
+  const later = service.save(first.articleId, {
+    mutationId: randomUUID(),
+    baseRevisionId: original.appliedRevisionId,
+    document: { ...first.document, title: 'later' },
+  });
+  expect(service.save(first.articleId, command)).toEqual(original);
+  expect(service.mutation(command.mutationId)).toEqual(original);
+  expect(service.read(first.articleId).headRevisionId).toBe(
+    later.appliedRevisionId,
+  );
+});
+it('ARTICLE-KEY-004 rejects key reuse and ARTICLE-CONFLICT-006 rejects stale writes', () => {
+  const { service } = open();
+  const first = service.ensure({ mutationId: randomUUID() });
+  const command = {
+    mutationId: randomUUID(),
+    baseRevisionId: first.headRevisionId,
+    document: { ...first.document, title: 'first' },
+  };
+  const result = service.save(first.articleId, command);
+  expect(() =>
+    service.save(first.articleId, {
+      ...command,
+      document: { ...first.document, title: 'different' },
+    }),
+  ).toThrow('同一请求标识');
+  expect(() =>
+    service.save(first.articleId, { ...command, mutationId: randomUUID() }),
+  ).toThrow('新版本');
+  expect(service.read(first.articleId).headRevisionId).toBe(
+    result.appliedRevisionId,
+  );
+});
+it('ARTICLE-RETRY-003 records a no-op without creating another content revision', () => {
+  const { service } = open();
+  const first = service.ensure({ mutationId: randomUUID() });
+  const command = {
+    mutationId: randomUUID(),
+    baseRevisionId: first.headRevisionId,
+    document: first.document,
+  };
+  const result = service.save(first.articleId, command);
+  expect(result.changed).toBe(false);
+  expect(result.appliedSeq).toBe(1);
+  expect(service.mutation(command.mutationId)).toEqual(result);
+});

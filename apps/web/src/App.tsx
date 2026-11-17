@@ -188,7 +188,11 @@ export function App() {
                 article.status === 'conflict') && (
                 <>
                   <span>{article.message}</span>
-                  <button onClick={() => void article.save()}>重试保存</button>
+                  {article.status === 'error' && (
+                    <button onClick={() => void article.save()}>
+                      重试保存
+                    </button>
+                  )}
                 </>
               )}
             </div>

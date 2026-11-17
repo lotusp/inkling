@@ -1,6 +1,6 @@
 # Implementation tasks
 
-状态：2026-11-17 开始实施，按编号步骤检查并提交。每个切片先写验收并记录有效 Red/baseline，再实现 UI/服务/存储所需部分，验证并更新证据。以下产品任务均未完成，POC 不勾选产品实现任务。
+状态：2026-11-17 开始实施，按编号步骤检查并提交。每个切片先写验收并记录有效 Red/baseline，再实现 UI/服务/存储所需部分，验证并更新证据。任务状态仅依据产品实现与真实验证更新，POC 不勾选产品实现任务。
 
 ## 1. 可安全打开的本地工作空间
 
@@ -11,7 +11,7 @@
 ## 2. 一篇稿件保存后重开
 
 - [x] 2.1 先覆盖 ARTICLE-CREATE-001、ARTICLE-SAVE-002、ARTICLE-SCHEMA-011 与 WORKBENCH-EDIT-004；建立严格正文 schema、初始化当前稿、保存 API 和编辑器加载/状态，记录刷新由清空转为恢复的 Red → Green。
-- [ ] 2.2 实现 ARTICLE-RETRY-003、ARTICLE-KEY-004、ARTICLE-RACE-005：原子修订/head/mutation、no-op 去重、串行保存；验证响应丢失、head 推进后旧请求重放及保存期间继续输入。
+- [x] 2.2 实现 ARTICLE-RETRY-003、ARTICLE-KEY-004、ARTICLE-RACE-005：原子修订/head/mutation、no-op 去重、串行保存；验证响应丢失、head 推进后旧请求重放及保存期间继续输入。
 - [ ] 2.3 运行现有格式/Chat/健康回归，补全当前 node/mark 组合、标题 Unicode 限制和中文输入法手工检查；同步保存状态文档。
 
 ## 3. 离线输入与冲突处理

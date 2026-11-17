@@ -1,6 +1,6 @@
 # Acceptance design
 
-状态：G1 验收计划；下列产品测试文件将在实现切片中创建/更新，尚未运行。POC 只提供设计证据。
+状态：实施中；下表为验收计划，实际完成情况与日志见 progress.md。POC 只提供设计证据。
 
 ## Scenario mapping
 
@@ -8,9 +8,9 @@
 | --- | --- | --- | --- | --- | --- |
 | ARTICLE-CREATE-001 | 首次创建/重开 | API + UI | tests/api/article-persistence.test.ts；tests/e2e/article-save.spec.ts | 空临时 workspace，两个 ensure 请求 | 只创建一个初稿，重开 article ID 一致 |
 | ARTICLE-SAVE-002 | 保存与服务重启 | 集成 + UI | tests/integration/article-store.test.ts；tests/e2e/article-save.spec.ts | 真实 SQLite 与中文/格式稿 | 确认后刷新/重启内容完整；保存状态准确 |
-| ARTICLE-RETRY-003 | 未知响应重试 | API + UI | tests/api/article-persistence.test.ts；tests/e2e/article-save.spec.ts | 真实提交后丢弃响应，再推进 head | 原 mutation 结果可查询，重试不增版本 |
+| ARTICLE-RETRY-003 | 未知响应重试 | API + UI | tests/api/article-persistence.test.ts；tests/integration/article-store.test.ts；tests/e2e/article-save-races.spec.ts | 真实提交后丢弃响应，再推进 head | 原 mutation 结果可查询，重试不增版本 |
 | ARTICLE-KEY-004 | 相同键不同载荷 | API | tests/api/article-persistence.test.ts | 修改文章/base/操作/正文的重复 ID | 409，不改变数据 |
-| ARTICLE-RACE-005 | 旧响应晚到 | UI | tests/e2e/article-save.spec.ts | 延迟真实保存响应，继续输入新字符 | 保留新内容和副本，不误显 clean |
+| ARTICLE-RACE-005 | 旧响应晚到 | UI | tests/e2e/article-save-races.spec.ts | 延迟真实保存响应，继续输入新字符 | 保留新内容和副本，不误显 clean |
 | ARTICLE-CONFLICT-006 | 两个标签页冲突 | API + UI | tests/e2e/article-conflict.spec.ts | 同 browser context 的两个页面 | 第二份写冲突，两边可查看，合并仍 CAS |
 | ARTICLE-LOCAL-007 | 断线/重开恢复 | UI | tests/e2e/article-recovery.spec.ts | 已持久 IDB、在途/最新 draft、服务中断 | 先查 mutation/head，选择恢复；多副本隔离；旧基线不自动上传 |
 | ARTICLE-IDB-008 | 浏览器副本失效 | UI | tests/e2e/article-recovery.spec.ts | 通过 adapter 故障点返回 IDB 配额/不可用 | 提示失败、可下载内存救援稿，不声称已保存副本 |

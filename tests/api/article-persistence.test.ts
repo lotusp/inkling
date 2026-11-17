@@ -53,6 +53,55 @@ async function setup() {
 afterEach(async () => {
   for (const close of cleanup.splice(0)) await close();
 });
+it('ARTICLE-KEY-004 rejects reuse across content, base, article and operation', async () => {
+  const { app, headers, article } = await setup();
+  const payload = {
+    mutationId: randomUUID(),
+    baseRevisionId: article.headRevisionId,
+    document: { ...article.document, title: '已提交' },
+  };
+  const url = `/api/articles/${article.articleId}/content`;
+  const first = await app.inject({ method: 'PUT', url, headers, payload });
+  expect(first.statusCode).toBe(200);
+  for (const attempt of [
+    {
+      url,
+      payload: {
+        ...payload,
+        document: { ...payload.document, title: '不同内容' },
+      },
+    },
+    { url, payload: { ...payload, baseRevisionId: randomUUID() } },
+    { url: `/api/articles/${randomUUID()}/content`, payload },
+    {
+      url: '/api/articles/ensure-current',
+      payload: { mutationId: payload.mutationId },
+    },
+  ]) {
+    const response = await app.inject({
+      method: attempt.url.endsWith('ensure-current') ? 'POST' : 'PUT',
+      headers,
+      ...attempt,
+    });
+    expect(response.statusCode).toBe(409);
+    expect(response.json()).toMatchObject({ code: 'IDEMPOTENCY_MISMATCH' });
+  }
+  const replay = await app.inject({ method: 'PUT', url, headers, payload });
+  expect(replay.json()).toEqual(first.json());
+  const lookup = await app.inject({
+    url: `/api/mutations/${payload.mutationId}`,
+    headers,
+  });
+  expect(lookup.json()).toEqual(first.json());
+  const read = await app.inject({
+    url: `/api/articles/${article.articleId}`,
+    headers,
+  });
+  expect(ArticleSnapshot.parse(read.json())).toMatchObject({
+    headSeq: 2,
+    document: payload.document,
+  });
+});
 it('ARTICLE-SAVE-002 persists a real authenticated HTTP save', async () => {
   const { app, headers, article } = await setup();
   const document = {
