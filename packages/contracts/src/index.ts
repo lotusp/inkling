@@ -5,3 +5,8 @@ export const HealthResponse = z.object({
   apiVersion: z.literal(1),
 });
 export type HealthResponse = z.infer<typeof HealthResponse>;
+
+export const AuthSession = z.object({
+  csrfToken: z.string().regex(/^[a-f0-9]{64}$/),
+  expiresAt: z.number().int().positive(),
+});

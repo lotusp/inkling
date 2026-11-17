@@ -138,3 +138,29 @@ it('WORKSPACE-PATH-005 refuses even a dangling database symlink', async () => {
   expect(result.error).toContain('WORKSPACE_PATH');
   expect(existsSync(outside)).toBe(false);
 });
+it('WORKSPACE-AUTH-003 local access command obtains a fresh link from a running service', async () => {
+  const dir = directory();
+  expect((await boot(dir).settled).ready).toBe(true);
+  const command = spawn(
+    process.execPath,
+    ['--import', 'tsx', 'apps/server/src/local-access.ts', '--workspace', dir],
+    { stdio: ['ignore', 'pipe', 'pipe'] },
+  );
+  children.push(command);
+  let output = '';
+  command.stdout?.on('data', (chunk: Buffer) => {
+    output += chunk.toString();
+  });
+  const [code] = await once(command, 'exit');
+  expect(code).toBe(0);
+  const url = new URL(output.trim());
+  expect(url.hostname).toBe('127.0.0.1');
+  const token = new URLSearchParams(url.hash.slice(1)).get('access');
+  expect(token?.length).toBe(64);
+  const response = await fetch(url.origin + '/api/auth/exchange', {
+    method: 'POST',
+    headers: { origin: url.origin, 'content-type': 'application/json' },
+    body: JSON.stringify({ token }),
+  });
+  expect(response.status).toBe(200);
+});

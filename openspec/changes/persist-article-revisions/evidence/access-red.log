@@ -1,0 +1,86 @@
+RUN  v5.1.0 <repo>
+
+ ❯ tests/api/workspace-access.test.ts (4 tests | 4 failed) 82ms
+   × WORKSPACE-AUTH-003 exchanges a one-use token and protects workspace reads 73ms
+   × WORKSPACE-AUTH-003 expires tokens and sessions and reissues only through local secret 3ms
+   × WORKSPACE-CSRF-004 rejects foreign, null and missing exchange origins and browser admin requests 2ms
+   × WORKSPACE-CSRF-004 requires CSRF on authenticated commands and forbids cross-origin reads 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/workspace-access.test.ts > WORKSPACE-AUTH-003 exchanges a one-use token and protects workspace reads
+AssertionError: expected 404 to be 401 // Object.is equality
+
+- Expected
++ Received
+
+- 401
++ 404
+
+ ❯ tests/api/workspace-access.test.ts:9:90
+      7| afterEach(async()=>{await Promise.all(apps.splice(0).map(app=>app.clos…
+      8| it('WORKSPACE-AUTH-003 exchanges a one-use token and protects workspac…
+      9|  const app=setup();expect((await app.inject({url:'/api/workspace',head…
+       |                                                                                          ^
+     10|  const login=await app.inject({method:'POST',url:'/api/auth/exchange',…
+     11|  expect(login.statusCode).toBe(200);expect(login.headers['set-cookie']…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/api/workspace-access.test.ts > WORKSPACE-AUTH-003 expires tokens and sessions and reissues only through local secret
+AssertionError: expected 404 to be 401 // Object.is equality
+
+- Expected
++ Received
+
+- 401
++ 404
+
+ ❯ tests/api/workspace-access.test.ts:18:121
+     16| it('WORKSPACE-AUTH-003 expires tokens and sessions and reissues only t…
+     17|  let now=100;const app=setup(()=>now);now+=300001;
+     18|  expect((await app.inject({method:'POST',url:'/api/auth/exchange',head…
+       |                                                                                                                         ^
+     19|  const renewed=await app.inject({method:'POST',url:'/api/local/access'…
+     20|  expect(renewed.statusCode).toBe(200);const url=new URL(renewed.json<{…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/api/workspace-access.test.ts > WORKSPACE-CSRF-004 rejects foreign, null and missing exchange origins and browser admin requests
+AssertionError: expected 404 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 404
+
+ ❯ tests/api/workspace-access.test.ts:27:200
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/api/workspace-access.test.ts > WORKSPACE-CSRF-004 requires CSRF on authenticated commands and forbids cross-origin reads
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/workspace-access.test.ts:33:27
+     31| it('WORKSPACE-CSRF-004 requires CSRF on authenticated commands and for…
+     32|  const app=setup();const login=await app.inject({method:'POST',url:'/a…
+     33|  expect(login.statusCode).toBe(200);const cookie=String(login.headers[…
+       |                           ^
+     34|  expect((await app.inject({method:'POST',url:'/api/auth/logout',header…
+     35|  expect((await app.inject({url:'/api/workspace',headers:{...headers,or…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  08:36:54
+   Duration  356ms (import 56%, tests 31%, transform 12%, worker 1%)

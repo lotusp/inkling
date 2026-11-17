@@ -8,7 +8,7 @@
     "node": ">=22.22.2 <23"
   },
   "scripts": {
-    "dev": "concurrently -k --names server,web \"PORT=4318 tsx watch apps/server/src/main.ts\" \"vite --config apps/web/vite.config.ts\"",
+    "dev": "concurrently -k --names server,web \"INKLING_DEV_ORIGIN=http://127.0.0.1:4317 PORT=4318 tsx watch apps/server/src/main.ts\" \"vite --config apps/web/vite.config.ts\"",
     "build": "vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs",
     "start": "pnpm build && node apps/server/dist/main.js",
     "typecheck": "tsc --noEmit",
@@ -21,7 +21,8 @@
     "test:harness": "node --test scripts/harness/check.test.mjs",
     "check:docs": "node scripts/harness/docs-check.mjs",
     "check:specs": "OPENSPEC_TELEMETRY=0 openspec validate --all --strict --no-interactive && OPENSPEC_TELEMETRY=0 openspec validate --archived --strict --no-interactive && node scripts/harness/check.mjs",
-    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm check:architecture && pnpm build && pnpm test && pnpm test:harness && pnpm check:docs && pnpm check:specs"
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm check:architecture && pnpm build && pnpm test && pnpm test:harness && pnpm check:docs && pnpm check:specs",
+    "local:access": "tsx apps/server/src/local-access.ts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

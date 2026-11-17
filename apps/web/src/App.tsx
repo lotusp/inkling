@@ -17,12 +17,14 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { useHealth } from './use-health';
+import { useAccess } from './access';
 import './styles.css';
 
 export function App() {
   const [title, setTitle] = useState('');
   const [focused, setFocused] = useState(false);
   const health = useHealth();
+  const access = useAccess();
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -216,7 +218,22 @@ export function App() {
             重新连接
           </button>
         )}
-        <span className="footer-note">你的想法，由你决定。</span>
+        <span className="footer-note">
+          {access.status === 'connected'
+            ? '工作空间已连接'
+            : access.status === 'checking'
+              ? '正在连接工作空间…'
+              : '工作空间未连接'}
+        </span>
+        {access.status === 'disconnected' && (
+          <button
+            className="retry-button"
+            onClick={access.reconnect}
+            title="在终端运行 corepack pnpm local:access，打开输出的本机访问链接。"
+          >
+            重新连接工作空间
+          </button>
+        )}
       </footer>
     </div>
   );
