@@ -1,0 +1,46 @@
+
+> inkling@0.1.0 test:storage-performance <repo>
+> tsx tests/performance/storage-performance.ts
+
+{
+  "node": "v22.22.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "osRelease": "25.6.0",
+  "cpu": "Apple M1 Pro",
+  "sqliteDurability": "WAL / synchronous FULL / fullfsync ON",
+  "fixture": "Chinese technical paragraphs with mixed marks, heading, list and multiline code; exact UTF-8 JSON sizes",
+  "transport": "authenticated loopback HTTP; body creation excluded, response decoding included",
+  "eventLoop": "measured inside server process; 1ms resolution; normal p95 limit 50ms",
+  "groups": [
+    {
+      "label": "normal",
+      "documentBytes": 61440,
+      "samples": 30,
+      "warmup": 2,
+      "p95Ms": 12.08,
+      "maxMs": 13.3,
+      "thresholdMs": 250,
+      "eventLoopP95Ms": 10.82,
+      "eventLoopMaxMs": 12.02,
+      "eventLoopSamples": 43,
+      "passed": true
+    },
+    {
+      "label": "maximum",
+      "documentBytes": 2097152,
+      "samples": 30,
+      "warmup": 2,
+      "p95Ms": 171.68,
+      "maxMs": 174.52,
+      "thresholdMs": 1000,
+      "eventLoopP95Ms": 94.18,
+      "eventLoopMaxMs": 169.74,
+      "eventLoopSamples": 367,
+      "passed": true
+    }
+  ],
+  "historyBytes": 69075028,
+  "reopenAndHashScanMs": 883.54,
+  "passed": true
+}

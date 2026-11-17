@@ -37,7 +37,7 @@
 - [x] 5.1 覆盖 ARTICLE-WRITE-009、ARTICLE-CRASH-010：真实只读存储、提交边界故障注入/SIGKILL，验证 head/revision/mutation 一致与错误后恢复；日志区分模拟 ENOSPC 与真实故障。
 - [x] 5.2a 覆盖 ARTICLE-CORRUPT-012：损坏隔离、有效旧稿只读救援，不自动删库或回退正文。
 - [x] 5.2b 覆盖 ARTICLE-QUOTA-013：容量阈值警告、超限拒绝、元数据/no-op 保留，不自动删除历史。
-- [ ] 5.3 建立 test:storage-performance 入口，在目标 Mac 验证设计规定的普通/最大稿件和事件循环门槛；如需调整存储执行方式，先更新 design 再重复受影响验收。
+- [x] 5.3 建立 test:storage-performance 入口，在目标 Mac 验证设计规定的普通/最大稿件和事件循环门槛；如需调整存储执行方式，先更新 design 再重复受影响验收。
 
 ## 6. G2 交付证据
 

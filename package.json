@@ -22,7 +22,8 @@
     "check:docs": "node scripts/harness/docs-check.mjs",
     "check:specs": "OPENSPEC_TELEMETRY=0 openspec validate --all --strict --no-interactive && OPENSPEC_TELEMETRY=0 openspec validate --archived --strict --no-interactive && node scripts/harness/check.mjs",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm check:architecture && pnpm build && pnpm test && pnpm test:harness && pnpm check:docs && pnpm check:specs",
-    "local:access": "tsx apps/server/src/local-access.ts"
+    "local:access": "tsx apps/server/src/local-access.ts",
+    "test:storage-performance": "tsx tests/performance/storage-performance.ts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

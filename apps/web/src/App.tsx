@@ -173,9 +173,7 @@ export function App() {
               disabled={!article.editable}
               maxLength={400}
             />
-            {article.snapshot && (
-              <HistoryCapacity article={article.snapshot} />
-            )}
+            {article.snapshot && <HistoryCapacity article={article.snapshot} />}
             {article.damagedArticleId && (
               <DamagedArticlePanel articleId={article.damagedArticleId} />
             )}

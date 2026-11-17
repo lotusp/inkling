@@ -38,9 +38,9 @@
 
 ## Required checks
 
-G1：`node scripts/harness/check.mjs persist-article-revisions --stage plan`、`corepack pnpm exec openspec validate persist-article-revisions --strict --no-interactive`、`corepack pnpm check:docs`；人工核对 23 个场景与设计/任务覆盖。当前轮只执行 G1 和实验。
+G1：`node scripts/harness/check.mjs persist-article-revisions --stage plan`、`corepack pnpm exec openspec validate persist-article-revisions --strict --no-interactive`、`corepack pnpm check:docs`；人工核对 23 个场景与设计/任务覆盖。G1 与设计实验已完成，实施记录见 progress.md。
 
-G2：`corepack pnpm install --frozen-lockfile`、`corepack pnpm verify`、`corepack pnpm test:e2e`、`node scripts/harness/check.mjs persist-article-revisions --stage verify`。现有 verify/test 配置应确保发现新增 unit/integration 目录；构建后进程测试使用正式入口。新增 `corepack pnpm test:storage-performance` 测量设计中的本机耗时门槛，脚本建立和真实结果均为任务，当前命令尚不存在，不能记通过。Linux CI 至少验证原生驱动安装及同样功能测试；性能门槛只在记录的目标 Mac 执行。
+G2：`corepack pnpm install --frozen-lockfile`、`corepack pnpm verify`、`corepack pnpm test:e2e`、`node scripts/harness/check.mjs persist-article-revisions --stage verify`。现有 verify/test 配置应确保发现新增 unit/integration 目录；构建后进程测试使用正式入口。`corepack pnpm test:storage-performance` 已建立，测量设计中的本机耗时门槛；目标 Mac 实测见 evidence/storage-performance.log，具体限制见 docs/validation/article-storage-performance.md。Linux CI 至少验证原生驱动安装及同样功能测试；性能门槛只在记录的目标 Mac 执行。
 
 中文输入法候选窗、组合过程中保存/切换/恢复需要本机手工记录。页面视觉复核涵盖加载、已保存、未保存、冲突、版本比较、恢复确认和窄屏。缺环境时明确标未执行，不用合成 composition 事件冒充人工候选窗检查。
 
