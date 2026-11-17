@@ -1,6 +1,6 @@
 # Inkling 产品知识库
 
-更新日期：2026-11-17。当前阶段：C02 正文持久化实施中，已有在线自动保存、重开、草稿恢复、冲突比较/显式合并与救援下载；版本历史、命名、比较和恢复已接通，AI 协作尚未完成。MVP 目标为单台 Mac 本地运行。此目录保存产品为什么存在、依据什么做决定、计划如何实现，以及实际验证了什么。
+更新日期：2026-11-17。当前阶段：C02 正文持久化已实现并归档，已有在线自动保存、重开、草稿恢复、冲突比较/显式合并与救援下载；版本历史、命名、比较和恢复已接通，AI 协作尚未完成。MVP 目标为单台 Mac 本地运行。此目录保存产品为什么存在、依据什么做决定、计划如何实现，以及实际验证了什么。
 
 ## 从这里开始
 
@@ -66,4 +66,4 @@
 
 当前有原型、Harness 与本地工作台的检查记录，尚无正式上线或真实用户访谈结论。已交付行为由仓库 `openspec/specs/` 维护；实施中的契约与证据在对应 `openspec/changes/` 目录。
 
-当前 C02 的存储故障与容量边界已有自动验收，目标 Mac 的测量结果见[存储性能验证](validation/article-storage-performance.md)。真实中文输入法已由用户手工确认通过；Linux CI 与 G2 验收已通过，见[验收报告](../openspec/changes/archive/2026-11-17-persist-article-revisions/verification.md)。该 change 尚未归档或合入主分支。
+当前 C02 的存储故障与容量边界已有自动验收，目标 Mac 的测量结果见[存储性能验证](validation/article-storage-performance.md)。真实中文输入法已由用户手工确认通过；Linux CI 与 G2 验收已通过，见[验收报告](../openspec/changes/archive/2026-11-17-persist-article-revisions/verification.md)。该 change 已归档，正在完成主分支合入与 G3 收口。

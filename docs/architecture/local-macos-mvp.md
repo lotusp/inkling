@@ -1,10 +1,10 @@
 # Inkling 单台 Mac 本地运行架构
 
-C02 设计更新（2026-11-16）：文章存储经 POC 选定 JSON 正文 + SQLite / better-sqlite3，初期不加 ORM。独占连接、恢复副本和保存协议以 [DEC-0004](../decisions/0004-article-storage-and-revisions.md)及当前 change 为准；下文其他模块仍是架构提案，正式产品尚未接入存储。
+C02 实现更新（2026-11-17）：文章存储经 POC 选定 JSON 正文 + SQLite / better-sqlite3，初期不加 ORM。独占连接、恢复副本和保存协议以 [DEC-0004](../decisions/0004-article-storage-and-revisions.md)及 [文章持久化规格](../../openspec/specs/article-persistence/spec.md)、[修订规格](../../openspec/specs/article-revisions/spec.md)、[工作空间规格](../../openspec/specs/local-workspace-access/spec.md)为准；上述能力已通过产品验收，下文其他模块仍是架构提案。
 
 设计日期：2026-11-16。状态：整体架构提案；本地工作台已交付，文章存储设计 POC 已完成，其余能力按 change 验证。作者已明确 MVP 在单台 Mac 本地运行，内容上云与多端协作放到后续阶段。本文作为当前 MVP 架构入口，细化[协作设计](../product/thinking-partner-product-design.md)的实现边界。
 
-范围与存储更新：当前功能以[V1 完整范围](../product/v1-scope.md)为准，首版已包含作者风格、跨文章记忆与一个真实博客的发布和更新。文件与 SQLite 对照后，C02 选定 JSON 正文与 SQLite；下文表结构和备份仍是 V1 整体提案，具体已选定范围以 DEC-0004 和当前 change 为准。
+范围与存储更新：当前功能以[V1 完整范围](../product/v1-scope.md)为准，首版已包含作者风格、跨文章记忆与一个真实博客的发布和更新。文件与 SQLite 对照后，C02 选定 JSON 正文与 SQLite；下文表结构和备份仍是 V1 整体提案，具体已实现范围以 DEC-0004 和 Living Spec 为准。
 
 工程基础更新：bootstrap-local-workbench 采用 Node 22.22.2、React/Tiptap、Fastify 与共享健康契约，实际入口见[本地运行](../engineering/local-development.md)。这只实现临时编辑和工程基础，不表示下文的存储、Agent、恢复与发布提案已实现。
 
@@ -76,7 +76,7 @@ API、后台任务和存储在同一服务进程中，模块之间通过函数�
 | 前端 | React、Vite、Tailwind CSS、shadcn/ui | 延续工作台方向；状态和任务通过 API 获取 |
 | 编辑器 | Tiptap／ProseMirror JSON | 保留结构、节点 ID、引用和代码块；中文输入法与导出需实测 |
 | HTTP 与事件 | Fastify、HTTP 命令、SSE | 命令与任务生命周期分离，事件可重连 |
-| 数据 | C02 选定 SQLite、better-sqlite3、参数化 SQL | 存储 POC 已完成，正式产品事务与迁移仍待实现；暂不引入 ORM |
+| 数据 | C02 选定 SQLite、better-sqlite3、参数化 SQL | 事务、迁移、独占连接与故障恢复已实现并通过 Mac/Linux 验收；暂不引入 ORM |
 | 文件 | 应用数据目录中的不可变附件与来源快照 | 数据库保存逻辑 ID、相对路径、hash 和大小 |
 | Agent | 优先验证 Pi AI 加 agent-core | 适合可插话的单 Agent；由产品保存业务状态，恢复语义见后文 |
 | 替代运行时 | LangGraph.js | 当流程级自动恢复是必要条件时，以相同任务对照评估 |

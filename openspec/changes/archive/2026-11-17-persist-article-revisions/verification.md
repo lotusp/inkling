@@ -62,4 +62,4 @@
 
 ## Closure
 
-G2：通过。G3：未执行。下一步按授权在 change 分支 archive 合并 delta，检查 Living Spec 的新增/改名/修改效果，再进行 Git merge 与最终交付验证。当前报告不替代这些操作。
+G2：通过。2026-11-17 已通过正式 OpenSpec archive 合并 delta，8 条新增需求、1 条改名/修改和原有 6 个未变场景已核对；归档记录见 evidence/g3-archive.log、g3-living-spec.log、g3-archive-checks.log。知识索引、架构、ADR 与运行说明已同步；Git merge 和 G3 最终验证尚待执行。

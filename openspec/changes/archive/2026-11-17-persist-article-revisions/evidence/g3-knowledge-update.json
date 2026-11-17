@@ -1,0 +1,8 @@
+[
+  {
+    "path": "AGENTS.md",
+    "before": "21600e71e127ce5dd492acd50654ef1fc2a82c3e1e7da6976cae599c74d6d451",
+    "after": "68f63d8d872c584587a15bd7a12558857bdf5bff19d9c062f6e40068a5b9e839",
+    "reason": "Delivery status documentation only; no product/test/config changes"
+  }
+]
