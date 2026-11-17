@@ -1,0 +1,19 @@
+Task status: ✓ Complete
+
+Specs to update:
+  article-persistence: create
+  article-revisions: create
+  local-workbench: update
+  local-workspace-access: create
+Applying changes to openspec/specs/article-persistence/spec.md:
+  + 3 added
+Applying changes to openspec/specs/article-revisions/spec.md:
+  + 3 added
+Applying changes to openspec/specs/local-workbench/spec.md:
+  ~ 1 modified
+  → 1 renamed
+Applying changes to openspec/specs/local-workspace-access/spec.md:
+  + 2 added
+Totals: + 8, ~ 1, - 0, → 1
+Specs updated successfully.
+Change 'persist-article-revisions' archived as '2026-11-17-persist-article-revisions'.

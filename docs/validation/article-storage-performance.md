@@ -20,4 +20,4 @@
 corepack pnpm test:storage-performance
 ```
 
-命令对任一既定门槛失败返回非零退出码；使用隔离空间并自动清理，没有产品 HTTP 性能/故障管理开关。最初纯文本测量保留为辅助基线，以上中文结构化样本是最终结果。证据见 [性能日志](../../openspec/changes/persist-article-revisions/evidence/storage-performance.log)。
+命令对任一既定门槛失败返回非零退出码；使用隔离空间并自动清理，没有产品 HTTP 性能/故障管理开关。最初纯文本测量保留为辅助基线，以上中文结构化样本是最终结果。证据见 [性能日志](../../openspec/changes/archive/2026-11-17-persist-article-revisions/evidence/storage-performance.log)。

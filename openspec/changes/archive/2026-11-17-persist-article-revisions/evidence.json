@@ -457,7 +457,7 @@
     },
     {
       "path": "@change/design.md",
-      "sha256": "e5c29199478726c5ea9a397a43c41f6e907c442c3392590ae920357be3f3de5f"
+      "sha256": "538bd43c02dcb68956b5845f80f90f97ad1eb12360ae82b7527684072a35ca01"
     },
     {
       "path": "@change/acceptance.md",
@@ -489,7 +489,7 @@
     },
     {
       "path": "@change/evidence/manual-ime.md",
-      "sha256": "bc9aa1bf1986aa81d942570795e37059adb2daae2a3f5da8e1336f166dd977f2"
+      "sha256": "87c6425bea72d6cc632675b6d140416ea7bab1a4f9fd05fb8f5f15b3d0d0f003"
     },
     {
       "path": "@change/evidence/g2-platform-validation.md",

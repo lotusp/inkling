@@ -29,7 +29,7 @@
 | verify | Mac；61 应用测试 + 10 Harness，格式/lint/类型/架构/构建/文档/规格全部通过 | [本机检查](evidence/g2-mac-verify.log) |
 | 完整 E2E | Mac Chromium，59/59，退出 0 | [浏览器检查](evidence/g2-mac-e2e.log) |
 | Linux CI | Ubuntu 26.04.1 x64；原生驱动安装、verify、59 E2E 全部通过 | [CI 日志](evidence/g2-linux-ci.log)、[运行元数据](evidence/g2-linux-run.json) |
-| 性能 | 60 KiB / 2 MiB API p95 12.08 / 171.68 ms；普通稿事件循环 p95 10.82 ms，通过预设门槛 | [测量](evidence/storage-performance.log)、[方法与限制](../../../docs/validation/article-storage-performance.md) |
+| 性能 | 60 KiB / 2 MiB API p95 12.08 / 171.68 ms；普通稿事件循环 p95 10.82 ms，通过预设门槛 | [测量](evidence/storage-performance.log)、[方法与限制](../../../../docs/validation/article-storage-performance.md) |
 | 中文 IME | 用户确认三项手工验收通过 | [手工记录](evidence/manual-ime.md) |
 | UI 视觉 | 桌面工作台、窄屏冲突/恢复、损坏救援、容量提示均已查看；其余状态沿用各切片复核 | [平台与视觉记录](evidence/g2-platform-validation.md) |
 | 23 场景/文件覆盖/自检 | 全部映射，代码边界与数据保护检查无阻断项 | [覆盖日志](evidence/g2-subject-coverage.log)、下文 |

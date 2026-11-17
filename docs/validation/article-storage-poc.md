@@ -6,7 +6,7 @@
 
 macOS 26.6.1（25G76）、arm64、Node 22.22.2。临时目录安装 `better-sqlite3@13.2.0`，实际 SQLite 3.54.1；系统 Node 和项目根依赖未修改。编辑器验证复用当前锁定的 Tiptap 3.34.0。
 
-实验保存在 [当前 change 的 poc 目录](../../openspec/changes/persist-article-revisions/poc/README.md)，原始结果见 [存储日志](../../openspec/changes/persist-article-revisions/evidence/storage-poc.log)和 [正文日志](../../openspec/changes/persist-article-revisions/evidence/document-poc.log)。两份日志的摘要与实验输入指纹见同目录 `design-evidence.json`，它是设计证据，不使用 Harness 的 G2 evidence.json 冒充产品验证。
+实验保存在 [当前 change 的 poc 目录](../../openspec/changes/archive/2026-11-17-persist-article-revisions/poc/README.md)，原始结果见 [存储日志](../../openspec/changes/archive/2026-11-17-persist-article-revisions/evidence/storage-poc.log)和 [正文日志](../../openspec/changes/archive/2026-11-17-persist-article-revisions/evidence/document-poc.log)。两份日志的摘要与实验输入指纹见同目录 `design-evidence.json`，它是设计证据，不使用 Harness 的 G2 evidence.json 冒充产品验证。
 
 ## 对照方法
 

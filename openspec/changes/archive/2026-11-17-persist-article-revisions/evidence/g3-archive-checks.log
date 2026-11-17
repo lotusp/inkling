@@ -1,0 +1,14 @@
+Commands: archived Harness on isolated committed snapshot; OpenSpec specs/archived strict; docs-check
+Exit: 0 for all commands
+
+Artifact structure checks passed. This does not prove test quality, spec semantics, or Git merge completion.
+✓ spec/article-persistence
+✓ spec/article-revisions
+✓ spec/development-checks
+✓ spec/local-workbench
+✓ spec/local-workspace-access
+Totals: 5 passed, 0 failed (5 items)
+✓ change/2026-11-16-bootstrap-local-workbench
+✓ change/2026-11-17-persist-article-revisions
+Totals: 2 passed, 0 failed (2 items)
+Checked 73 Markdown files; 0 local path / directory errors. Anchor contents and external URLs are not checked.
