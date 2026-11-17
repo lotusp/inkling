@@ -31,6 +31,8 @@ schema 2→3 为增量迁移，新增 `article_library`：article_id 主键/FK�
 
 标题查找用字面片段，q ≤100 字符；%/_ 不作通配符。中文直接匹配，ASCII 大小写不敏感，不承诺拼音/分词。标签去首尾空白、Unicode NFC、去重，最多 10 个，每个 1–30 Unicode 字符；标签区分大小写；筛选用精确标签。C03 不扫描正文全文。
 
+切片 2.1 先开放 active 文章，其他状态明确拒绝，返回 ArticleSnapshot；归档只读打开与元数据响应在生命周期切片 4 一起接入。重放仅返回原请求结果，客户端重新读取目标最新 head，不能把旧 snapshot 当作当前正文。
+
 ### 元数据与生命周期
 
 metadata_version 只随标签/状态变化推进，与正文 head 分开；正文保存不会制造无关标签冲突。active 可编辑，archived 只读，trashed 仅回收站元数据可见；历史/正文在归档中可读，回收站 UI 不提供正文编辑。原已提交请求重放仍可查询，但不绕过新的写状态检查创建版本。save/restore/name 在非 active 上拒绝，浏览器保留输入。

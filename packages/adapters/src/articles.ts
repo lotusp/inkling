@@ -15,6 +15,7 @@ import {
   type ArticleListQuery,
   type ArticleListPage,
   type CreateArticleCommand,
+  type OpenArticleCommand,
   RevisionInfo,
   RevisionDetail,
   NameRevisionResult,
@@ -246,6 +247,41 @@ export class SqliteArticles implements ArticleRepository {
           command.mutationId,
           result.articleId,
           'create-article',
+          requestHash,
+          result,
+          result.headRevisionId,
+        );
+        return result;
+      })
+      .immediate();
+  }
+  open(articleId: string, command: OpenArticleCommand): ArticleSnapshot {
+    return this.db
+      .transaction(() => {
+        const requestHash = hash({ operation: 'open', articleId, ...command });
+        const old = this.replay(command.mutationId, requestHash);
+        if (old !== undefined) return ArticleSnapshot.parse(old);
+        const metadata = row(
+          this.db
+            .prepare('SELECT state FROM article_library WHERE article_id=?')
+            .get(articleId),
+        );
+        if (metadata.state !== 'active')
+          throw new ArticleError(
+            'ARTICLE_NOT_ACTIVE',
+            409,
+            '文章当前不可编辑，请刷新文章库。',
+          );
+        const result = this.read(articleId);
+        this.db
+          .prepare(
+            'UPDATE workspace SET current_article_id=? WHERE singleton=1',
+          )
+          .run(articleId);
+        this.remember(
+          command.mutationId,
+          articleId,
+          'open',
           requestHash,
           result,
           result.headRevisionId,

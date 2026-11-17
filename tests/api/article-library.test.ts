@@ -265,3 +265,104 @@ it('LIBRARY-FAILURE-013 failed metadata insertion or title projection rolls back
   );
   expect(() => f.service.mutation(mutationId)).toThrow();
 });
+it('LIBRARY-OPEN-004 opening an article is atomic and replay cannot rewind the latest selection', async () => {
+  const f = await setup(),
+    a = await f.create('A'),
+    b = await f.create('B');
+  const command = { mutationId: randomUUID() };
+  const opened = await f.app.inject({
+    method: 'POST',
+    url: `/api/articles/${a.article.articleId}/open`,
+    headers: f.headers,
+    payload: command,
+  });
+  expect(opened.statusCode).toBe(200);
+  expect(ArticleSnapshot.parse(opened.json()).articleId).toBe(
+    a.article.articleId,
+  );
+  expect(f.service.workspace().currentArticleId).toBe(a.article.articleId);
+  await f.app.inject({
+    method: 'POST',
+    url: `/api/articles/${b.article.articleId}/open`,
+    headers: f.headers,
+    payload: { mutationId: randomUUID() },
+  });
+  const replay = await f.app.inject({
+    method: 'POST',
+    url: `/api/articles/${a.article.articleId}/open`,
+    headers: f.headers,
+    payload: command,
+  });
+  expect(replay.json()).toEqual(opened.json());
+  expect(f.service.workspace().currentArticleId).toBe(b.article.articleId);
+  expect(
+    (
+      await f.app.inject({
+        method: 'POST',
+        url: `/api/articles/${b.article.articleId}/open`,
+        headers: f.headers,
+        payload: command,
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect(
+    f.db.prepare('SELECT COUNT(*) n FROM article_revisions').get(),
+  ).toEqual({ n: 2 });
+});
+it('LIBRARY-OPEN-004 refuses unknown or inactive articles without moving the current pointer', async () => {
+  const f = await setup(),
+    a = await f.create('A'),
+    b = await f.create('B');
+  f.db
+    .prepare("UPDATE article_library SET state='archived' WHERE article_id=?")
+    .run(a.article.articleId);
+  expect(
+    (
+      await f.app.inject({
+        method: 'POST',
+        url: `/api/articles/${a.article.articleId}/open`,
+        headers: f.headers,
+        payload: { mutationId: randomUUID() },
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect(
+    (
+      await f.app.inject({
+        method: 'POST',
+        url: `/api/articles/${randomUUID()}/open`,
+        headers: f.headers,
+        payload: { mutationId: randomUUID() },
+      })
+    ).statusCode,
+  ).toBe(404);
+  expect(
+    (
+      await f.app.inject({
+        method: 'POST',
+        url: `/api/articles/${a.article.articleId}/open`,
+        headers: { host: f.headers.host },
+        payload: { mutationId: randomUUID() },
+      })
+    ).statusCode,
+  ).toBe(401);
+  expect(f.service.workspace().currentArticleId).toBe(b.article.articleId);
+});
+it('LIBRARY-OPEN-004 a failed open mutation leaves recent selection and original request untouched', async () => {
+  const f = await setup(),
+    a = await f.create('A'),
+    b = await f.create('B');
+  f.db.exec(
+    "CREATE TEMP TRIGGER refuse_open BEFORE INSERT ON mutations WHEN NEW.operation='open' BEGIN SELECT RAISE(ABORT,'injected open failure'); END;",
+  );
+  const command = { mutationId: randomUUID() };
+  const result = await f.app.inject({
+    method: 'POST',
+    url: `/api/articles/${a.article.articleId}/open`,
+    headers: f.headers,
+    payload: command,
+  });
+  expect(result.statusCode).toBe(503);
+  expect(f.service.workspace().currentArticleId).toBe(b.article.articleId);
+  expect(() => f.service.mutation(command.mutationId)).toThrow();
+});

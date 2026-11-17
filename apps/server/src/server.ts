@@ -90,6 +90,10 @@ export function createServer(
     app.post('/api/articles/ensure-current', async (request) =>
       service().ensure(request.body),
     );
+    app.post<{ Params: { id: string } }>(
+      '/api/articles/:id/open',
+      async (request) => service().open(request.params.id, request.body),
+    );
     app.get<{ Params: { id: string } }>('/api/articles/:id', async (request) =>
       service().read(request.params.id),
     );

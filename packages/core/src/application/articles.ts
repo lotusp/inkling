@@ -1,6 +1,7 @@
 import {
   ArticleDocument,
   CreateArticleCommand,
+  OpenArticleCommand,
   ArticleListQuery,
   type ArticleListPage,
   RevisionQuery,
@@ -20,6 +21,7 @@ export interface ArticleRepository {
   workspace(): WorkspaceInfo;
   ensure(mutationId: string): ArticleSnapshot;
   create(command: CreateArticleCommand): ArticleSnapshot;
+  open(articleId: string, command: OpenArticleCommand): ArticleSnapshot;
   list(query: ArticleListQuery): ArticleListPage;
   read(articleId: string): ArticleSnapshot;
   save(articleId: string, command: SaveArticleCommand): SaveResult;
@@ -43,6 +45,9 @@ export class ArticleService {
   }
   create(input: unknown) {
     return this.repository.create(CreateArticleCommand.parse(input));
+  }
+  open(id: unknown, input: unknown) {
+    return this.repository.open(Id.parse(id), OpenArticleCommand.parse(input));
   }
   list(input: unknown) {
     return this.repository.list(ArticleListQuery.parse(input));

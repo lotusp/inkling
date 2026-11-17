@@ -1,0 +1,73 @@
+
+ RUN  v5.1.0 <repo>
+
+ ❯ tests/api/article-library.test.ts (8 tests | 3 failed) 604ms
+   × LIBRARY-OPEN-004 opening an article is atomic and replay cannot rewind the latest selection 71ms
+   × LIBRARY-OPEN-004 refuses unknown or inactive articles without moving the current pointer 68ms
+   × LIBRARY-OPEN-004 a failed open mutation leaves recent selection and original request untouched 55ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-OPEN-004 opening an article is atomic and replay cannot rewind the latest selection
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/article-library.test.ts:272:29
+    270|   const command={mutationId:randomUUID()};
+    271|   const opened=await f.app.inject({method:'POST',url:`/api/articles/${…
+    272|   expect(opened.statusCode).toBe(200);
+       |                             ^
+    273|   expect(ArticleSnapshot.parse(opened.json()).articleId).toBe(a.articl…
+    274|   expect(f.service.workspace().currentArticleId).toBe(a.article.articl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-OPEN-004 refuses unknown or inactive articles without moving the current pointer
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ❯ tests/api/article-library.test.ts:285:160
+    283|   const f=await setup(), a=await f.create('A'), b=await f.create('B');
+    284|   f.db.prepare("UPDATE article_library SET state='archived' WHERE arti…
+    285|   expect((await f.app.inject({method:'POST',url:`/api/articles/${a.art…
+       |                                                                                                                                                                ^
+    286|   expect((await f.app.inject({method:'POST',url:`/api/articles/${rando…
+    287|   expect((await f.app.inject({method:'POST',url:`/api/articles/${a.art…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/api/article-library.test.ts > LIBRARY-OPEN-004 a failed open mutation leaves recent selection and original request untouched
+AssertionError: expected 404 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 404
+
+ ❯ tests/api/article-library.test.ts:295:29
+    293|   const command={mutationId:randomUUID()};
+    294|   const result=await f.app.inject({method:'POST',url:`/api/articles/${…
+    295|   expect(result.statusCode).toBe(503);
+       |                             ^
+    296|   expect(f.service.workspace().currentArticleId).toBe(b.article.articl…
+    297|   expect(()=>f.service.mutation(command.mutationId)).toThrow();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 5 passed (8)
+   Start at  21:37:09
+   Duration  909ms (tests 74%, import 19%, transform 7%)
+

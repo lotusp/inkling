@@ -37,3 +37,6 @@ export const ArticleListPage = z.object({
     .nullable(),
 });
 export type ArticleListPage = z.infer<typeof ArticleListPage>;
+
+export const OpenArticleCommand = z.object({ mutationId: Id }).strict();
+export type OpenArticleCommand = z.infer<typeof OpenArticleCommand>;
