@@ -1,0 +1,175 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-library.spec.ts --workers=2 --timeout=12000
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2252 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-Aloy4iO7.css    8.57 kB │ gzip:   2.57 kB
+apps/web/dist/assets/index-BB7oJdQD.js   769.46 kB │ gzip: 239.32 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 331ms
+
+Running 4 tests using 2 workers
+
+(node:59448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59449) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [chromium] › tests/e2e/article-library.spec.ts:14:1 › LIBRARY-LIST-003 paginates real metadata and marks current article on desktop and narrow screens (6.4s)
+(node:59527) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/article-library.spec.ts:58:1 › LIBRARY-CREATE-002 named creation protects the source and lost response retries without duplicate articles (12.1s)
+(node:59598) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [chromium] › tests/e2e/article-library.spec.ts:104:1 › LIBRARY-FAILURE-013 list loading failure and retry preserve the draft; stale responses cannot replace refresh (6.0s)
+  ✘  4 [chromium] › tests/e2e/article-library.spec.ts:148:3 › empty library › LIBRARY-CREATE-002 empty library creates an untitled draft explicitly (5.6s)
+
+
+  1) [chromium] › tests/e2e/article-library.spec.ts:14:1 › LIBRARY-LIST-003 paginates real metadata and marks current article on desktop and narrow screens
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('region', { name: '文章列表', exact: true }).getByRole('listitem')
+    Expected: 20
+    Received: 0
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('region', { name: '文章列表', exact: true }).getByRole('listitem') with timeout 5000ms
+      - waiting for getByRole('region', { name: '文章列表', exact: true }).getByRole('listitem')
+        14 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      27 |     ).toBe(true);
+      28 |   await page.getByRole('button', { name: '文章库', exact: true }).click();
+    > 29 |   await expect(library(page).getByRole('listitem')).toHaveCount(20);
+         |                                                     ^
+      30 |   await page.getByRole('button', { name: '加载更多文章', exact: true }).click();
+      31 |   await expect(library(page).getByRole('listitem')).toHaveCount(23);
+      32 |   await expect(
+        at <repo>/tests/e2e/article-library.spec.ts:29:53
+
+    Error Context: test-results/article-library-LIBRARY-LI-80969--desktop-and-narrow-screens-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-library-LIBRARY-LI-80969--desktop-and-narrow-screens-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-library-LIBRARY-LI-80969--desktop-and-narrow-screens-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/article-library.spec.ts:58:1 › LIBRARY-CREATE-002 named creation protects the source and lost response retries without duplicate articles
+
+    Test timeout of 12000ms exceeded.
+
+    Error: locator.fill: Test timeout of 12000ms exceeded.
+    Call log:
+      - waiting for getByRole('textbox', { name: '新文章标题（可选）', exact: true })
+
+
+      81 |   await page
+      82 |     .getByRole('textbox', { name: '新文章标题（可选）', exact: true })
+    > 83 |     .fill('缓存一致性的取舍');
+         |      ^
+      84 |   await page.getByRole('button', { name: '新建文章', exact: true }).click();
+      85 |   await page.getByRole('button', { name: '保存后切换', exact: true }).click();
+      86 |   await expect(
+        at <repo>/tests/e2e/article-library.spec.ts:83:6
+
+    Error Context: test-results/article-library-LIBRARY-CR-92d4f--without-duplicate-articles-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-library-LIBRARY-CR-92d4f--without-duplicate-articles-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-library-LIBRARY-CR-92d4f--without-duplicate-articles-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/article-library.spec.ts:104:1 › LIBRARY-FAILURE-013 list loading failure and retry preserve the draft; stale responses cannot replace refresh
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('正在读取文章…', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('正在读取文章…', { exact: true }) with timeout 5000ms
+      - waiting for getByText('正在读取文章…', { exact: true })
+
+
+      128 |   await page.getByRole('button', { name: '文章库', exact: true }).click();
+      129 |   await waiting;
+    > 130 |   await expect(page.getByText('正在读取文章…', { exact: true })).toBeVisible();
+          |                                                            ^
+      131 |   await page.getByRole('button', { name: '刷新文章库', exact: true }).click();
+      132 |   await expect(
+      133 |     page.getByText('文章库读取失败，请重试。', { exact: true }),
+        at <repo>/tests/e2e/article-library.spec.ts:130:60
+
+    Error Context: test-results/article-library-LIBRARY-FA-bf0ac-nses-cannot-replace-refresh-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-library-LIBRARY-FA-bf0ac-nses-cannot-replace-refresh-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-library-LIBRARY-FA-bf0ac-nses-cannot-replace-refresh-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/article-library.spec.ts:148:3 › empty library › LIBRARY-CREATE-002 empty library creates an untitled draft explicitly
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('还没有文章，从一个问题开始写作。', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('还没有文章，从一个问题开始写作。', { exact: true }) with timeout 5000ms
+      - waiting for getByText('还没有文章，从一个问题开始写作。', { exact: true })
+
+
+      152 |     await expect(
+      153 |       page.getByText('还没有文章，从一个问题开始写作。', { exact: true }),
+    > 154 |     ).toBeVisible();
+          |       ^
+      155 |     await page.getByRole('button', { name: '新建文章', exact: true }).click();
+      156 |     await expect(
+      157 |       page.getByRole('textbox', { name: '文章标题', exact: true }),
+        at <repo>/tests/e2e/article-library.spec.ts:154:7
+
+    Error Context: test-results/article-library-empty-libr-7e85b-n-untitled-draft-explicitly-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-library-empty-libr-7e85b-n-untitled-draft-explicitly-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-library-empty-libr-7e85b-n-untitled-draft-explicitly-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [chromium] › tests/e2e/article-library.spec.ts:14:1 › LIBRARY-LIST-003 paginates real metadata and marks current article on desktop and narrow screens
+    [chromium] › tests/e2e/article-library.spec.ts:58:1 › LIBRARY-CREATE-002 named creation protects the source and lost response retries without duplicate articles
+    [chromium] › tests/e2e/article-library.spec.ts:104:1 › LIBRARY-FAILURE-013 list loading failure and retry preserve the draft; stale responses cannot replace refresh
+    [chromium] › tests/e2e/article-library.spec.ts:148:3 › empty library › LIBRARY-CREATE-002 empty library creates an untitled draft explicitly
+ ELIFECYCLE  Command failed with exit code 1.

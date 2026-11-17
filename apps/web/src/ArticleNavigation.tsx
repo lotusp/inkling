@@ -1,10 +1,8 @@
 import { useRef, useState } from 'react';
-import {
-  ArticleListPage,
-  ArticleSnapshot,
-  WorkspaceInfo,
-} from '@inkling/contracts';
-import { api } from './api';
+import { ArticleSnapshot, WorkspaceInfo } from '@inkling/contracts';
+import { api, ApiError } from './api';
+import { ArticleLibrary } from './ArticleLibrary';
+import { Library } from 'lucide-react';
 import { ownDraftClient } from './draft-store';
 import type { ArticleSession, useArticle } from './use-article';
 type Intent = { mutationId: string; articleId?: string; title?: string };
@@ -16,28 +14,20 @@ export function ArticleNavigation({
   navigate: (session: ArticleSession) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<ArticleListPage['items']>([]);
-  const [listError, setListError] = useState('');
   const [intent, setIntent] = useState<Intent | null>(null);
   const [message, setMessage] = useState('');
   const [choice, setChoice] = useState(false);
   const [running, setRunning] = useState(false);
   const executing = useRef(false),
     sent = useRef(false);
-  async function load() {
-    try {
-      setListError('');
-      setItems(ArticleListPage.parse(await api('/api/articles')).items);
-    } catch {
-      setListError('文章库读取失败，请重试。');
-    }
-  }
   async function execute(target: Intent, mode: 'save' | 'keep') {
     if (executing.current) return;
     executing.current = true;
     setRunning(true);
     setMessage('');
     let release: (() => void) | undefined;
+    let writeReturned = false;
+    const previouslyUnconfirmed = sent.current;
     try {
       release = await article.prepareNavigation(mode);
       sent.current = true;
@@ -52,6 +42,7 @@ export function ArticleNavigation({
             : { mutationId: target.mutationId, title: target.title ?? '' },
         ),
       );
+      writeReturned = true;
       // Replay is immutable; always read the latest target before replacing the old editor.
       const snapshot = ArticleSnapshot.parse(
         await api('/api/articles/' + result.articleId),
@@ -66,6 +57,15 @@ export function ArticleNavigation({
       navigate({ workspaceId: workspace.workspaceId, article: snapshot });
     } catch (error) {
       release?.();
+      // A definitive first rejection is cancellable. An earlier unknown outcome
+      // still needs reconciliation even if a later retry is rejected.
+      if (
+        !writeReturned &&
+        !previouslyUnconfirmed &&
+        error instanceof ApiError &&
+        [400, 401, 403, 404, 409].includes(error.status)
+      )
+        sent.current = false;
       setMessage(error instanceof Error ? error.message : '切换失败，请重试。');
     } finally {
       executing.current = false;
@@ -106,45 +106,31 @@ export function ArticleNavigation({
         aria-expanded={open}
         onClick={() => {
           setOpen(!open);
-          if (!open) void load();
         }}
       >
+        <Library size={16} aria-hidden="true" />
         文章库
       </button>
       {open && (
-        <div aria-label="文章列表" role="region">
-          <button
-            disabled={!!intent}
-            onClick={() => request({ mutationId: crypto.randomUUID() })}
-          >
-            新建文章
-          </button>
-          {listError && (
-            <p role="alert">
-              {listError}
-              <button onClick={() => void load()}>重试列表</button>
-            </p>
-          )}
-          {items.map((item) => (
-            <button
-              key={item.articleId}
-              disabled={
-                !!intent || item.articleId === article.snapshot?.articleId
-              }
-              onClick={() =>
-                request({
-                  mutationId: crypto.randomUUID(),
-                  articleId: item.articleId,
-                })
-              }
-            >
-              打开：{item.title || '未命名文章'}
-            </button>
-          ))}
-        </div>
+        <ArticleLibrary
+          current={article.snapshot}
+          disabled={!!intent}
+          openArticle={(articleId) =>
+            request({ mutationId: crypto.randomUUID(), articleId })
+          }
+          createArticle={(title) =>
+            request({ mutationId: crypto.randomUUID(), title })
+          }
+          close={() => setOpen(false)}
+        />
       )}
       {intent && (
-        <section role="region" aria-label="切换文章确认">
+        <section
+          className="navigation-confirmation"
+          role="region"
+          aria-label="切换文章确认"
+        >
+          <h2>{intent.articleId ? '打开另一篇文章' : '创建新文章'}</h2>
           <p>切换前请确认当前输入已保存，或保留恢复副本供返回后继续写作。</p>
           {choice && (
             <>
@@ -163,7 +149,7 @@ export function ArticleNavigation({
             </>
           )}
           {message && <p role="alert">{message}</p>}
-          {sent.current && message && (
+          {message && (
             <button disabled={running} onClick={retry}>
               重试切换
             </button>
