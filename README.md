@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="docs/assets/inkling-logo.svg" width="324" height="108" alt="Inkling">
+  <img src="apps/web/public/inkling-logo.svg" width="294" height="70" alt="Inkling">
 </h1>
 
 <p align="center"><strong>个人中文技术写作工作台</strong></p>

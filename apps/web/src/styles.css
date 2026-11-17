@@ -71,14 +71,8 @@ svg {
   border-bottom: 1px solid var(--line);
 }
 .brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font:
-    500 29px Georgia,
-    serif;
-  letter-spacing: -0.7px;
-  color: #35543d;
+  flex-shrink: 0;
+  color-scheme: light;
 }
 .header-divider {
   width: 1px;
@@ -510,7 +504,8 @@ svg {
     flex-wrap: wrap;
   }
   .brand {
-    font-size: 26px;
+    width: 112px;
+    height: auto;
   }
   .preview-label {
     display: none;

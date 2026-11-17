@@ -105,10 +105,13 @@ export function App() {
   return (
     <div className="workbench">
       <header className="app-header">
-        <div className="brand">
-          <img src="/inkling-mark.svg" width={26} height={26} alt="" />
-          <span>Inkling</span>
-        </div>
+        <img
+          className="brand"
+          src="/inkling-logo.svg"
+          width={122}
+          height={29}
+          alt="Inkling"
+        />
         <div className="header-divider" />
         <h1>写作工作台</h1>
         <span className="preview-label">本地预览</span>
