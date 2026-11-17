@@ -1,0 +1,94 @@
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-versions.spec.ts
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2245 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.46 kB │ gzip:   0.32 kB
+apps/web/dist/assets/index-s_4LejIp.css    7.46 kB │ gzip:   2.32 kB
+apps/web/dist/assets/index-CAsvP9i4.js   751.23 kB │ gzip: 234.30 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 333ms
+
+Running 2 tests using 2 workers
+
+(node:36434) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:36433) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [chromium] › tests/e2e/article-versions.spec.ts:3:1 › REVISION-HISTORY-001 saves and names the clicked draft; REVISION-COMPARE-002 compares without changing the editor (30.2s)
+  ✘  1 [chromium] › tests/e2e/article-versions.spec.ts:31:1 › REVISION-HISTORY-001 a lost naming response retries the same revision and does not include later typing (30.2s)
+
+
+  1) [chromium] › tests/e2e/article-versions.spec.ts:3:1 › REVISION-HISTORY-001 saves and names the clicked draft; REVISION-COMPARE-002 compares without changing the editor
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '版本历史', exact: true })
+
+
+      4 |   const editor=page.getByRole('textbox',{name:'文章正文',exact:true});
+      5 |   await editor.fill('独立思考的第一稿');
+    > 6 |   await page.getByRole('button',{name:'版本历史',exact:true}).click();
+        |                                                           ^
+      7 |   const panel=page.getByRole('region',{name:'版本历史'});
+      8 |   await panel.getByLabel('版本名称',{exact:true}).fill('观点形成');
+      9 |   await panel.getByRole('button',{name:'保存并命名当前稿',exact:true}).click();
+        at <repo>/tests/e2e/article-versions.spec.ts:6:59
+
+    Error Context: test-results/article-versions-REVISION--c1308-without-changing-the-editor-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-versions-REVISION--c1308-without-changing-the-editor-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-versions-REVISION--c1308-without-changing-the-editor-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/article-versions.spec.ts:31:1 › REVISION-HISTORY-001 a lost naming response retries the same revision and does not include later typing
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '版本历史', exact: true })
+
+
+      39 |   const editor=page.getByRole('textbox',{name:'文章正文',exact:true});
+      40 |   await editor.fill('命名时的内容');
+    > 41 |   await page.getByRole('button',{name:'版本历史',exact:true}).click();
+         |                                                           ^
+      42 |   const panel=page.getByRole('region',{name:'版本历史'});
+      43 |   await panel.getByLabel('版本名称',{exact:true}).fill('固定版本');
+      44 |   await panel.getByRole('button',{name:'保存并命名当前稿',exact:true}).click();
+        at <repo>/tests/e2e/article-versions.spec.ts:41:59
+
+    Error Context: test-results/article-versions-REVISION--86d54-es-not-include-later-typing-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-versions-REVISION--86d54-es-not-include-later-typing-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-versions-REVISION--86d54-es-not-include-later-typing-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › tests/e2e/article-versions.spec.ts:3:1 › REVISION-HISTORY-001 saves and names the clicked draft; REVISION-COMPARE-002 compares without changing the editor
+    [chromium] › tests/e2e/article-versions.spec.ts:31:1 › REVISION-HISTORY-001 a lost naming response retries the same revision and does not include later typing
+ ELIFECYCLE  Command failed with exit code 1.

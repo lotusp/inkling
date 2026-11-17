@@ -1,0 +1,12 @@
+
+> inkling@0.1.0 test <repo>
+> vitest run tests/unit/document-diff.test.ts
+
+
+ RUN  v5.1.0 <repo>
+
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  11:27:03
+   Duration  178ms (import 63%, transform 30%, tests 4%, worker 3%)

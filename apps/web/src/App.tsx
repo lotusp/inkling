@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
-  Feather,
   Bold,
   Heading2,
   List,
@@ -21,10 +20,12 @@ import { useAccess } from './access';
 import { useArticle } from './use-article';
 import { RecoveryPanel } from './RecoveryPanel';
 import { ConflictPanel } from './ConflictPanel';
+import { VersionPanel } from './VersionPanel';
 import './styles.css';
 
 export function App() {
   const [title, setTitle] = useState('');
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const health = useHealth();
   const access = useAccess();
@@ -103,7 +104,7 @@ export function App() {
     <div className="workbench">
       <header className="app-header">
         <div className="brand">
-          <Feather size={22} aria-hidden="true" />
+          <img src="/inkling-mark.svg" width={26} height={26} alt="" />
           <span>Inkling</span>
         </div>
         <div className="header-divider" />
@@ -126,6 +127,13 @@ export function App() {
         <main className="document-pane">
           <div className="format-bar" role="toolbar" aria-label="正文格式">
             <span className="document-label">草稿</span>
+            <button
+              disabled={!article.snapshot}
+              aria-expanded={historyOpen}
+              onClick={() => setHistoryOpen((x) => !x)}
+            >
+              版本历史
+            </button>
             <div className="format-actions">
               {tools.map(({ label, Icon, active, run }) => (
                 <button
@@ -207,6 +215,12 @@ export function App() {
                 prepared={article.mergePrepared}
                 prepare={article.prepareMerge}
                 confirm={article.confirmMerge}
+              />
+            )}
+            {historyOpen && article.snapshot && (
+              <VersionPanel
+                article={article.snapshot}
+                flush={article.flushForVersion}
               />
             )}
             <div className="document-meta">

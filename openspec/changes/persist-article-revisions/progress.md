@@ -34,6 +34,8 @@
 
 - 4.1a：分页/筛选历史、指定版本读取及命名/重命名 API 已接通；读取历史校验正文 hash，命名与 mutation 同事务。两个真实 HTTP 404 Red 后，12 项 API/存储验收及回归通过，类型/lint/依赖边界通过。覆盖分页边界、未授权、跨文章/不存在版本、名称 Unicode 上限、旧命名重试不撤销后续重命名。日志 revisions-api-red.log、revisions-api-green.log。
 
+- 4.1b：历史/命名 UI、只读两版本比较已接通。有效缺失入口 Red 后，版本、冲突和 IME 共 14 项 E2E 通过；3 项差异单元检查通过，类型/lint 通过，请求清理整理后 2 项版本验收再次通过。桌面/375px 截图已查看，无横向溢出。名称固定 flush 结果，丢失响应重试不换目标/id；大稿差异使用有界算法。日志 revisions-ui-red.log、revisions-ui-green.log、revisions-ui-final.log、revisions-diff-green.log。
+
 ## 当前边界
 
 3.1 与 3.2 已完成：在线自动保存、浏览器草稿恢复/重连核对、救援下载、冲突比较/显式合并及确认放弃副本已实现；版本 UI 尚未实现。服务停止期间刷新不能打开页面，重启后可恢复；救援 JSON 当前无导入界面。Linux 原生驱动安装和手工 IME 未验证。本机依赖安装成功；pnpm 原生驱动需要允许构建且可能使用 Xcode Command Line Tools。

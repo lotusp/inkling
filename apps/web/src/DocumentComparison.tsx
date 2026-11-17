@@ -84,7 +84,7 @@ function renderNode(node: DocumentNode): ReactNode {
       return <p>此结构暂不支持预览。</p>;
   }
 }
-function DocumentPart({ node }: { node: DocumentNode }) {
+export function DocumentPart({ node }: { node: DocumentNode }) {
   return renderNode(node);
 }
 export function DocumentComparison({

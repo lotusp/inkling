@@ -304,7 +304,7 @@ export function useArticle(
           setMessage('另一标签页已更新稿件，当前新输入已保留，请先比较。');
         }
         await persist();
-        return;
+        return result;
       }
       head.current = next;
       setSnapshot(next);
@@ -323,6 +323,7 @@ export function useArticle(
         dirtySince.current = null;
       } else setStatus('dirty');
       await persist();
+      return result;
     } catch (error) {
       if (pending) pending.reconcile = true;
       conflicted.current =
@@ -339,6 +340,27 @@ export function useArticle(
       setEditVersion((value) => value + 1);
     }
   }, [editor, display, persist]);
+  const flushForVersion = useCallback(async () => {
+    if (
+      busy.current ||
+      choosing.current ||
+      conflicted.current ||
+      inFlight.current ||
+      !head.current ||
+      !valid.current ||
+      composing.current ||
+      editor?.view.composing
+    )
+      throw new Error('请先完成选词、保存或冲突处理，再命名版本。');
+    if (editSeq.current === savedSeq.current)
+      return {
+        revisionId: head.current.headRevisionId,
+        seq: head.current.headSeq,
+      };
+    const result = await save();
+    if (!result) throw new Error('尚未确认保存，请保留输入并重试。');
+    return { revisionId: result.appliedRevisionId, seq: result.appliedSeq };
+  }, [editor, save]);
   const compare = useCallback(async () => {
     if (
       busy.current ||
@@ -727,6 +749,7 @@ export function useArticle(
   }, [save]);
   return {
     snapshot,
+    flushForVersion,
     status,
     message,
     create,
