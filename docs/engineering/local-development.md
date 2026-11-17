@@ -1,6 +1,6 @@
 # 本地开发与检查
 
-更新日期：2026-11-16。适用：bootstrap-local-workbench 工程基础。现阶段可编辑临时标题与正文、查看服务状态；尚无内容保存或 AI 调用，刷新会清空内容。
+更新日期：2026-11-17。适用：当前 C02 开发分支；已接入工作空间身份与访问保护，文章持久化仍在实施。现阶段可编辑临时标题与正文、查看服务状态；尚无内容保存或 AI 调用，刷新会清空内容。
 
 ## 环境与安装
 
@@ -12,11 +12,29 @@ corepack pnpm install --frozen-lockfile
 corepack pnpm start
 ```
 
-安装完成后，`start` 一次完成构建与启动，打开 `http://127.0.0.1:4317`。Ctrl+C 停止，关闭浏览器页面不停止服务。无需模型、数据库或其他服务账号。
+安装完成后，`start` 一次完成构建与启动，打开终端输出的“打开工作台”链接（包含一次性凭证，交换后地址会自动清除凭证）。Ctrl+C 停止，关闭浏览器页面不停止服务。无需模型、数据库或其他服务账号。
 
 若没有 Corepack，可按 pnpm 官方安装方法安装 packageManager 指定版本，然后使用等价的 `pnpm` 命令。仓库不修改系统 Node 或全局包管理器配置。
 
 默认端口被占用时会明确失败，不自动切换。可以先停止原服务，或者显式运行 `PORT=4320 corepack pnpm start`。服务只绑定 127.0.0.1；不开放局域网访问。PORT=0 主要供进程测试取得独立端口，实际地址以启动输出为准。
+
+## 工作空间与本机接入
+
+默认数据目录为 `~/Library/Application Support/Inkling/workspaces/default/`，不在源码仓库内。当前 SQLite 保存工作空间身份；正文保存按 C02 后续步骤接入。SQLite 嵌入应用进程，无需独立数据库服务。
+
+不同端口也不能让两个服务同时写同一目录。程序正常退出或崩溃后 SQLite 释放锁；遇到不兼容、损坏或符号链接时拒绝打开，不会自动清空原数据。
+
+需要独立开发空间时，可设置 `INKLING_WORKSPACE=/absolute/path corepack pnpm start`。同样的路径用于重新获取访问链接：
+
+```bash
+corepack pnpm local:access
+# 自定义工作空间时
+corepack pnpm local:access --workspace /absolute/path
+```
+
+一次性链接 5 分钟内有效，会话 12 小时有效；服务重启后重新接入。访问信息仅保存在权限受限的 runtime-access.json，本机管理入口拒绝浏览器跨源请求。不要分享访问链接或此文件。切换端口或浏览器会改变浏览器恢复副本所在的 origin，服务端数据目录不随之改变。
+
+better-sqlite3 是原生依赖，pnpm-workspace.yaml 已允许其构建。若安装需从源码编译，Mac 需要 Xcode Command Line Tools；本机已验证编译成功。构建后的服务保留原生驱动作为外部依赖，因此不能只复制 dist 而遗漏锁定安装的运行依赖。
 
 ## 开发模式
 
@@ -34,7 +52,7 @@ corepack pnpm exec playwright install chromium
 corepack pnpm test:e2e
 ```
 
-verify 依次执行格式、lint、类型、依赖边界、构建、API/进程/架构测试、Harness 回归、文档和 OpenSpec 检查。浏览器测试启动独立的 4329 端口服务，结束后停止它，不复用已有工作台实例。首次使用需安装对应 Chromium；Linux CI 安装时加 `--with-deps`。
+verify 依次执行格式、lint、类型、依赖边界、构建、API/进程/架构测试、Harness 回归、文档和 OpenSpec 检查。浏览器测试启动独立的 4329 端口服务，结束后停止它，不复用已有工作台实例，工作空间使用本机临时目录，不接触个人默认目录。首次使用需安装对应 Chromium；Linux CI 安装时加 `--with-deps`。
 
 有针对性地定位问题时可以运行：
 
@@ -52,7 +70,7 @@ GitHub Actions 复用 verify 和 E2E，不调用模型、不发布应用。CI �
 
 ## 模块与工具选择
 
-当前仅有 `apps/web`、`apps/server`、`packages/contracts`。contracts 导出健康响应 schema，web 校验真实响应，server 提供它；后续业务模块出现时再建立 core/adapters。
+当前有 `apps/web`、`apps/server`、`packages/contracts` 和 `packages/adapters`。contracts 导出健康响应 schema，web 校验真实响应，server 提供它；工作空间存储已放入 packages/adapters，正文业务用例随实现建立 core。
 
 React 19 与 Tiptap 3 提供编辑，Vite 8 构建 Web，Fastify 5 提供本机服务，esbuild 打包服务入口，Zod 4 负责契约。完整精确版本见各 package.json 和 pnpm-lock.yaml。TypeScript 使用 6.0.3：当前 typescript-eslint 的支持范围小于 6.1，因此没有机械采用 TypeScript 7。
 
@@ -64,4 +82,4 @@ dependency-cruiser 使用 package.json 的 workspaces 识别公开包导入；pn
 
 正文仅在编辑器内存中；有内容时浏览器会尝试显示离开提醒，这不是数据备份。没有导入、保存、自动恢复、模型、版本或发布实现。健康接口的“已连接”只表示本机服务可用。
 
-浏览器测试覆盖中文文本及组合事件，不能代替真实中文输入法候选窗验证。构建会提示编辑器主包较大，这一条 bootstrap 尚未做加载性能优化。模型与存储框架仍保持待验证状态。
+浏览器测试覆盖中文文本及组合事件，不能代替真实中文输入法候选窗验证。构建会提示编辑器主包较大，这一条 bootstrap 尚未做加载性能优化。SQLite 存储选择已完成 POC；模型框架仍待验证。

@@ -6,7 +6,7 @@
 
 - [x] 1.1 建立真实 SQLite 夹具与进程验收，覆盖 WORKSPACE-OPEN-001、WORKSPACE-LOCK-002；锁定驱动、初始化迁移、独占生命周期，验证同目录不同端口及崩溃释放。
 - [x] 1.2 为 WORKSPACE-AUTH-003、WORKSPACE-CSRF-004、WORKSPACE-PATH-005 编写 API/浏览器验收；实现启动凭证、会话、CSRF、Origin、请求限制和本机重新接入命令，验证过期/重启可重新接入；持久草稿不清除在 3.1 有恢复副本后联验。
-- [ ] 1.3 更新启动/数据目录说明并检查 core/adapters/contracts 依赖方向；保证原有健康与启动边界有效，不先开放未保护的文章写接口。
+- [x] 1.3 更新启动/数据目录说明并检查 core/adapters/contracts 依赖方向；保证原有健康与启动边界有效，不先开放未保护的文章写接口。
 
 ## 2. 一篇稿件保存后重开
 

@@ -231,7 +231,7 @@ export function App() {
             onClick={access.reconnect}
             title="在终端运行 corepack pnpm local:access，打开输出的本机访问链接。"
           >
-            重新连接工作空间
+            连接工作空间
           </button>
         )}
       </footer>
