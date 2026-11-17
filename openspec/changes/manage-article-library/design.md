@@ -92,3 +92,15 @@ trash 保存 previous_state；restore 回到该状态。不支持永久删除、
 3.2a 列表增加可选 `q`、`tag`。q 为原样字面片段（至多 100 Unicode 字符，不剥离有意义空格）；空字符串等同不筛选。标签复用单行 NFC/trim 校验，空参数等同不筛选，非空上限 30 字符；大小写敏感。两个条件同时存在时取交集。SQL 参数绑定，通过 `instr(lower(title),lower(q))` 实现中文与 ASCII 不区分大小写的字面标题查找，百分号、下划线、反斜杠和引号不解释为模式；通过 EXISTS 查询精确标签，不读取正文、不改变版本和最近指针。当前只查 active，生命周期状态入口留在 4.x。
 
 3.2b 表单显式“查找文章”，标题和标签均可留空；“清除筛选”立即回到全部活动文章。输入尚未提交时保持已应用条件的结果和提示；查询条件改变会清空旧结果并重置分页。下一页、刷新和重试始终携带已应用条件；旧请求不能覆盖或追加到新查询。初次空库、无匹配、请求错误分别显示；查找失败不影响正文/整理表单。组合输入期间不能提交或清除筛选，结束选词后需重新操作。服务端游标仍为创建时间/ID，不是带查询签名的快照；客户端负责条件变更时重置，不把翻页中的外部修改伪装成一致性快照。
+
+### 生命周期服务端切片（4.1）
+
+状态转换仅允许 active→archived（archive）、archived→active（unarchive）、active/archived→trashed（trash）、trashed→previous_state（restore）。每次真实转换推进 metadata_version；不同请求对不适用状态重复操作返回 `INVALID_LIFECYCLE_TRANSITION`，同 mutationId 原载荷则返回原结果。先重放，再检查元数据 CAS（`METADATA_CONFLICT`），最后检查转换；标签先提交也使旧确认失效。正文 head 的推进不使元数据 CAS 失效，服务端按事务顺序保存已经提交的内容，未提交输入由 4.2 的导航保护处理。
+
+`POST .../lifecycle` 返回 `{mutationId,metadata}`。状态、previous_state、版本、时间、最近指针和 mutation 同一 immediate 事务提交；不新增正文修订、不改变标签/历史/名称。归档和移入回收站只在目标恰好为最近指针时清空指针。状态更新、指针更新或 mutation 记账任一失败，全部回滚。schema 3 已有所需字段，不再次迁移。
+
+`GET /api/articles` 增加 state（active/archived/trashed，默认 active），沿用标题/标签交集和稳定游标。正文与历史读取拒绝 trashed（`ARTICLE_TRASHED`），归档仍允许读取及 open。open 继续返回 ArticleSnapshot，状态由已有 metadata 接口读取；旧幂等结果不扩展字段，也不得用旧快照推断当前状态。save、正文 restore、name 的新请求必须 active（`ARTICLE_NOT_ACTIVE`）；标签写入沿用相同限制。所有操作先查询已提交请求，保障归档/删除后原请求核对仍返回原结果，且不重新执行。
+
+workspace 读取保留有效的显式最近指针（包括后来主动打开的归档项）；指针为空、缺失或指向回收站时，按 updated_at DESC / created_at DESC / article_id DESC 返回最近 active，若无则 null。此读取不写指针或创建文章。主动打开归档后刷新仍可只读重开；归档当前活动文章时则清空指针并回退活动稿。ensure-current 只复用 active：归档指针先找活动稿，没有才显式新建；采用活动稿时同事务记下指针。重复 ensure 原请求依旧仅返回历史结果。这里的“最近”是最近更新/整理，不宣称保存逐篇访问历史。
+
+本步骤交付受保护 API 和状态约束，4.2 再接状态入口、只读编辑器与浏览器副本保护；不把 API 测试当作生命周期 UI 验收。
