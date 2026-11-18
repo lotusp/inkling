@@ -339,7 +339,7 @@ test('原型的自动备份可按批展开、命名和再次查找', async (t) =
   // Seed a long history in this isolated prototype context so the older page is reachable.
   await p.addInitScript(() => {
     const key = 'inkling.prototype.writing-desk.v3.1',
-      store = JSON.parse(localStorage.getItem(key));
+      store = JSON.parse(globalThis.localStorage.getItem(key));
     const article = store.articles.find((item) => item.id === store.active);
     const initial = article.versions[0];
     for (let i = 1; i <= 12; i++) {
@@ -353,7 +353,7 @@ test('原型的自动备份可按批展开、命名和再次查找', async (t) =
         label: '自动恢复点',
       });
     }
-    localStorage.setItem(key, JSON.stringify(store));
+    globalThis.localStorage.setItem(key, JSON.stringify(store));
   });
   await p.reload();
   await button(p, '文章菜单').click();
