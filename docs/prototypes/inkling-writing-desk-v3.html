@@ -507,6 +507,25 @@
         padding-bottom: 10px;
         margin-bottom: 14px;
       }
+      .revision-diff {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        line-height: 1.85;
+      }
+      .revision-diff ins {
+        background: #dcefe0;
+        color: #224d30;
+      }
+      .revision-diff del {
+        display: inline;
+        margin: 0;
+        font: inherit;
+        background: #f5e1dc;
+        color: #793a2d;
+      }
+      .revision-picks select {
+        width: 100%;
+      }
       .shelves {
         display: flex;
         gap: 3px;
@@ -880,6 +899,7 @@
         title: a.title,
         blocks: copy(a.blocks),
         label,
+        time: Date.now(),
       });
       const discussion = (messages = []) => ({
         id: id(),
@@ -975,10 +995,12 @@
         shelfResult = '',
         selected = null,
         toolTarget = null,
-        compareIds = [],
+        comparison = null,
+        recoveryLimit = 0,
         toastTimer,
         typingTimer,
         versionTimer,
+        batchStartedAt = 0,
         unsnapped = null,
         storageOk = true;
       function persist() {
@@ -1001,23 +1023,65 @@
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => ($('notice').hidden = true), 1800);
       }
-      function finishVersion(label) {
+      function keepSnapshot(draft, label, kind) {
+        let v = draft.versions.find((item) => item.rev === draft.rev);
+        if (!v) {
+          v = snapshot(draft, label);
+          draft.versions.push(v);
+        }
+        if (
+          ['published', 'milestone'].includes(kind) &&
+          versionKind(draft, v) === 'recovery'
+        )
+          v.label = label;
+        if (label && kind === 'named') v.label = label;
+        if (kind !== 'recovery' || !v.kind) v.kind = kind;
+        if (kind === 'published') v.wasPublished = true;
+        return v;
+      }
+      function versionKind(art, v) {
+        if (v.kind) return v.kind;
+        // Older prototypes stored no type or timestamp. Preserve every snapshot.
+        return v.rev === art.published ||
+          ![
+            '正文编辑',
+            '采用段落修改',
+            '段落格式',
+            '插入灵感',
+            '采用大纲',
+            '自动恢复点',
+          ].includes(v.label)
+          ? 'milestone'
+          : 'recovery';
+      }
+      function finishVersion() {
         clearTimeout(versionTimer);
         if (!unsnapped) return;
         const draft = unsnapped;
-        draft.versions.push(snapshot(draft, label || '正文编辑'));
         unsnapped = null;
-        if (rightView === 'history') renderVersions();
+        if (
+          !draft.lastRecoveryAt ||
+          Date.now() - draft.lastRecoveryAt >= 5 * 60 * 1000
+        ) {
+          keepSnapshot(draft, '自动恢复点', 'recovery');
+          draft.lastRecoveryAt = Date.now();
+        }
+        if (draft.status === 'active' && rightView === 'history')
+          renderVersions();
         persist();
       }
-      function changed(label) {
+      function changed() {
         if (unsnapped !== a()) {
           finishVersion();
+          batchStartedAt = Date.now();
           unsnapped = a();
           a().rev++;
         }
         clearTimeout(versionTimer);
-        versionTimer = setTimeout(() => finishVersion(label), 800);
+        versionTimer = setTimeout(
+          finishVersion,
+          Math.min(800, Math.max(0, 10000 - (Date.now() - batchStartedAt))),
+        );
         persist();
         meta();
         renderProposal();
@@ -1086,26 +1150,7 @@
                       '</div>',
                   )
                   .join('') +
-                '<details><summary>版本历史（' +
-                art.versions.length +
-                '）</summary>' +
-                art.versions
-                  .slice()
-                  .reverse()
-                  .map(
-                    (v) =>
-                      '<details class="item"><summary>v' +
-                      v.rev +
-                      ' · ' +
-                      esc(v.label) +
-                      '</summary><div class="preview">' +
-                      esc(
-                        [v.title, ...v.blocks.map((b) => b.text)].join('\n\n'),
-                      ) +
-                      '</div></details>',
-                  )
-                  .join('') +
-                '</details>'
+                btn('archive-history', '查看版本历史')
               : '<p>文章已移入回收站。正文和历史仍然保留。</p>' +
                 btn(
                   'recover',
@@ -1602,7 +1647,10 @@
                 '</small></div>';
               if (x.status === 'archived')
                 html +=
-                  '<small>只读 · ' + x.versions.length + ' 个版本</small>';
+                  '<small>只读 · ' +
+                  x.versions.filter((v) => versionKind(x, v) !== 'recovery')
+                    .length +
+                  ' 个关键稿次</small>';
               html +=
                 '<details><summary>文章操作</summary><div class="actions">' +
                 btn(
@@ -1702,7 +1750,8 @@
         store.active = x.id;
         selected = null;
         toolTarget = null;
-        compareIds = [];
+        comparison = null;
+        recoveryLimit = 0;
         $('prompt').value = '';
         $('tool').hidden = true;
         closePanel();
@@ -1745,7 +1794,8 @@
           finishVersion();
           selected = null;
           toolTarget = null;
-          compareIds = [];
+          comparison = null;
+          recoveryLimit = 0;
           renderPaper();
           renderChat();
           $('paper').scrollTop = 0;
@@ -1758,44 +1808,229 @@
         openRight('history');
         renderVersions();
       }
+      function versionName(art, v) {
+        const suffix =
+          v.wasPublished || v.rev === art.published ? ' · 已发表' : '';
+        return v.label + suffix;
+      }
       function renderVersions() {
-        const versions = a().versions;
-        let html = versions
-          .slice()
-          .reverse()
-          .map(
-            (v) =>
-              '<div class="item"><label><input type="checkbox" data-ver="' +
-              v.rev +
-              '" ' +
-              (compareIds.includes(v.rev) ? 'checked' : '') +
-              '> v' +
-              v.rev +
-              ' · ' +
-              esc(v.label) +
-              '</label><details><summary>版本操作</summary>' +
-              btn('renamever', '命名', v.rev) +
-              (v.rev !== a().rev ? btn('restorever', '恢复此版', v.rev) : '') +
-              '</details></div>',
-          )
-          .join('');
-        if (compareIds.length === 2) {
-          html +=
-            '<h3>版本对照</h3>' +
-            compareIds
-              .map((r) => {
-                const v = versions.find((x) => x.rev === r);
-                return (
-                  '<small>v' +
-                  r +
-                  '</small><div class="preview">' +
-                  esc([v.title, ...v.blocks.map((b) => b.text)].join('\n\n')) +
-                  '</div>'
-                );
+        const art = a(),
+          readOnly = art.status === 'archived';
+        if (art.status === 'trash') return;
+        const newest = [...art.versions].reverse(),
+          keys = newest.filter((v) => versionKind(art, v) !== 'recovery');
+        const recoveries = newest.filter(
+          (v) => versionKind(art, v) === 'recovery',
+        );
+        const row = (v) => {
+          const time = v.time
+            ? new Date(v.time).toLocaleString('zh-CN', {
+                month: 'numeric',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
               })
-              .join('');
+            : '旧记录';
+          return (
+            '<div class="item"><strong>' +
+            esc(versionName(art, v)) +
+            '</strong><br><small>' +
+            esc(time) +
+            '</small><div class="actions">' +
+            btn('compare-version', '比较', v.rev, 'text-btn') +
+            (readOnly
+              ? ''
+              : btn('renamever', '命名', v.rev, 'text-btn') +
+                (v.rev !== art.rev
+                  ? btn('restorever', '恢复', v.rev, 'text-btn')
+                  : '')) +
+            '</div></div>'
+          );
+        };
+        let html =
+          '<h3>关键稿次</h3>' +
+          (!readOnly ? btn('name-current', '命名当前稿', '', 'lined') : '');
+        if (comparison)
+          html += comparisonHTML(art, keys, recoveries.slice(0, recoveryLimit));
+        html += keys.map(row).join('');
+        if (recoveries.length) {
+          html += btn(
+            'toggle-recoveries',
+            recoveryLimit
+              ? '收起恢复点'
+              : '自动恢复点（' + recoveries.length + '）',
+            '',
+            'text-btn',
+          );
+          if (recoveryLimit)
+            html +=
+              recoveries.slice(0, recoveryLimit).map(row).join('') +
+              (recoveryLimit < recoveries.length
+                ? btn('older-recoveries', '更早的恢复点')
+                : '');
         }
-        $('rightDetail').innerHTML = html;
+        if (readOnly) panel('archive-history', '版本历史', html);
+        else $('rightDetail').innerHTML = html;
+      }
+      function comparisonHTML(art, keys, recoveries) {
+        const base = art.versions.find((v) => v.rev === comparison.from);
+        const target =
+          comparison.to === 'current'
+            ? snapshot(art, '当前稿')
+            : art.versions.find((v) => v.rev === Number(comparison.to));
+        if (!base || !target) return '';
+        const options = [
+          ['current', '当前稿'],
+          ...[...keys, ...recoveries]
+            .filter((v) => v.rev !== base.rev)
+            .map((v) => [
+              String(v.rev),
+              versionName(art, v) + '（记录 ' + v.rev + '）',
+            ]),
+        ];
+        return (
+          '<section class="card revision-picks"><strong>比较改动</strong><label>从 ' +
+          esc(versionName(art, base)) +
+          ' 到<select id="compareTarget">' +
+          options
+            .map(
+              ([value, label]) =>
+                '<option value="' +
+                esc(value) +
+                '" ' +
+                (value === comparison.to ? 'selected' : '') +
+                '>' +
+                esc(label) +
+                '</option>',
+            )
+            .join('') +
+          '</select></label>' +
+          revisionDiff(base, target) +
+          btn('close-comparison', '结束比较', '', 'text-btn') +
+          '</section>'
+        );
+      }
+      // Standalone copy of the bounded text diff from apps/web/src/document-diff.ts.
+      function textChanges(before, after) {
+        const a = [...before],
+          b = [...after];
+        let prefix = 0,
+          suffix = 0;
+        while (
+          prefix < a.length &&
+          prefix < b.length &&
+          a[prefix] === b[prefix]
+        )
+          prefix++;
+        while (
+          suffix < a.length - prefix &&
+          suffix < b.length - prefix &&
+          a[a.length - 1 - suffix] === b[b.length - 1 - suffix]
+        )
+          suffix++;
+        const x = a.slice(prefix, a.length - suffix),
+          y = b.slice(prefix, b.length - suffix),
+          out = [];
+        const add = (kind, text) => {
+          if (!text) return;
+          const last = out.at(-1);
+          if (last?.kind === kind) last.text += text;
+          else out.push({ kind, text });
+        };
+        add('same', a.slice(0, prefix).join(''));
+        if (
+          x.length > 0 &&
+          y.length > 0 &&
+          (x.length + 1) * (y.length + 1) <= 100_000
+        ) {
+          const table = Array.from(
+            { length: x.length + 1 },
+            () => new Uint32Array(y.length + 1),
+          );
+          for (let i = x.length - 1; i >= 0; i--)
+            for (let j = y.length - 1; j >= 0; j--)
+              table[i][j] =
+                x[i] === y[j]
+                  ? table[i + 1][j + 1] + 1
+                  : Math.max(table[i + 1][j], table[i][j + 1]);
+          let i = 0,
+            j = 0;
+          while (i < x.length || j < y.length) {
+            if (i < x.length && j < y.length && x[i] === y[j]) {
+              add('same', x[i++]);
+              j++;
+            } else if (
+              i < x.length &&
+              (j === y.length || table[i + 1][j] >= table[i][j + 1])
+            )
+              add('removed', x[i++]);
+            else add('added', y[j++]);
+          }
+        } else {
+          add('removed', x.join(''));
+          add('added', y.join(''));
+        }
+        add('same', suffix ? a.slice(a.length - suffix).join('') : '');
+        return out;
+      }
+
+      function revisionDiff(base, target) {
+        const changes = [];
+        function difference(label, before, after, format = '') {
+          if (before === after && !format) return;
+          const deltas = textChanges(before, after).map(({ kind, text }) =>
+            kind === 'added'
+              ? '<ins>' + esc(text) + '</ins>'
+              : kind === 'removed'
+                ? '<del>' + esc(text) + '</del>'
+                : esc(text),
+          );
+          changes.push(
+            '<div class="item"><small>' +
+              esc(label) +
+              '</small><div class="revision-diff">' +
+              deltas.join('') +
+              '</div>' +
+              (format ? '<small>' + esc(format) + '</small>' : '') +
+              '</div>',
+          );
+        }
+        difference('标题', base.title, target.title);
+        const oldById = new Map(base.blocks.map((b) => [b.id, b])),
+          newIds = new Set(target.blocks.map((b) => b.id));
+        const commonOrder = base.blocks
+          .filter((b) => newIds.has(b.id))
+          .map((b) => b.id);
+        const order = new Map(commonOrder.map((key, index) => [key, index]));
+        let commonIndex = 0;
+        target.blocks.forEach((b, i) => {
+          const old = oldById.get(b.id),
+            notes = [];
+          if (old) {
+            if (order.get(b.id) !== commonIndex) notes.push('位置调整');
+            commonIndex++;
+            if (old.kind !== b.kind || old.bold !== b.bold)
+              notes.push('段落格式已改变');
+          }
+          difference(
+            (old ? '修改' : '新增') + '第 ' + (i + 1) + ' 段',
+            old?.text || '',
+            b.text,
+            notes.join(' · ') || (!old && !b.text ? '新增空段落' : ''),
+          );
+        });
+        base.blocks.forEach((b, i) => {
+          if (!newIds.has(b.id))
+            difference(
+              '删除原第 ' + (i + 1) + ' 段',
+              b.text,
+              '',
+              b.text ? '' : '删除空段落',
+            );
+        });
+        return changes.length
+          ? changes.join('')
+          : '<p>标题、正文和格式相同。</p>';
       }
       function stylePanel() {
         const memo = '记录技术取舍时，把适用条件和反例一起写下。';
@@ -1907,12 +2142,9 @@
             : a().attached.filter((s) => s !== key);
           persist();
           meta();
-        } else if (el.dataset.ver) {
-          const r = Number(el.dataset.ver);
-          compareIds = el.checked
-            ? [...compareIds.slice(-1), r]
-            : compareIds.filter((v) => v !== r);
-          historyPanel();
+        } else if (el.id === 'compareTarget') {
+          comparison.to = el.value;
+          renderVersions();
         } else if (el.id === 'confirm') $('publish').disabled = !el.checked;
       });
       document.addEventListener('click', (e) => {
@@ -2052,7 +2284,7 @@
           }
           case 'insert':
             art.blocks.push(block(store.notes[Number(key)]));
-            changed('插入灵感');
+            changed();
             closePanel();
             renderPaper();
             locate(art.blocks.at(-1).id);
@@ -2103,7 +2335,7 @@
               const kind = op === 'heading' ? 'h2' : 'ul';
               b.kind = b.kind === kind ? 'p' : kind;
             }
-            changed('段落格式');
+            changed();
             renderPaper();
             $('tool').hidden = true;
             break;
@@ -2157,7 +2389,7 @@
             if (!m.used) {
               art.blocks.push(block(m.outline, 'h2'));
               m.used = true;
-              changed('采用大纲');
+              changed();
               renderPaper();
               renderChat();
             }
@@ -2179,8 +2411,8 @@
             }
             b.text = p.after;
             chat().proposal = null;
-            changed('采用段落修改');
-            finishVersion('采用段落修改');
+            changed();
+            finishVersion();
             renderPaper();
             message('已将你确认的文字写入选中的段落。');
             break;
@@ -2191,25 +2423,66 @@
             renderChat();
             break;
           case 'history':
-            compareIds = [];
+            comparison = null;
+            recoveryLimit = 0;
             historyPanel();
             break;
-          case 'renamever':
+          case 'archive-history':
+            comparison = null;
+            recoveryLimit = 0;
+            renderVersions();
+            break;
+          case 'compare-version':
+            comparison = { from: Number(key), to: 'current' };
+            renderVersions();
+            break;
+          case 'close-comparison':
+            comparison = null;
+            renderVersions();
+            break;
+          case 'toggle-recoveries':
+            if (recoveryLimit) {
+              comparison = null;
+              recoveryLimit = 0;
+            } else recoveryLimit = 10;
+            renderVersions();
+            break;
+          case 'older-recoveries':
+            recoveryLimit += 10;
+            renderVersions();
+            break;
+          case 'name-current':
+          case 'renamever': {
+            finishVersion();
+            const rev = op === 'name-current' ? art.rev : Number(key);
+            const previous = art.versions.find((v) => v.rev === rev);
             panel(
               'name',
-              '命名版本',
-              '<label for="versionname">v' +
-                Number(key) +
-                ' 的名称</label><input id="versionname" value="' +
-                esc(art.versions.find((v) => v.rev === Number(key)).label) +
+              '命名稿次',
+              '<label for="versionname">稿次名称</label><input id="versionname" maxlength="80" placeholder="例如：补完恢复实验" value="' +
+                esc(
+                  previous && versionKind(art, previous) !== 'recovery'
+                    ? previous.label
+                    : '',
+                ) +
                 '">' +
-                btn('savename', '保存名称', key),
+                btn('savename', '保存名称', rev),
             );
             break;
+          }
           case 'savename': {
-            const v = art.versions.find((v) => v.rev === Number(key));
-            if ($('versionname').value.trim())
-              v.label = $('versionname').value.trim();
+            const name = $('versionname').value.trim();
+            if (!name) {
+              $('versionname').focus();
+              return;
+            }
+            const rev = Number(key),
+              v = art.versions.find((v) => v.rev === rev);
+            if (v) {
+              if (v.rev === art.published) v.wasPublished = true;
+              v.label = name;
+              v.kind = 'named';
+            } else if (rev === art.rev) keepSnapshot(art, name, 'named');
             persist();
             historyPanel();
             break;
@@ -2217,19 +2490,33 @@
           case 'restorever':
             panel(
               'restore',
-              '恢复 v' + Number(key) + '？',
-              '<p>当前正文会保留在历史中。</p>' +
+              '恢复「' +
+                versionName(
+                  art,
+                  art.versions.find((v) => v.rev === Number(key)),
+                ) +
+                '」？',
+              '<p>当前稿会保留为恢复前稿。以下是恢复将带来的改动。</p>' +
+                revisionDiff(
+                  art,
+                  art.versions.find((v) => v.rev === Number(key)),
+                ) +
                 btn('confirmrestore', '恢复为新版本', key, 'primary') +
                 btn('history', '返回'),
             );
             break;
           case 'confirmrestore': {
             const v = art.versions.find((v) => v.rev === Number(key));
+            finishVersion();
+            keepSnapshot(art, '恢复前稿', 'milestone');
             art.title = v.title;
             art.blocks = copy(v.blocks);
             selected = null;
             changed();
-            finishVersion('恢复自 v' + v.rev);
+            finishVersion();
+            keepSnapshot(art, '恢复自「' + v.label + '」', 'milestone');
+            persist();
+            comparison = null;
             renderPaper();
             renderChat();
             historyPanel();
@@ -2267,6 +2554,7 @@
             break;
           case 'publish':
             if ($('confirm').checked && art.rev === Number(key)) {
+              keepSnapshot(art, '发表稿', 'published');
               art.published = art.rev;
               persist();
               if (libraryOpen && tab === '文章') library(tab);
