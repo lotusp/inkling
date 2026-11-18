@@ -29,6 +29,15 @@ export function ArticleOrganizer({
   const composing = useRef(false),
     renamingRef = useRef(false);
   const tags = useArticleTags(mode === 'tags' ? articleId : null, onConfirmed);
+  const tagInput = useRef<HTMLTextAreaElement>(null);
+  const tagsLoaded = !!tags.base;
+  useEffect(() => {
+    if (
+      tagsLoaded &&
+      tagInput.current?.closest('dialog')?.contains(document.activeElement)
+    )
+      tagInput.current.focus();
+  }, [tagsLoaded]);
   const dirty = title !== committedTitle || tags.dirty;
   useEffect(() => {
     if (!dirty && !renaming) return;
@@ -45,7 +54,7 @@ export function ArticleOrganizer({
       setTitleMessage('请先完成标题选词。');
       return;
     }
-    const parsed = ArticleTitle.safeParse(title);
+    const parsed = ArticleTitle.safeParse(title.trim());
     if (!parsed.success) {
       setTitleMessage('标题不能超过 200 个字符。');
       return;
@@ -124,6 +133,7 @@ export function ArticleOrganizer({
         >
           <label htmlFor="organizer-tags">每行一个标签</label>
           <textarea
+            ref={tagInput}
             id="organizer-tags"
             rows={4}
             value={tags.text}

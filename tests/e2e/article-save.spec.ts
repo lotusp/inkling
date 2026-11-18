@@ -25,7 +25,8 @@ test('ARTICLE-SAVE-002 Chinese draft is saved and reopened with formatting', asy
     .fill('可靠保存我的想法');
   const editor = page.getByRole('textbox', { name: '文章正文', exact: true });
   await editor.fill('中文正文必须保留。');
-  await page.getByRole('button', { name: '二级标题', exact: true }).click();
+  await page.getByRole('button', { name: '段落格式…', exact: true }).click();
+  await page.getByRole('button', { name: '小标题', exact: true }).click();
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await page.reload();
   await expect(

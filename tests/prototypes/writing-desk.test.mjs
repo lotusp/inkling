@@ -204,3 +204,173 @@ test('旧笔记升级只出现一次；保存失败时专注模式也能下载�
   await p.reload();
   await expect(p.locator('.block').first()).toHaveText('已恢复写入。');
 });
+
+test('原型的偏好、记忆、导出和模拟发布分别进入自己的窗口', async (t) => {
+  const p = await fixture(t);
+  async function menu(label) {
+    await button(p, '文章菜单').click();
+    await button(p, label).click();
+  }
+  await menu('写作偏好');
+  await button(p, '确认保存').click();
+  await button(p, '撤回').click();
+  await p.getByLabel('本篇文类').selectOption('技术复盘');
+  await p.getByLabel('我的表达偏好').fill('给出依据。');
+  await button(p, '保存风格').click();
+  await menu('写作偏好');
+  await expect(p.getByLabel('我的表达偏好')).toHaveValue('给出依据。');
+  await expect(p.getByLabel('本篇文类')).toHaveValue('技术复盘');
+  await button(p, '关闭面板').click();
+  await menu('导出文件…');
+  const downloaded = p.waitForEvent('download');
+  await button(p, '下载 Markdown').click();
+  const file = await downloaded;
+  assert.match(file.suggestedFilename(), /\.md$/u);
+  assert.ok(
+    readFileSync(await file.path(), 'utf8').includes('我为什么把草稿留在本机'),
+  );
+  await button(p, '关闭面板').click();
+  await menu('发布到博客…');
+  await expect(button(p, '模拟发布')).toBeDisabled();
+  await p.getByRole('checkbox').check();
+  await button(p, '模拟发布').click();
+  await expect(p.getByText(/已模拟发布/)).toBeVisible();
+  await button(p, '关闭面板').click();
+  await button(p, '文章库').click();
+  await p.getByLabel('文章范围').selectOption({ label: '已发表' });
+  await expect(
+    p.getByRole('button', { name: '我为什么把草稿留在本机', exact: true }),
+  ).toBeVisible();
+});
+
+test('原型的讨论工具、资料引用、收藏溯源、章节建议和会话切换', async (t) => {
+  const p = await fixture(t);
+  const click = (name) => button(p, name).click();
+  await click('闻一 · AI 写作助手');
+  await click('新讨论');
+  await click('推敲判断');
+  await expect(p.locator('#thread')).toContainText('你想让读者相信什么');
+  await click('讨论操作');
+  await click('查找依据');
+  await click('查看资料 ↗');
+  await expect(p.locator('#originMessage')).toBeVisible();
+  await click('关闭面板');
+  await click('讨论操作');
+  await click('审阅文章');
+  await click('定位段落');
+  await click('忽略建议');
+  await expect(button(p, '忽略建议')).toHaveCount(0);
+  await click('大纲');
+  await click('讨论文章结构');
+  await click('加入章节标题');
+  await expect(p.locator('.block.h2').last()).toHaveText(
+    '什么情况会改变我的判断',
+  );
+  await p
+    .getByRole('button', { name: '收藏到素材', exact: true })
+    .last()
+    .click();
+  await click('文章库');
+  await click('素材');
+  await p.locator('.source-row').first().click();
+  await click('查看原讨论');
+  await expect(p.locator('#thread')).toContainText('已加入大纲');
+  await click('讨论历史');
+  await click('‹ 返回讨论');
+  await click('新讨论');
+  await click('讨论历史');
+  await p
+    .locator('[data-do="openchat"]')
+    .filter({ hasText: '推敲' })
+    .first()
+    .click();
+  await expect(p.locator('#thread')).toContainText('已加入大纲');
+  await p.getByLabel('给闻一的消息').fill('再谈一次');
+  await click('发送');
+  await click('停止回复');
+  await expect(button(p, '发送')).toBeVisible();
+  await click('素材');
+  await p.getByLabel('记个想法，或粘贴链接').fill('从这条观察起笔');
+  await click('保存素材');
+  await p.getByRole('button', { name: /从这条观察起笔/ }).click();
+  await click('用这条开始写');
+  await expect(p.locator('#blocks .block').first()).toHaveText(
+    '从这条观察起笔',
+  );
+});
+
+test('原型中归档、移回草稿、取消删除和回收站恢复保持原文', async (t) => {
+  const p = await fixture(t);
+  const title = '我为什么把草稿留在本机';
+  const click = (name) => button(p, name).click();
+  const menu = () => click(title + '的更多操作');
+  const scope = p.getByLabel('文章范围');
+  const original = await p.locator('#blocks').innerText();
+  await click('文章库');
+  await menu();
+  await click('归档');
+  await click('查看版本历史');
+  await expect(p.getByRole('dialog')).toContainText('保留的版本');
+  await expect(button(p, '保存版本')).toBeHidden();
+  await click('关闭面板');
+  await click('移回草稿，继续编辑');
+  assert.equal(await p.locator('#blocks').innerText(), original);
+  await menu();
+  await click('归档');
+  await scope.selectOption({ label: '已归档' });
+  await menu();
+  await click('移回草稿');
+  await scope.selectOption({ label: '写作中' });
+  await menu();
+  await click('移入回收站…');
+  await click('取消');
+  await menu();
+  await click('移入回收站…');
+  await click('移入回收站');
+  await scope.selectOption({ label: '回收站' });
+  await click('恢复到草稿');
+  await scope.selectOption({ label: '写作中' });
+  await click(title);
+  assert.equal(await p.locator('#blocks').innerText(), original);
+});
+
+test('原型的自动备份可按批展开、命名和再次查找', async (t) => {
+  const p = await fixture(t);
+  // Seed a long history in this isolated prototype context so the older page is reachable.
+  await p.addInitScript(() => {
+    const key = 'inkling.prototype.writing-desk.v3.1',
+      store = JSON.parse(localStorage.getItem(key));
+    const article = store.articles.find((item) => item.id === store.active);
+    const initial = article.versions[0];
+    for (let i = 1; i <= 12; i++) {
+      const rev = ++article.rev;
+      article.versions.push({
+        ...initial,
+        rev,
+        time: Date.now() + i,
+        kind: 'recovery',
+        versionId: '备份-' + i,
+        label: '自动恢复点',
+      });
+    }
+    localStorage.setItem(key, JSON.stringify(store));
+  });
+  await p.reload();
+  await button(p, '文章菜单').click();
+  await button(p, '版本历史').click();
+  await p.getByRole('button', { name: /查看自动备份/ }).click();
+  await button(p, '更早的恢复点').click();
+  await button(p, '收起自动备份').click();
+  await p.getByRole('button', { name: /查看自动备份/ }).click();
+  const row = p
+    .locator('.version-row')
+    .filter({ hasText: '自动恢复点' })
+    .first();
+  await row.getByText('⋯').click();
+  await row.getByRole('button', { name: '命名', exact: true }).click();
+  await p.getByLabel('稿次名称').fill('复核稿');
+  await button(p, '保存名称').click();
+  await p.getByLabel('查找日期、名称或版本号').fill('复核稿');
+  await expect(p.locator('.version-row:visible')).toHaveCount(1);
+  await expect(p.locator('.version-row:visible')).toContainText('复核稿');
+});

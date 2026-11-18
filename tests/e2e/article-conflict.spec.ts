@@ -253,7 +253,8 @@ async function conflictingTabs(
   await page
     .getByRole('textbox', { name: '文章正文', exact: true })
     .press('ControlOrMeta+a');
-  await page.getByRole('button', { name: '加粗', exact: true }).click();
+  await page.getByRole('button', { name: '段落格式…', exact: true }).click();
+  await page.getByRole('button', { name: '整段加粗', exact: true }).click();
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await other
     .getByRole('textbox', { name: '文章正文', exact: true })

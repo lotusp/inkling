@@ -24,7 +24,9 @@ async function setup(page: Page, origin: string) {
   return { a, b, headers };
 }
 async function choose(page: Page, title = '第二篇') {
-  await page.getByRole('button', { name: '文章库', exact: true }).click();
+  const library = page.getByRole('button', { name: '文章库', exact: true });
+  if ((await library.getAttribute('aria-expanded')) !== 'true')
+    await library.click();
   await page
     .getByRole('button', { name: '打开：' + title, exact: true })
     .click();

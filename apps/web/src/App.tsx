@@ -1,15 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
-  Bold,
-  Heading2,
-  List,
-  Code2,
   Library,
   Ellipsis,
   X,
-  ListTree,
   Sparkles,
   RefreshCw,
   CircleCheck,
@@ -22,6 +17,8 @@ import { ArticleSaveFeedback } from './ArticleSaveFeedback';
 import { ArticleNavigation } from './ArticleNavigation';
 import { RecoveryPanel } from './RecoveryPanel';
 import { ConflictPanel } from './ConflictPanel';
+import { ParagraphFormat } from './ParagraphFormat';
+import { ArticleOutline } from './ArticleOutline';
 import { DeskMenu } from './DeskMenu';
 import { VersionPanel } from './VersionPanel';
 import { DamagedArticlePanel } from './DamagedArticlePanel';
@@ -54,25 +51,45 @@ function Workbench({
   navigate: (session: ArticleSession) => void;
 }) {
   const [title, setTitle] = useState('');
-  const [panel, setPanel] = useState<
-    'library' | 'assistant' | 'history' | null
-  >(null);
-  const [historyVisited, setHistoryVisited] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(!!initial?.libraryOpen);
+  const [panel, setPanel] = useState<'assistant' | 'history' | null>(null);
+  const [lastRail, setLastRail] = useState<'left' | 'right'>('left');
+  const [compact, setCompact] = useState(
+    () => matchMedia('(max-width:1100px)').matches,
+  );
+  useEffect(() => {
+    const query = matchMedia('(max-width:1100px)');
+    const change = () => setCompact(query.matches);
+    query.addEventListener('change', change);
+    return () => query.removeEventListener('change', change);
+  }, []);
+  const [historyVisit, setHistoryVisit] = useState(0);
   const [navigationBusy, setNavigationBusy] = useState(false);
   const libraryButton = useRef<HTMLButtonElement>(null);
   const assistantButton = useRef<HTMLButtonElement>(null);
   const header = useRef<HTMLElement>(null);
-  const [outline, setOutline] = useState<HTMLElement[]>([]);
-  function closePanel() {
+  const [focused, setFocused] = useState(false);
+  const leftVisible =
+    !focused && libraryOpen && (!compact || !panel || lastRail === 'left');
+  const rightVisible =
+    !focused && !!panel && (!compact || !libraryOpen || lastRail === 'right');
+  function closeLibrary() {
+    setLibraryOpen(false);
+    libraryButton.current?.focus();
+  }
+  function closeRight() {
     setPanel(null);
+    if (matchMedia('(max-width:820px)').matches) setLibraryOpen(false);
     if (panel === 'assistant') assistantButton.current?.focus();
-    else if (panel === 'library') libraryButton.current?.focus();
     else
       header.current
         ?.querySelector<HTMLButtonElement>('[aria-label="文章菜单"]')
         ?.focus();
   }
-  const [focused, setFocused] = useState(false);
+  function openRight(view: 'assistant' | 'history') {
+    setPanel(view);
+    setLastRail('right');
+  }
   const health = useHealth();
   const access = useAccess();
   const editor = useEditor({
@@ -110,10 +127,6 @@ function Workbench({
   const format = useEditorState({
     editor,
     selector: ({ editor }) => ({
-      bold: editor?.isActive('bold') ?? false,
-      heading: editor?.isActive('heading', { level: 2 }) ?? false,
-      list: editor?.isActive('bulletList') ?? false,
-      code: editor?.isActive('codeBlock') ?? false,
       length: editor?.getText().replace(/\s/g, '').length ?? 0,
     }),
   });
@@ -127,47 +140,26 @@ function Workbench({
     window.addEventListener('beforeunload', confirmLeave);
     return () => window.removeEventListener('beforeunload', confirmLeave);
   }, [hasText]);
-  const tools = [
-    {
-      label: '二级标题',
-      Icon: Heading2,
-      active: format?.heading,
-      run: () => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
-    },
-    {
-      label: '加粗',
-      Icon: Bold,
-      active: format?.bold,
-      run: () => editor?.chain().focus().toggleBold().run(),
-    },
-    {
-      label: '无序列表',
-      Icon: List,
-      active: format?.list,
-      run: () => editor?.chain().focus().toggleBulletList().run(),
-    },
-    {
-      label: '代码块',
-      Icon: Code2,
-      active: format?.code,
-      run: () => editor?.chain().focus().toggleCodeBlock().run(),
-    },
-  ];
+  const onEscape = useEffectEvent((event: KeyboardEvent) => {
+    if (
+      event.key !== 'Escape' ||
+      event.isComposing ||
+      event.defaultPrevented ||
+      navigationBusy ||
+      document.querySelector(':popover-open,dialog[open]')
+    )
+      return;
+    if (focused) setFocused(false);
+    else if (leftVisible && (!rightVisible || lastRail === 'left'))
+      closeLibrary();
+    else if (rightVisible) closeRight();
+  });
+  useEffect(() => {
+    window.addEventListener('keydown', onEscape);
+    return () => window.removeEventListener('keydown', onEscape);
+  }, []);
   return (
-    <div
-      className={focused ? 'workbench is-focused' : 'workbench'}
-      onKeyDown={(event) => {
-        if (
-          event.key !== 'Escape' ||
-          event.nativeEvent.isComposing ||
-          navigationBusy ||
-          document.querySelector(':popover-open')
-        )
-          return;
-        if (focused) setFocused(false);
-        else if (panel) closePanel();
-      }}
-    >
+    <div className={focused ? 'workbench is-focused' : 'workbench'}>
       <header ref={header} className="app-header" hidden={focused}>
         <img
           className="brand"
@@ -180,9 +172,15 @@ function Workbench({
         <button
           ref={libraryButton}
           aria-controls="article-library"
-          aria-expanded={panel === 'library'}
+          aria-expanded={leftVisible}
           disabled={access.status !== 'connected' || navigationBusy}
-          onClick={() => setPanel(panel === 'library' ? null : 'library')}
+          onClick={() => {
+            if (leftVisible) closeLibrary();
+            else {
+              setLastRail('left');
+              setLibraryOpen(true);
+            }
+          }}
         >
           <Library size={16} />
           文章库
@@ -192,10 +190,14 @@ function Workbench({
           ref={assistantButton}
           aria-label="闻一 · AI 写作助手"
           title="闻一 · AI 写作助手"
-          disabled={navigationBusy}
+          disabled={navigationBusy || article.stateReadOnly}
           aria-controls="assistant-panel"
-          aria-expanded={panel === 'assistant'}
-          onClick={() => setPanel(panel === 'assistant' ? null : 'assistant')}
+          aria-expanded={rightVisible && panel === 'assistant'}
+          onClick={() =>
+            rightVisible && panel === 'assistant'
+              ? closeRight()
+              : openRight('assistant')
+          }
         >
           <Sparkles size={20} />
         </button>
@@ -205,10 +207,10 @@ function Workbench({
           disabled={navigationBusy}
         >
           <button
-            disabled={!article.snapshot}
+            disabled={!article.snapshot || article.articleState === 'trashed'}
             onClick={() => {
-              setHistoryVisited(true);
-              setPanel('history');
+              setHistoryVisit((n) => n + 1);
+              openRight('history');
             }}
           >
             版本历史
@@ -232,14 +234,19 @@ function Workbench({
         </button>
       )}
       <div
-        className={'workspace' + (!focused && panel ? ' with-' + panel : '')}
+        className={
+          'workspace' +
+          (leftVisible ? ' with-library' : '') +
+          (rightVisible ? ' with-' + panel : '')
+        }
       >
         {access.status === 'connected' && (
           <ArticleNavigation
             article={article}
             navigate={navigate}
-            open={!focused && panel === 'library'}
-            close={closePanel}
+            open={leftVisible}
+            initialView={initial?.libraryView}
+            close={closeLibrary}
             busyChanged={setNavigationBusy}
           />
         )}
@@ -267,59 +274,11 @@ function Workbench({
                 disabled={!article.editable}
                 maxLength={400}
               />
-              {article.snapshot && (
-                <DeskMenu
-                  label="本文大纲"
-                  onOpen={() =>
-                    setOutline(
-                      Array.from(
-                        editor?.view.dom.querySelectorAll<HTMLElement>(
-                          'h2,h3',
-                        ) ?? [],
-                      ),
-                    )
-                  }
-                  trigger={
-                    <>
-                      <ListTree size={15} />
-                      大纲
-                    </>
-                  }
-                >
-                  {outline.map((heading, i) => (
-                    <button
-                      key={i}
-                      onClick={() =>
-                        heading.scrollIntoView({ block: 'center' })
-                      }
-                    >
-                      {heading.textContent || '未命名章节'}
-                    </button>
-                  ))}
-                  {!outline.length && <small>还没有章节标题</small>}
-                </DeskMenu>
+              {article.snapshot && editor && (
+                <ArticleOutline editor={editor} editable={article.editable} />
               )}
             </div>
-            {article.editable && (
-              <div
-                className="format-actions"
-                role="toolbar"
-                aria-label="正文格式"
-              >
-                {tools.map(({ label, Icon, active, run }) => (
-                  <button
-                    key={label}
-                    aria-label={label}
-                    title={label}
-                    aria-pressed={active ?? false}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={run}
-                  >
-                    <Icon size={16} />
-                  </button>
-                ))}
-              </div>
-            )}
+            {article.editable && editor && <ParagraphFormat editor={editor} />}
             {article.snapshot && article.stateReadOnly && (
               <section className="article-state" aria-label="文章状态">
                 <p role="status">
@@ -405,11 +364,11 @@ function Workbench({
           className="desk-rail"
           id="assistant-panel"
           aria-label="写作讨论"
-          hidden={focused || panel !== 'assistant'}
+          hidden={!rightVisible || panel !== 'assistant'}
         >
           <header className="rail-heading">
             <h2>闻一</h2>
-            <button aria-label="关闭闻一" onClick={closePanel}>
+            <button aria-label="关闭闻一" onClick={closeRight}>
               <X size={17} />
             </button>
           </header>
@@ -425,19 +384,20 @@ function Workbench({
         </aside>
         <aside
           className="desk-rail history-rail"
-          hidden={focused || panel !== 'history'}
+          hidden={!rightVisible || panel !== 'history'}
           aria-label="历史侧栏"
         >
           <header className="rail-heading">
             <h2>版本历史</h2>
-            <button aria-label="关闭版本历史" onClick={closePanel}>
+            <button aria-label="关闭版本历史" onClick={closeRight}>
               <X size={17} />
             </button>
           </header>
-          {historyVisited && article.snapshot && (
+          {historyVisit > 0 && article.snapshot && (
             <VersionPanel
               article={article.snapshot}
-              visible={panel === 'history' && !focused}
+              visit={historyVisit}
+              visible={rightVisible && panel === 'history'}
               readOnly={article.stateReadOnly || article.navigationLocked}
               currentDocument={article.currentDocument}
               flush={article.flushForVersion}

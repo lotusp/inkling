@@ -66,6 +66,9 @@ test('LIBRARY-ARCHIVE-009 archived reopening is read-only with readable history 
   await expect(title(page)).toBeDisabled();
   await expect(body(page)).toHaveAttribute('contenteditable', 'false');
   await expect(
+    page.getByRole('button', { name: '闻一 · AI 写作助手' }),
+  ).toBeDisabled();
+  await expect(
     page.getByText('文章已归档，当前为只读。', { exact: true }),
   ).toBeVisible();
   await page.getByRole('button', { name: '文章菜单' }).click();

@@ -23,7 +23,8 @@ test('REVISION-HISTORY-001 saves and names the clicked draft; REVISION-COMPARE-0
   await expect(panel.getByRole('status')).toContainText('版本已保存');
   await expect(panel.getByText('观点形成', { exact: true })).toBeVisible();
   await editor.press('ControlOrMeta+a');
-  await page.getByRole('button', { name: '加粗', exact: true }).click();
+  await page.getByRole('button', { name: '段落格式…', exact: true }).click();
+  await page.getByRole('button', { name: '整段加粗', exact: true }).click();
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await panel
     .getByRole('listitem')
@@ -145,6 +146,7 @@ test('REVISION-COMPARE-002 restore preview contains long code lines within a nar
 }) => {
   const editor = page.getByRole('textbox', { name: '文章正文', exact: true });
   await editor.fill('const message = "' + 'long_code_'.repeat(60) + '";');
+  await page.getByRole('button', { name: '段落格式…', exact: true }).click();
   await page.getByRole('button', { name: '代码块', exact: true }).click();
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await editor.fill('替代代码行');

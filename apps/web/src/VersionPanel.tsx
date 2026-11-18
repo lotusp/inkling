@@ -22,6 +22,7 @@ import { RevisionComparison } from './RevisionComparison';
 import type { RestoreReview } from './use-article';
 export function VersionPanel({
   article,
+  visit,
   visible,
   currentDocument,
   readOnly,
@@ -32,6 +33,7 @@ export function VersionPanel({
   article: ArticleSnapshot;
   readOnly: boolean;
   visible: boolean;
+  visit: number;
   currentDocument: () => ArticleDocument | null;
   flush: () => Promise<{ revisionId: string; seq: number }>;
   reviewRestore: (source: string) => Promise<RestoreReview>;
@@ -45,33 +47,39 @@ export function VersionPanel({
     [notice, setNotice] = useState(''),
     [name, setName] = useState(''),
     [busy, setBusy] = useState(false);
-  const [left, setLeft] = useState(''),
-    [right, setRight] = useState(''),
-    [pair, setPair] = useState<[RevisionDetail, ArticleDocument] | null>(null);
+  const [pair, setPair] = useState<{
+    from: RevisionDetail;
+    to: RevisionDetail | null;
+  } | null>(null);
+  const readGeneration = useRef(0);
+  const namingComposing = useRef(false);
+  useEffect(
+    () => () => {
+      readGeneration.current++;
+    },
+    [visible, visit],
+  );
   const [pending, setPending] = useState<{
     revisionId: string;
     seq: number;
     command: NameRevisionCommand;
   } | null>(null);
   const [review, setReview] = useState<RestoreReview | null>(null);
-  const [wasVisible, setWasVisible] = useState(visible);
-  if (visible !== wasVisible) {
-    setWasVisible(visible);
-    if (!visible) {
-      setQuery('');
-      setPair(null);
-      setReview(null);
-      if (!pending) setRename(null);
-      setShowBackups(false);
-      setLimit(20);
-    }
+  const [lastVisit, setLastVisit] = useState(visit);
+  if (visit !== lastVisit) {
+    setLastVisit(visit);
+    setQuery('');
+    setPair(null);
+    setReview(null);
+    if (!pending) setRename(null);
+    setShowBackups(false);
+    setLimit(20);
   }
   const action = useRef(false);
   const detailPane = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (review || pair)
-      detailPane.current?.scrollIntoView({ block: 'nearest' });
-  }, [review, pair]);
+    if (pair) detailPane.current?.scrollIntoView({ block: 'nearest' });
+  }, [pair]);
   const writeBlocked = useRef(readOnly);
   writeBlocked.current = readOnly;
   const path = '/api/articles/' + article.articleId;
@@ -144,15 +152,15 @@ export function VersionPanel({
   const retained = (r: RevisionInfo) => !!r.name || r.kind !== 'save';
   const backups = matches.filter((r) => !retained(r));
   async function compare(from: string, to: string) {
-    const draft = currentDocument() ?? article.document;
+    const generation = ++readGeneration.current;
     const detail = async (id: string) =>
       RevisionDetail.parse(await api(path + '/revisions/' + id));
-    const target =
-      to === 'draft' ? { seq: null, document: draft, name: null } : null;
-    const [a, b] = await Promise.all([detail(from), target ?? detail(to)]);
-    setLeft(from);
-    setRight(to);
-    setPair([a, b.document]);
+    const [source, target] = await Promise.all([
+      detail(from),
+      to === 'draft' ? null : detail(to),
+    ]);
+    if (readGeneration.current !== generation) return;
+    setPair({ from: source, to: target });
     setReview(null);
     setRename(null);
   }
@@ -181,6 +189,7 @@ export function VersionPanel({
                 <button
                   aria-label={'命名版本 #' + r.seq}
                   onClick={() => {
+                    namingComposing.current = false;
                     setRename(r);
                     setName(r.name || '');
                     setReview(null);
@@ -197,7 +206,10 @@ export function VersionPanel({
                         setRename(null);
                         setPair(null);
                         setReview(null);
-                        setReview(await reviewRestore(r.revisionId));
+                        const generation = ++readGeneration.current;
+                        const ticket = await reviewRestore(r.revisionId);
+                        if (generation === readGeneration.current)
+                          setReview(ticket);
                       })
                     }
                   >
@@ -253,10 +265,12 @@ export function VersionPanel({
           重试{pending.command.keepExistingName ? '保存版本' : '命名'}
         </button>
       )}
-      {rename && (
+      {visible && rename && (
         <DeskDialog
           title="命名稿次"
-          close={() => setRename(null)}
+          close={() => {
+            if (!namingComposing.current) setRename(null);
+          }}
           blocked={busy || !!pending}
         >
           <form
@@ -266,6 +280,7 @@ export function VersionPanel({
               if (
                 !busy &&
                 !pending &&
+                !namingComposing.current &&
                 !readOnly &&
                 name.trim() &&
                 [...name].length <= 80
@@ -286,7 +301,17 @@ export function VersionPanel({
               <input
                 value={name}
                 maxLength={160}
-                disabled={!!pending}
+                disabled={!!pending || busy}
+                onCompositionStart={() => {
+                  namingComposing.current = true;
+                }}
+                onCompositionEnd={() => {
+                  namingComposing.current = false;
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && event.nativeEvent.isComposing)
+                    event.preventDefault();
+                }}
                 onChange={(e) => setName(e.target.value)}
               />
             </label>
@@ -313,22 +338,24 @@ export function VersionPanel({
           </form>
         </DeskDialog>
       )}
-      {pair && (
+      {visible && pair && (
         <section ref={detailPane} className="version-compare">
           <strong>比较改动</strong>
           <label>
-            从 {label(pair[0])} 到
+            从 {label(pair.from)} 到
             <select
               aria-label="比较目标版本"
               disabled={busy}
-              value={right}
+              value={pair.to?.revisionId ?? 'draft'}
               onChange={(event) =>
-                void run(() => compare(left, event.target.value))
+                void run(() =>
+                  compare(pair.from.revisionId, event.target.value),
+                )
               }
             >
               <option value="draft">当前稿</option>
               {items
-                .filter((r) => r.revisionId !== left)
+                .filter((r) => r.revisionId !== pair.from.revisionId)
                 .map((r) => (
                   <option
                     key={r.revisionId}
@@ -340,13 +367,22 @@ export function VersionPanel({
                 ))}
             </select>
           </label>
-          <RevisionComparison before={pair[0].document} after={pair[1]} />
-          <button className="text-action" onClick={() => setPair(null)}>
+          <RevisionComparison
+            before={pair.from.document}
+            after={pair.to?.document ?? currentDocument() ?? article.document}
+          />
+          <button
+            className="text-action"
+            onClick={() => {
+              readGeneration.current++;
+              setPair(null);
+            }}
+          >
             结束比较
           </button>
         </section>
       )}
-      {review && (
+      {visible && review && (
         <DeskDialog
           title={'恢复「' + versionId(review.source) + '」？'}
           close={() => setReview(null)}

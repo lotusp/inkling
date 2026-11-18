@@ -12,13 +12,14 @@ import { DeskMenu } from './DeskMenu';
 import type { OrganizerMode } from './ArticleOrganizer';
 import type { LifecycleTarget } from './ArticleLifecycle';
 import { ArticleSearchForm } from './ArticleSearchForm';
+import type { LibraryView } from './use-article';
 export function ArticleLibrary({
   current,
-  initialState,
+  initialView,
   refreshGeneration,
   refreshArticleState,
   manageState,
-  stateChanged,
+  viewChanged,
   restoreArticle,
   disabled,
   openArticle,
@@ -28,11 +29,11 @@ export function ArticleLibrary({
   close,
 }: {
   current: ArticleSnapshot | null;
-  initialState: ArticleShelf;
+  initialView: LibraryView;
   refreshGeneration: number;
   refreshArticleState: () => void;
   manageState: (target: LifecycleTarget) => void;
-  stateChanged: (state: ArticleShelf) => void;
+  viewChanged: (view: LibraryView) => void;
   restoreArticle: (id: string) => void;
   confirmedMetadata: ArticleListItem | null;
   organizeArticle: (id: string, mode: OrganizerMode) => void;
@@ -54,8 +55,8 @@ export function ArticleLibrary({
   }>({
     attempt: 0,
     cursor: null,
-    filters: { q: '', tag: '' },
-    state: initialState,
+    filters: initialView.filters,
+    state: initialView.shelf,
   });
   const generation = useRef(0);
   const previousRefresh = useRef(refreshGeneration);
@@ -123,6 +124,7 @@ export function ArticleLibrary({
     }));
   }
   function applyFilters(filters: ArticleSearchFilters & { term?: string }) {
+    viewChanged({ shelf: query.state, filters });
     generation.current++;
     setLoading(true);
     setError('');
@@ -160,7 +162,7 @@ export function ArticleLibrary({
       cursor: null,
       attempt: previous.attempt + 1,
     }));
-    stateChanged(state);
+    viewChanged({ shelf: state, filters: query.filters });
   }
   const hasFilters = !!(
     query.filters.q ||
@@ -202,6 +204,8 @@ export function ArticleLibrary({
       </div>
 
       <ArticleSearchForm
+        initialFilters={initialView.filters}
+        noMatches={loaded && !loading && !error && page.total === 0}
         apply={applyFilters}
         disabled={disabled}
         refresh={() => {
@@ -264,10 +268,13 @@ export function ArticleLibrary({
           return (
             <li key={item.articleId} className={selected ? 'is-current' : ''}>
               <button
-                disabled={disabled || selected || item.state === 'trashed'}
+                disabled={disabled || item.state === 'trashed'}
                 aria-label={'打开：' + name}
                 aria-current={selected ? 'page' : undefined}
-                onClick={() => openArticle(item.articleId)}
+                onClick={() => {
+                  if (!selected) openArticle(item.articleId);
+                  else if (matchMedia('(max-width:820px)').matches) close();
+                }}
               >
                 <span className="library-item-title">{name}</span>
                 <span className="library-item-meta">

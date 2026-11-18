@@ -5,16 +5,22 @@ export function ArticleSearchForm({
   apply,
   refresh,
   disabled,
+  initialFilters,
+  noMatches,
 }: {
   apply: (filters: ArticleSearchFilters & { term?: string }) => void;
   refresh: () => void;
   disabled: boolean;
+  initialFilters: ArticleSearchFilters & { term?: string };
+  noMatches: boolean;
 }) {
-  const [q, setQ] = useState(''),
-    [tag, setTag] = useState(''),
+  const [q, setQ] = useState(initialFilters.q),
+    [tag, setTag] = useState(initialFilters.tag),
     [message, setMessage] = useState('');
-  const [term, setTerm] = useState('');
-  const [advanced, setAdvanced] = useState(false);
+  const [term, setTerm] = useState(initialFilters.term ?? '');
+  const [advanced, setAdvanced] = useState(
+    !!(initialFilters.q || initialFilters.tag),
+  );
   function search(text: string) {
     const value = text.trim().normalize('NFC');
     if ([...value].length > 100) {
@@ -139,6 +145,20 @@ export function ArticleSearchForm({
           </button>
         </div>
       </form>
+      {noMatches && term && (
+        <button
+          className="text-action"
+          disabled={disabled}
+          onClick={() => {
+            if (ready()) {
+              setTerm('');
+              search('');
+            }
+          }}
+        >
+          清除搜索
+        </button>
+      )}
       {message && <p role="alert">{message}</p>}
     </div>
   );

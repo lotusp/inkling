@@ -7,6 +7,8 @@ import {
   ArticleSnapshot,
   SaveResult,
   WorkspaceInfo,
+  type ArticleShelf,
+  type ArticleSearchFilters,
   type SaveArticleCommand,
 } from '@inkling/contracts';
 import { api, ApiError } from './api';
@@ -27,7 +29,13 @@ import {
   type PendingSave,
   type RecoveryChoice,
 } from './draft-store';
+export interface LibraryView {
+  shelf: ArticleShelf;
+  filters: ArticleSearchFilters & { term?: string };
+}
 export interface ArticleSession {
+  libraryOpen?: boolean;
+  libraryView?: LibraryView;
   focusBody?: boolean;
   workspaceId: string;
   article: ArticleSnapshot | null;

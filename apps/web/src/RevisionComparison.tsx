@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { ArticleDocument } from '@inkling/contracts';
 import { documentChanges, type TextChange } from './document-diff';
 
@@ -38,7 +39,7 @@ export function RevisionComparison({
   before: ArticleDocument;
   after: ArticleDocument;
 }) {
-  const diff = documentChanges(before, after);
+  const diff = useMemo(() => documentChanges(before, after), [before, after]);
   const titleChanged = before.title !== after.title;
   return (
     <section className="revision-comparison" aria-label="版本差异">

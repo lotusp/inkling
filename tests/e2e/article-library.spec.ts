@@ -162,7 +162,7 @@ test.describe('empty library', () => {
     await expect(library(page).getByRole('listitem')).toHaveCount(1);
     await expect(
       page.getByRole('button', { name: '打开：未命名文章', exact: true }),
-    ).toBeDisabled();
+    ).toHaveAttribute('aria-current', 'page');
   });
 });
 test('LIBRARY-FAILURE-013 definitive rejection can be cancelled without abandoning the editor', async ({

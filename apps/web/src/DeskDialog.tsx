@@ -35,6 +35,17 @@ export function DeskDialog({
           if (event.nativeEvent.isComposing) event.preventDefault();
         }
       }}
+      onClick={(event) => {
+        if (blocked || event.target !== event.currentTarget) return;
+        const rect = event.currentTarget.getBoundingClientRect();
+        if (
+          event.clientX < rect.left ||
+          event.clientX > rect.right ||
+          event.clientY < rect.top ||
+          event.clientY > rect.bottom
+        )
+          close();
+      }}
       onCancel={(event) => {
         event.preventDefault();
         if (!blocked) close();

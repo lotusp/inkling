@@ -75,7 +75,9 @@ async function offset(page: Page) {
   return body(page).evaluate((element) => -element.getBoundingClientRect().top);
 }
 async function choose(page: Page, name: string) {
-  await page.getByRole('button', { name: '文章库', exact: true }).click();
+  const library = page.getByRole('button', { name: '文章库', exact: true });
+  if ((await library.getAttribute('aria-expanded')) !== 'true')
+    await library.click();
   await page
     .getByRole('button', { name: '打开：' + name, exact: true })
     .click();

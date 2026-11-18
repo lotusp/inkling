@@ -19,17 +19,20 @@ test('WORKBENCH-EDIT-004 edits Chinese text and basic formatting and preserves i
   const editor = page.getByRole('textbox', { name: '文章正文' });
   await page.getByLabel('文章标题').fill('我的第一篇技术文章');
   await editor.fill('从一次具体的技术选择开始。');
-  await page.getByRole('button', { name: '二级标题', exact: true }).click();
+  await page.getByRole('button', { name: '段落格式…', exact: true }).click();
+  await page.getByRole('button', { name: '小标题', exact: true }).click();
   await expect(editor.locator('h2')).toContainText('技术选择');
-  const outline = page.getByRole('button', { name: '本文大纲' });
+  const outline = page.getByRole('button', { name: '大纲' });
   await outline.click();
   await page
     .getByRole('button', { name: '从一次具体的技术选择开始。', exact: true })
     .click();
   await editor.click();
-  await page.getByRole('button', { name: '二级标题', exact: true }).click();
+  await page.getByRole('button', { name: '段落格式…', exact: true }).click();
+  await page.getByRole('button', { name: '小标题', exact: true }).click();
   await editor.press('ControlOrMeta+A');
-  await page.getByRole('button', { name: '加粗', exact: true }).click();
+  await page.getByRole('button', { name: '段落格式…', exact: true }).click();
+  await page.getByRole('button', { name: '整段加粗', exact: true }).click();
   await expect(editor.locator('strong')).toContainText('技术选择');
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await page.reload();
@@ -109,9 +112,12 @@ test('WORKBENCH-EDIT-004 supports lists and code blocks', async ({ page }) => {
   await page.goto('/');
   const editor = page.getByRole('textbox', { name: '文章正文' });
   await editor.fill('const insight = true;');
-  await page.getByRole('button', { name: '无序列表', exact: true }).click();
+  await page.getByRole('button', { name: '段落格式…', exact: true }).click();
+  await page.getByRole('button', { name: '列表', exact: true }).click();
   await expect(editor.locator('ul li')).toContainText('const insight');
-  await page.getByRole('button', { name: '无序列表', exact: true }).click();
+  await page.getByRole('button', { name: '段落格式…', exact: true }).click();
+  await page.getByRole('button', { name: '列表', exact: true }).click();
+  await page.getByRole('button', { name: '段落格式…', exact: true }).click();
   await page.getByRole('button', { name: '代码块', exact: true }).click();
   await expect(editor.locator('pre code')).toHaveText('const insight = true;');
 });

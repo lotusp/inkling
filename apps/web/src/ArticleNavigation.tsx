@@ -3,7 +3,6 @@ import {
   ArticleSnapshot,
   WorkspaceInfo,
   type ArticleListItem,
-  type ArticleShelf,
 } from '@inkling/contracts';
 import { api, ApiError } from './api';
 import { ArticleLibrary } from './ArticleLibrary';
@@ -11,7 +10,7 @@ import { LibraryArticleOrganizer } from './LibraryArticleOrganizer';
 import { ArticleOrganizer, type OrganizerMode } from './ArticleOrganizer';
 import { ArticleLifecycle, type LifecycleTarget } from './ArticleLifecycle';
 import { ownDraftClient } from './draft-store';
-import type { ArticleSession, useArticle } from './use-article';
+import type { ArticleSession, LibraryView, useArticle } from './use-article';
 type Intent = {
   mutationId: string;
   articleId?: string;
@@ -20,11 +19,13 @@ export function ArticleNavigation({
   article,
   navigate,
   open,
+  initialView,
   close,
   busyChanged,
 }: {
   article: ReturnType<typeof useArticle>;
   open: boolean;
+  initialView?: LibraryView;
   close: () => void;
   busyChanged: (busy: boolean) => void;
   navigate: (session: ArticleSession) => void;
@@ -36,7 +37,9 @@ export function ArticleNavigation({
   const [confirmedMetadata, setConfirmedMetadata] =
     useState<ArticleListItem | null>(null);
   const [lifecycle, setLifecycle] = useState<LifecycleTarget | null>(null);
-  const [libraryState, setLibraryState] = useState<ArticleShelf>('active');
+  const [libraryView, setLibraryView] = useState<LibraryView>(
+    initialView ?? { shelf: 'active', filters: { q: '', tag: '' } },
+  );
   const [libraryGeneration, setLibraryGeneration] = useState(0);
   const [lifecycleMessage, setLifecycleMessage] = useState('');
   const [intent, setIntent] = useState<Intent | null>(null);
@@ -87,6 +90,9 @@ export function ArticleNavigation({
         workspaceId: workspace.workspaceId,
         article: snapshot,
         focusBody: !target.articleId,
+        libraryOpen:
+          !!target.articleId && !matchMedia('(max-width:820px)').matches,
+        libraryView,
       });
     } catch (error) {
       release?.();
@@ -173,8 +179,8 @@ export function ArticleNavigation({
             refreshGeneration={libraryGeneration}
             refreshArticleState={article.refreshState}
             manageState={requestLifecycle}
-            initialState={libraryState}
-            stateChanged={setLibraryState}
+            initialView={libraryView}
+            viewChanged={setLibraryView}
             restoreArticle={(articleId) =>
               requestLifecycle({ articleId, action: 'restore' })
             }
