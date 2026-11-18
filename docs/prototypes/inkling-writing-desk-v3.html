@@ -507,6 +507,26 @@
         padding-bottom: 10px;
         margin-bottom: 14px;
       }
+      .shelves {
+        display: flex;
+        gap: 3px;
+        flex-wrap: wrap;
+        margin-bottom: 9px;
+      }
+      .shelves button {
+        font-size: 12px;
+        padding: 4px 6px;
+      }
+      .shelves [aria-pressed='true'] {
+        background: var(--wash);
+        color: var(--green);
+        font-weight: 600;
+      }
+      .shelf-result {
+        border-left: 2px solid #819784;
+        padding-left: 10px;
+        overflow-wrap: anywhere;
+      }
       .item {
         padding: 13px 0;
         border-bottom: 1px solid var(--line);
@@ -713,7 +733,7 @@
         <div class="inside" id="libraryBody"></div>
       </section>
       <main id="paper">
-        <article class="sheet">
+        <article class="sheet" id="draftSheet">
           <div class="crumb">
             <i></i><span>个人写作</span><span>／</span><span id="genre"></span>
           </div>
@@ -725,6 +745,7 @@
           <div id="blocks"></div>
           <div class="endmark" id="count"></div>
         </article>
+        <article class="sheet" id="shelfSheet" hidden></article>
       </main>
       <aside id="rightRail" aria-label="讨论与版本">
         <header class="rail-head">
@@ -947,7 +968,8 @@
         chat = () => a().chats[0],
         findBlock = (key) => a().blocks.find((x) => x.id === key);
       let tab = '文章',
-        folder = 'active',
+        folder = a().status,
+        shelfResult = '',
         selected = null,
         toolTarget = null,
         compareIds = [],
@@ -1020,6 +1042,69 @@
       }
       function renderPaper() {
         const art = a();
+        const writable = art.status === 'active';
+        $('draftSheet').hidden = !writable;
+        $('shelfSheet').hidden = writable;
+        $('rightToggle').disabled = !writable;
+        for (const name of ['export', 'style'])
+          document.querySelector('.top [data-do="' + name + '"]').disabled =
+            !writable;
+        if (!writable) {
+          $('tool').hidden = true;
+          $('blocks').replaceChildren();
+          const archived = art.status === 'archived',
+            title = esc(art.title || '未命名文章');
+          $('shelfSheet').innerHTML =
+            '<div class="crumb"><i></i>' +
+            (archived ? '已归档 · 只读' : '回收站') +
+            '</div><h1>' +
+            title +
+            '</h1>' +
+            (archived
+              ? btn('archive', '移回草稿，继续编辑', art.id) +
+                '<hr>' +
+                art.blocks
+                  .map(
+                    (b) =>
+                      '<div class="block ' +
+                      b.kind +
+                      (b.bold ? ' strong' : '') +
+                      '">' +
+                      esc(b.text) +
+                      '</div>',
+                  )
+                  .join('') +
+                '<details><summary>版本历史（' +
+                art.versions.length +
+                '）</summary>' +
+                art.versions
+                  .slice()
+                  .reverse()
+                  .map(
+                    (v) =>
+                      '<details class="item"><summary>v' +
+                      v.rev +
+                      ' · ' +
+                      esc(v.label) +
+                      '</summary><div class="preview">' +
+                      esc(
+                        [v.title, ...v.blocks.map((b) => b.text)].join('\n\n'),
+                      ) +
+                      '</div></details>',
+                  )
+                  .join('') +
+                '</details>'
+              : '<p>文章已移入回收站。正文和历史仍然保留。</p>' +
+                btn(
+                  'recover',
+                  '恢复到' +
+                    (art.beforeTrash === 'archived' ? '已归档' : '草稿'),
+                  art.id,
+                  'primary',
+                ));
+          return;
+        }
+        $('shelfSheet').replaceChildren();
         $('title').textContent = art.title;
         $('blocks').innerHTML = art.blocks
           .map(
@@ -1320,11 +1405,12 @@
         lastRail = 'right';
       function syncRails() {
         const focus = document.body.classList.contains('focus');
-        const both = libraryOpen && rightOpen && compact.matches;
+        const canDiscuss = a().status === 'active';
+        const both = libraryOpen && rightOpen && canDiscuss && compact.matches;
         const leftVisible =
           libraryOpen && !focus && (!both || lastRail === 'left');
         const rightVisible =
-          rightOpen && !focus && (!both || lastRail === 'right');
+          canDiscuss && rightOpen && !focus && (!both || lastRail === 'right');
         $('libraryRail').hidden = !leftVisible;
         $('rightRail').hidden = !rightVisible;
         $('libraryToggle').setAttribute('aria-expanded', String(leftVisible));
@@ -1391,7 +1477,11 @@
       });
       function library(next = tab, highlight = '') {
         tab = next;
-        const tabs = ['文章', '灵感', '资料', '大纲'];
+        const tabs =
+          a().status === 'active'
+            ? ['文章', '灵感', '资料', '大纲']
+            : ['文章', '灵感', '资料'];
+        if (!tabs.includes(tab)) tab = '文章';
         let html =
           '<nav class="tabs">' +
           tabs
@@ -1399,52 +1489,79 @@
             .join('') +
           '</nav>';
         if (tab === '文章') {
+          const shelves = {
+            active: '草稿',
+            archived: '已归档',
+            trash: '回收站',
+          };
           html +=
-            '<div class="row"><select id="folder" aria-label="文章状态">' +
-            [
-              ['active', '草稿'],
-              ['archived', '已归档'],
-              ['trash', '回收站'],
-            ]
+            '<nav class="shelves" aria-label="文章位置">' +
+            Object.entries(shelves)
               .map(
-                ([v, t]) =>
-                  '<option value="' +
-                  v +
-                  '" ' +
-                  (folder === v ? 'selected' : '') +
-                  '>' +
-                  t +
-                  '</option>',
+                ([value, label]) =>
+                  '<button data-do="folder" data-key="' +
+                  value +
+                  '" aria-pressed="' +
+                  (value === folder) +
+                  '">' +
+                  label +
+                  ' ' +
+                  store.articles.filter((x) => x.status === value).length +
+                  '</button>',
               )
               .join('') +
-            '</select><span class="grow"></span>' +
-            btn('create', '＋ 新文章') +
-            '</div>';
+            '</nav>';
+          if (shelfResult)
+            html +=
+              '<p class="shelf-result" role="status">' +
+              esc(shelfResult) +
+              '</p>';
+          if (folder === 'active') html += btn('create', '＋ 新文章');
           const list = store.articles.filter((x) => x.status === folder);
-          html +=
-            list
-              .map(
-                (x) =>
-                  '<div class="item"><div class="row">' +
-                  (folder === 'active'
-                    ? btn(
-                        'open',
-                        x.title || '未命名文章',
-                        x.id,
-                        x === a() ? 'active' : '',
-                      )
-                    : esc(x.title || '未命名文章')) +
-                  '</div><details><summary>文章操作</summary><div class="actions">' +
-                  (folder === 'trash'
-                    ? btn('recover', '恢复文章', x.id)
-                    : btn(
-                        'archive',
-                        folder === 'active' ? '归档' : '取消归档',
-                        x.id,
-                      ) + btn('trash', '移入回收站', x.id)) +
-                  '</div></details></div>',
-              )
-              .join('') || '<p class="muted">这里还没有文章。</p>';
+          for (const x of list) {
+            html +=
+              '<div class="item"><div class="row">' +
+              (folder === 'trash'
+                ? esc(x.title || '未命名文章')
+                : btn(
+                    'open',
+                    x.title || '未命名文章',
+                    x.id,
+                    x === a() ? 'active' : '',
+                  )) +
+              '</div>';
+            if (folder === 'trash') {
+              html += btn(
+                'recover',
+                '恢复到' + (x.beforeTrash === 'archived' ? '已归档' : '草稿'),
+                x.id,
+                'text-btn',
+              );
+            } else {
+              if (folder === 'archived')
+                html +=
+                  '<small>只读 · ' + x.versions.length + ' 个版本</small>';
+              html +=
+                '<details><summary>文章操作</summary><div class="actions">' +
+                btn(
+                  'archive',
+                  folder === 'active' ? '归档留存' : '移回草稿',
+                  x.id,
+                ) +
+                btn('trash', '移入回收站', x.id) +
+                '</div></details>';
+            }
+            html += '</div>';
+          }
+          if (!list.length)
+            html +=
+              '<p class="muted">' +
+              {
+                active: '还没有草稿。',
+                archived: '归档的文章会保留在这里，供以后查阅。',
+                trash: '回收站是空的。',
+              }[folder] +
+              '</p>';
         } else if (tab === '灵感') {
           html +=
             '<label for="idea">随手记</label><textarea id="idea" placeholder="记下还没展开的想法"></textarea>' +
@@ -1455,7 +1572,9 @@
                   '<div class="item"><p>' +
                   esc(n) +
                   '</p>' +
-                  btn('insert', '插入正文', i, 'text-btn') +
+                  (a().status === 'active'
+                    ? btn('insert', '插入正文', i, 'text-btn')
+                    : '') +
                   '</div>',
               )
               .join('');
@@ -1469,6 +1588,7 @@
                   '"><label><input type="checkbox" data-src="' +
                   s.id +
                   '" ' +
+                  (a().status === 'active' ? '' : 'disabled ') +
                   (a().attached.includes(s.id) ? 'checked' : '') +
                   '> ' +
                   esc(s.title) +
@@ -1537,13 +1657,27 @@
           x.beforeTrash = x.status;
           x.status = 'trash';
         } else x.status = x.status === 'archived' ? 'active' : 'archived';
-        if (x === a() && x.status !== 'active') {
-          let next = store.articles.find((other) => other.status === 'active');
-          if (!next) {
-            next = article('未命名文章', [block()]);
-            store.articles.push(next);
-          }
-          switchTo(next);
+        folder = x.status;
+        shelfResult =
+          '「' +
+          (x.title || '未命名文章') +
+          '」' +
+          (action === 'trash'
+            ? '已移入回收站，可恢复。'
+            : action === 'recover'
+              ? '已恢复到' + (folder === 'archived' ? '已归档。' : '草稿。')
+              : folder === 'archived'
+                ? '已归档，可只读查阅。'
+                : '已移回草稿，可继续编辑。');
+        if (x === a()) {
+          stop();
+          finishVersion();
+          selected = null;
+          toolTarget = null;
+          compareIds = [];
+          renderPaper();
+          renderChat();
+          $('paper').scrollTop = 0;
         }
         persist();
         library('文章');
@@ -1664,7 +1798,7 @@
           '<div class="item">稿件保存 · ' +
             (storageOk ? '当前浏览器' : '仅当前页') +
             '</div><div class="item">工作空间 · 独立交互原型</div><div class="item">模型与发布 · 本地示例</div><p>' +
-            btn('rescue', '下载当前稿件 JSON') +
+            (a().status === 'trash' ? '' : btn('rescue', '下载当前稿件 JSON')) +
             '</p>',
         );
       }
@@ -1689,10 +1823,7 @@
       }
       document.addEventListener('change', (e) => {
         const el = e.target;
-        if (el.id === 'folder') {
-          folder = el.value;
-          library();
-        } else if (el.dataset.src) {
+        if (el.dataset.src) {
           const key = el.dataset.src;
           a().attached = el.checked
             ? [...new Set([...a().attached, key])]
@@ -1734,6 +1865,11 @@
           case 'library':
             library('文章');
             break;
+          case 'folder':
+            folder = key;
+            shelfResult = '';
+            library('文章');
+            break;
           case 'tab':
             library(key);
             break;
@@ -1745,6 +1881,8 @@
             library('资料', key);
             break;
           case 'create': {
+            folder = 'active';
+            shelfResult = '';
             const x = article('未命名文章', [block()]);
             store.articles.unshift(x);
             switchTo(x);
@@ -1767,7 +1905,11 @@
               '移入回收站？',
               '<p>' +
                 esc(store.articles.find((x) => x.id === key).title) +
-                ' 可以从回收站恢复。</p>' +
+                ' 将从当前列表移出，恢复后会回到' +
+                (store.articles.find((x) => x.id === key).status === 'archived'
+                  ? '已归档'
+                  : '草稿') +
+                '。正文和版本都会保留。</p>' +
                 btn('confirmtrash', '移入回收站', key, 'primary') +
                 btn('library', '取消'),
             );
