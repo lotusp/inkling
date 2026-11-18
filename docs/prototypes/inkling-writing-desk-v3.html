@@ -128,12 +128,13 @@
         flex-wrap: wrap;
       }
       .wordmark {
-        width: 81px;
-        height: 24px;
+        width: 112px;
+        height: 32px;
+        flex: none;
         object-fit: contain;
       }
       .top {
-        height: 50px;
+        height: 56px;
         padding: 0 clamp(12px, 2.2vw, 36px);
         border-bottom: 1px solid var(--line);
         background: #fdfdf9;
@@ -157,11 +158,53 @@
         background: #a47635;
       }
       .layout {
-        height: calc(100dvh - 50px);
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) clamp(335px, 31vw, 465px);
+        height: calc(100dvh - 56px);
+        display: flex;
       }
+      #libraryRail {
+        width: clamp(240px, 21vw, 306px);
+        flex: none;
+        min-width: 0;
+        overflow: auto;
+        border-right: 1px solid var(--line);
+        background: #f8f9f4;
+      }
+      #libraryRail > header,
+      .rail-head {
+        height: 56px;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      #libraryRail > header {
+        position: sticky;
+        top: 0;
+        background: #f8f9f4;
+        z-index: 1;
+      }
+      #libraryRail h2 {
+        font-size: 15px;
+        margin: 0;
+      }
+      #rightRail {
+        width: clamp(320px, 31vw, 465px);
+        flex: none;
+      }
+      #rightDetail {
+        overflow: auto;
+        min-height: 0;
+      }
+      .rail-head [aria-pressed='true'],
+      .top [aria-expanded='true'] {
+        color: var(--green);
+        background: var(--wash);
+      }
+      .rail-head button {
+        font-size: 13px;
+      }
+
       main {
+        flex: 1;
+        min-width: 0;
         overflow: auto;
         scrollbar-gutter: stable;
       }
@@ -256,25 +299,7 @@
         border-left: 1px solid var(--line);
         background: #f4f6f0;
       }
-      .chat-head {
-        min-height: 57px;
-        padding: 0 18px;
-        border-bottom: 1px solid var(--line);
-      }
-      .chat-head h2 {
-        font-size: 15px;
-        margin: 0;
-      }
-      .chat-head small {
-        font-size: 11px;
-      }
-      .glyph {
-        font:
-          italic 27px Georgia,
-          serif;
-        color: var(--green);
-        margin-right: 2px;
-      }
+
       .thread {
         flex: 1;
         min-height: 0;
@@ -436,18 +461,6 @@
       dialog::backdrop {
         background: #26312338;
       }
-      dialog.drawer {
-        height: 100dvh;
-        max-height: 100dvh;
-        width: min(390px, 94vw);
-        margin: 0;
-        border-radius: 0;
-        border-width: 0 1px 0 0;
-      }
-      dialog.right {
-        margin-left: auto;
-        border-width: 0 0 0 1px;
-      }
       dialog header {
         position: sticky;
         top: 0;
@@ -553,9 +566,6 @@
       body.focus .sheet {
         margin-top: 72px;
       }
-      .mobile {
-        display: none;
-      }
       .notice {
         position: fixed;
         bottom: 20px;
@@ -569,24 +579,11 @@
         pointer-events: none;
       }
       @media (max-width: 820px) {
-        .mobile {
-          display: inline-flex;
+        .layout > :is(#libraryRail, #rightRail) {
+          width: 100%;
+          border: 0;
         }
-        .layout {
-          display: block;
-        }
-        main {
-          height: 100%;
-        }
-        aside {
-          display: none;
-        }
-        body.talking aside {
-          display: flex;
-          height: 100%;
-          border-left: 0;
-        }
-        body.talking main {
+        body:has(#libraryRail:not([hidden]), #rightRail:not([hidden])) main {
           display: none;
         }
         .sheet {
@@ -599,9 +596,7 @@
         .long {
           display: none;
         }
-        .chat-head {
-          min-height: 48px;
-        }
+
         .thread {
           padding-top: 18px;
         }
@@ -615,7 +610,7 @@
           display: none;
         }
         .wordmark {
-          width: 66px;
+          width: 99px;
         }
         body.focus main {
           display: block;
@@ -634,7 +629,13 @@
           padding: 4px;
         }
         .wordmark {
-          width: 59px;
+          width: 87px;
+        }
+        .top {
+          gap: 2px;
+        }
+        .top .right-label {
+          display: none;
         }
         .top .save-label {
           display: none;
@@ -650,18 +651,18 @@
       <img class="wordmark" id="logo" alt="Inkling" /><span
         class="divider"
       ></span
-      ><button class="with" data-do="library" aria-label="文章库">
+      ><button
+        class="with"
+        id="libraryToggle"
+        data-do="toggle-library"
+        aria-label="文章库"
+        aria-expanded="false"
+        aria-controls="libraryRail"
+      >
         <i data-icon="library"></i>文章库</button
       ><span class="grow"></span
       ><button class="with quiet" data-do="status" aria-label="保存状态">
         <i class="dot"></i><span class="save-label">本页草稿</span></button
-      ><button
-        class="ib"
-        data-do="history"
-        aria-label="版本历史"
-        title="版本历史"
-      >
-        <i data-icon="clock"></i></button
       ><button
         class="ib"
         data-do="style"
@@ -671,8 +672,17 @@
         <i data-icon="sliders"></i></button
       ><button class="with quiet" data-do="export" aria-label="导出与发布">
         <i data-icon="export"></i><span class="long">导出与发布</span></button
-      ><button class="ib mobile" data-do="talk" aria-label="切换讨论">
-        <i data-icon="chat"></i></button
+      ><button
+        class="with"
+        id="rightToggle"
+        data-do="talk"
+        aria-label="讨论与版本"
+        title="讨论与版本"
+        aria-expanded="false"
+        aria-controls="rightRail"
+      >
+        <i data-icon="chat"></i
+        ><span class="right-label">讨论与版本</span></button
       ><button
         class="ib"
         data-do="focus"
@@ -687,6 +697,21 @@
       ><button data-do="unfocus">退出专注</button>
     </div>
     <div class="layout">
+      <section id="libraryRail" hidden aria-label="文章库">
+        <header>
+          <h2>文章库</h2>
+          <span class="grow"></span
+          ><button
+            class="ib"
+            data-do="hide-library"
+            aria-label="收起文章库"
+            title="收起文章库"
+          >
+            <i data-icon="close"></i>
+          </button>
+        </header>
+        <div class="inside" id="libraryBody"></div>
+      </section>
       <main id="paper">
         <article class="sheet">
           <div class="crumb">
@@ -701,29 +726,40 @@
           <div class="endmark" id="count"></div>
         </article>
       </main>
-      <aside aria-label="文章讨论">
-        <header class="chat-head">
-          <span class="glyph" aria-hidden="true">ℐ</span>
-          <h2>讨论</h2>
-          <small>示例对话</small><span class="grow"></span
-          ><button
+      <aside id="rightRail" aria-label="讨论与版本">
+        <header class="rail-head">
+          <button id="discussionTab" data-do="discussion">讨论</button>
+          <button id="versionsTab" data-do="history">版本历史</button>
+          <span class="grow"></span>
+          <div class="row" id="discussionActions">
+            <small>示例</small>
+            <button
+              class="ib"
+              data-do="chats"
+              aria-label="讨论历史"
+              title="讨论历史"
+            >
+              <i data-icon="clock"></i>
+            </button>
+            <button
+              class="ib"
+              data-do="newchat"
+              aria-label="新讨论"
+              title="新讨论"
+            >
+              <i data-icon="plus"></i>
+            </button>
+          </div>
+          <button
             class="ib"
-            data-do="chats"
-            aria-label="讨论历史"
-            title="讨论历史"
+            data-do="back"
+            aria-label="收起右栏"
+            title="收起右栏"
           >
-            <i data-icon="clock"></i></button
-          ><button
-            class="ib"
-            data-do="newchat"
-            aria-label="新讨论"
-            title="新讨论"
-          >
-            <i data-icon="plus"></i></button
-          ><button class="ib mobile" data-do="back" aria-label="返回正文">
             <i data-icon="close"></i>
           </button>
         </header>
+        <section id="rightDetail" class="inside" hidden></section>
         <section id="thread" class="thread" aria-label="当前讨论"></section>
         <div class="compose">
           <div class="quick">
@@ -910,8 +946,7 @@
       const a = () => store.articles.find((x) => x.id === store.active),
         chat = () => a().chats[0],
         findBlock = (key) => a().blocks.find((x) => x.id === key);
-      let panelName = '',
-        tab = '文章',
+      let tab = '文章',
         folder = 'active',
         selected = null,
         toolTarget = null,
@@ -947,6 +982,7 @@
         const draft = unsnapped;
         draft.versions.push(snapshot(draft, label || '正文编辑'));
         unsnapped = null;
+        if (rightView === 'history') renderVersions();
         persist();
       }
       function changed(label) {
@@ -968,6 +1004,10 @@
           (sum, b) => sum + b.text.replace(/\s/g, '').length,
           0,
         );
+        const entry = $('libraryBody').querySelector(
+          '[data-do="open"][data-key="' + a().id + '"]',
+        );
+        if (entry) entry.textContent = a().title || '未命名文章';
         $('genre').textContent = a().style;
         $('stylechip').textContent = a().style + ' ⌄';
         $('count').textContent = n + ' 字';
@@ -1009,7 +1049,11 @@
       function locate(key) {
         if (!findBlock(key)) return;
         closePanel();
-        document.body.classList.remove('talking');
+        if (phone.matches) {
+          rightOpen = false;
+          libraryOpen = false;
+          syncRails();
+        }
         mark(key);
         document
           .querySelector('[data-block="' + key + '"]')
@@ -1017,7 +1061,7 @@
       }
       function showTalk() {
         document.body.classList.remove('focus');
-        document.body.classList.add('talking');
+        openRight('discussion');
       }
       function btn(action, label, key = '', cls = 'lined') {
         return (
@@ -1268,14 +1312,66 @@
         link.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
+      const phone = matchMedia('(max-width:820px)');
+      const compact = matchMedia('(max-width:1100px)');
+      let libraryOpen = false,
+        rightOpen = !phone.matches,
+        rightView = 'discussion',
+        lastRail = 'right';
+      function syncRails() {
+        const focus = document.body.classList.contains('focus');
+        const both = libraryOpen && rightOpen && compact.matches;
+        const leftVisible =
+          libraryOpen && !focus && (!both || lastRail === 'left');
+        const rightVisible =
+          rightOpen && !focus && (!both || lastRail === 'right');
+        $('libraryRail').hidden = !leftVisible;
+        $('rightRail').hidden = !rightVisible;
+        $('libraryToggle').setAttribute('aria-expanded', String(leftVisible));
+        $('rightToggle').setAttribute('aria-expanded', String(rightVisible));
+        $('discussionTab').setAttribute(
+          'aria-pressed',
+          String(rightView !== 'history'),
+        );
+        $('versionsTab').setAttribute(
+          'aria-pressed',
+          String(rightView === 'history'),
+        );
+        for (const el of document.querySelectorAll(
+          '#discussionActions,#thread,.compose',
+        ))
+          el.hidden = rightView !== 'discussion';
+        $('rightDetail').hidden = rightView === 'discussion';
+      }
+      phone.addEventListener('change', () => {
+        rightOpen = !phone.matches;
+        syncRails();
+      });
+      compact.addEventListener('change', syncRails);
+      function hideLibrary() {
+        libraryOpen = false;
+        syncRails();
+        $('libraryToggle').focus();
+      }
+      function hideRight() {
+        rightOpen = false;
+        if (phone.matches) libraryOpen = false;
+        syncRails();
+        $('rightToggle').focus();
+      }
+      function openRight(view) {
+        closePanel();
+        rightOpen = true;
+        rightView = view;
+        lastRail = 'right';
+        syncRails();
+      }
       function closePanel() {
         if ($('panel').open) $('panel').close();
-        panelName = '';
       }
-      function panel(name, title, html, side = '') {
-        panelName = name;
+      function panel(name, title, html) {
         const d = $('panel');
-        d.className = side ? 'drawer ' + side : '';
+        d.dataset.view = name;
         $('paneltitle').textContent = title;
         $('inside').innerHTML = html;
         $('tool').hidden = true;
@@ -1397,7 +1493,11 @@
               .join('') || '<p class="muted">文章还没有小标题。</p>';
           html += btn('outline', '和 Inkling 整理结构', '', 'primary');
         }
-        panel('library', '写作资料库', html, 'left');
+        closePanel();
+        $('libraryBody').innerHTML = html;
+        libraryOpen = true;
+        lastRail = 'left';
+        syncRails();
         if (highlight) {
           const el = $('src-' + highlight);
           if (el) {
@@ -1418,6 +1518,14 @@
         closePanel();
         renderPaper();
         renderChat();
+        if (libraryOpen) {
+          if (phone.matches) {
+            libraryOpen = false;
+            rightOpen = false;
+          } else library(tab);
+        }
+        rightView = 'discussion';
+        syncRails();
         $('paper').scrollTop = 0;
         persist();
       }
@@ -1442,6 +1550,10 @@
       }
       function historyPanel() {
         finishVersion();
+        openRight('history');
+        renderVersions();
+      }
+      function renderVersions() {
         const versions = a().versions;
         let html = versions
           .slice()
@@ -1478,7 +1590,7 @@
               })
               .join('');
         }
-        panel('history', '版本历史', html, 'right');
+        $('rightDetail').innerHTML = html;
       }
       function stylePanel() {
         const memo = '记录技术取舍时，把适用条件和反例一起写下。';
@@ -1557,9 +1669,10 @@
         );
       }
       function chatHistory() {
-        panel(
-          'chats',
-          '讨论历史',
+        openRight('chats');
+        $('rightDetail').innerHTML =
+          btn('discussion', '‹ 返回讨论', '', 'text-btn') +
+          '<h3>讨论历史</h3>' +
           a()
             .chats.map(
               (c) =>
@@ -1572,9 +1685,7 @@
                 ) +
                 '</div>',
             )
-            .join(''),
-          'right',
-        );
+            .join('');
       }
       document.addEventListener('change', (e) => {
         const el = e.target;
@@ -1603,6 +1714,23 @@
           op = trigger.dataset.do,
           art = a();
         switch (op) {
+          case 'toggle-library':
+            if (!$('libraryRail').hidden) hideLibrary();
+            else if (
+              ['资料', '灵感'].includes(tab) &&
+              $('libraryBody').childElementCount
+            ) {
+              libraryOpen = true;
+              lastRail = 'left';
+              syncRails();
+            } else library();
+            break;
+          case 'hide-library':
+            hideLibrary();
+            break;
+          case 'discussion':
+            showTalk();
+            break;
           case 'library':
             library('文章');
             break;
@@ -1916,26 +2044,37 @@
             break;
           case 'focus':
             closePanel();
-            document.body.classList.remove('talking');
             document.body.classList.add('focus');
+            syncRails();
             break;
           case 'unfocus':
             document.body.classList.remove('focus');
+            syncRails();
             break;
           case 'talk':
-            document.body.classList.toggle('talking');
+            if (!$('rightRail').hidden) hideRight();
+            else openRight(rightView);
             break;
           case 'back':
-            document.body.classList.remove('talking');
+            hideRight();
             break;
         }
       });
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !$('panel').open) {
-          document.body.classList.remove('focus', 'talking');
+          if (document.body.classList.contains('focus')) {
+            document.body.classList.remove('focus');
+            syncRails();
+          } else if (
+            !$('libraryRail').hidden &&
+            ($('rightRail').hidden || lastRail === 'left')
+          )
+            hideLibrary();
+          else if (!$('rightRail').hidden) hideRight();
           $('tool').hidden = true;
         }
       });
+      syncRails();
       renderPaper();
       renderChat();
       persist();
