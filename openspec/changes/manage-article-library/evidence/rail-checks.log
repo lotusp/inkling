@@ -407,3 +407,6 @@ ok 4 - 旧笔记升级只出现一次；保存失败时专注模式也能下载�
 # skipped 0
 # todo 0
 # duration_ms 3711.73275
+
+Local docs, plan, strict validation and diff check, exit code 0
+84 Markdown files checked with zero local link errors. Active change passed the structure and strict OpenSpec checks.

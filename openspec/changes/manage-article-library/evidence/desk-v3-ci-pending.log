@@ -1,3 +1,4 @@
 Tested implementation: e938057ea10f783632642ccc438d6bd9b1f2e8a8
 Status: not-run. The V3 changes are local to the development branch.
 Prior Linux results in linux-ci.log cover 62a4cf4.
+Panel parity implementation: 5c664e6d45477073b716c50176c61bf518603ddc; Linux CI not run for this local commit.
