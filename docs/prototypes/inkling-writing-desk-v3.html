@@ -994,8 +994,8 @@
       </div>
     </header>
     <div class="capsule">
-      <span class="save-state" hidden
-        ><i class="dot"></i> <span class="save-label"></span></span
+      <button class="save-state" data-do="status" hidden>
+        <i class="dot"></i> <span class="save-label"></span></button
       ><button data-do="unfocus">退出专注</button>
     </div>
     <div class="layout">
@@ -2000,7 +2000,10 @@
         $('libraryRail').hidden = !leftVisible;
         $('rightRail').hidden = !rightVisible;
         $('libraryToggle').setAttribute('aria-expanded', String(leftVisible));
-        $('rightToggle').setAttribute('aria-expanded', String(rightVisible));
+        $('rightToggle').setAttribute(
+          'aria-expanded',
+          String(rightVisible && rightView !== 'history'),
+        );
         $('railTitle').textContent = {
           history: '版本历史',
           chats: '讨论历史',
@@ -3466,10 +3469,8 @@
           if (!e.isComposing && !composing && !$('panel').open) manualSave();
           return;
         }
-        if (
-          e.key === 'Escape' &&
-          document.querySelector('.library-popup:popover-open')
-        )
+        if (e.isComposing || composing || e.keyCode === 229) return;
+        if (e.key === 'Escape' && document.querySelector(':popover-open'))
           return;
         if (e.key === 'Escape' && !$('panel').open) {
           if (document.body.classList.contains('focus')) {

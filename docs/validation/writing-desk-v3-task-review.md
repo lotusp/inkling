@@ -1,6 +1,6 @@
 # 写作台 V3 原型评审
 
-2026-11-18，评审对象为提交 `11d2f66` 的[写作台 V3](../prototypes/inkling-writing-desk-v3.html)。本次走查了[首屏](../prototypes/inkling-writing-desk-v3.png)、[文章库](../prototypes/inkling-writing-desk-v3-library.png)和[版本比较](../prototypes/inkling-writing-desk-v3-history.png)，并用临时数据在 Node 中执行了原型的切稿、生成候选、采用、搜索和恢复处理逻辑。页面元素使用内存替身，未连接个人稿件、模型或博客。本地文件受内置浏览器访问限制，本轮未做浏览器点测、真实输入法测试或作者访谈。
+2026-11-18，评审对象为提交 `11d2f66` 的[写作台 V3](../prototypes/inkling-writing-desk-v3.html)。本次走查了[首屏](evidence/writing-desk-v3-11d2f66/inkling-writing-desk-v3.png)、[文章库](evidence/writing-desk-v3-11d2f66/inkling-writing-desk-v3-library.png)和[版本比较](evidence/writing-desk-v3-11d2f66/inkling-writing-desk-v3-history.png)，并用临时数据在 Node 中执行了原型的切稿、生成候选、采用、搜索和恢复处理逻辑。页面元素使用内存替身，未连接个人稿件、模型或博客。本地文件受内置浏览器访问限制，本轮未做浏览器点测、真实输入法测试或作者访谈。
 
 **结论：先修选区和撤回，再修切稿，最后调整版本入口。** 三项任务中，前两项会让作者重写或重找刚才的内容，第三项能完成，但要求作者知道版本放在哪里、怎样识别日期。
 

@@ -9,6 +9,8 @@
 
 ### 当前界面
 
+[文章库](inkling-writing-desk-v3-library.png) · [素材](inkling-writing-desk-v3-materials.png) · [本文大纲](inkling-writing-desk-v3-outline.png) · [版本比较](inkling-writing-desk-v3-history.png) · [窄屏文章库](inkling-writing-desk-v3-mobile.png)
+
 首次打开直接显示稿纸。点「文章库」切换文章或看素材，点标题旁的「大纲」跳到对应章节，点「讨论」展开这篇文章的会话。再次切稿时，讨论输入草稿按会话留存。文章菜单「⋯」中有版本历史、导出文件、模拟发布、写作偏好、专注与保存状态。
 
 - **文章**：直接搜标题或标签，在「写作中」下拉框切换范围。行末「⋯」提供重命名、标签、归档和移入回收站。归档列表中的其他稿件后仍留在原范围，可撤销。回收站按原状态恢复。
@@ -21,7 +23,7 @@
 
 原型使用示例讨论、研究和博客发布，适合用演示内容体验。浏览器数据沿用原 V3 存储键。正式产品行为见 Living Spec；C03 真实输入法验收单独记录。
 
-交互回归入口：`node --test tests/prototypes/writing-desk.test.cjs`。测试在隔离的 Chromium 浏览器上下文中运行。
+交互回归入口：`node --test tests/prototypes/writing-desk.test.mjs`。测试在隔离的 Chromium 浏览器上下文中运行。本次 4 组回归通过，覆盖 1360 像素桌面和 375 像素窄屏、旧笔记迁移，以及专注模式下存储失败时下载最新正文。
 
 ## 上一版 · V2
 
