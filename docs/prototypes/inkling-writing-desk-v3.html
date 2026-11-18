@@ -21,6 +21,9 @@
         box-sizing: border-box;
       }
       body {
+        display: flex;
+        flex-direction: column;
+        height: 100dvh;
         margin: 0;
         color: var(--ink);
         background: var(--paper);
@@ -134,6 +137,7 @@
         object-fit: contain;
       }
       .top {
+        flex: none;
         height: 56px;
         padding: 0 clamp(12px, 2.2vw, 36px);
         border-bottom: 1px solid var(--line);
@@ -156,18 +160,22 @@
         width: 20px;
         height: 20px;
       }
-      .dot {
-        display: inline-block;
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #63846d;
+      #saveFailure {
+        flex: none;
+        justify-content: center;
+        padding: 5px 12px;
+        background: #fff3da;
+        color: #62451e;
       }
-      .dot.pending {
-        background: #a47635;
+      #saveFailure button {
+        text-decoration: underline;
+      }
+      body:has(#saveFailure:not([hidden])) .notice {
+        bottom: 60px;
       }
       .layout {
-        height: calc(100dvh - 56px);
+        flex: 1;
+        min-height: 0;
         display: flex;
       }
       #libraryRail {
@@ -767,7 +775,6 @@
         display: none;
       }
       body.focus .layout {
-        height: 100dvh;
         display: block;
       }
       body.focus main {
@@ -846,14 +853,6 @@
         }
         .top .right-label {
           display: none;
-        }
-        .top .save-state {
-          position: absolute;
-          top: 57px;
-          right: 4px;
-          z-index: 2;
-          background: var(--paper, #fff);
-          font-size: 11px;
         }
         .sheet {
           width: calc(100% - 38px);
@@ -968,13 +967,6 @@
         <i data-icon="library"></i>文章库</button
       ><span class="grow"></span
       ><button
-        class="with quiet save-state"
-        data-do="status"
-        aria-label="保存状态"
-        hidden
-      >
-        <i class="dot"></i><span class="save-label">本页草稿</span></button
-      ><button
         class="ib"
         id="rightToggle"
         data-do="talk"
@@ -999,14 +991,11 @@
         <button data-do="blog">发布到博客…</button>
         <hr />
         <button data-do="style">写作偏好</button
-        ><button data-do="focus">专注写作</button
-        ><button data-do="status">保存状态</button>
+        ><button data-do="focus">专注写作</button>
       </div>
     </header>
     <div class="capsule">
-      <button class="save-state" data-do="status" hidden>
-        <i class="dot"></i> <span class="save-label"></span></button
-      ><button data-do="unfocus">退出专注</button>
+      <button data-do="unfocus">退出专注</button>
     </div>
     <div class="layout">
       <section id="libraryRail" hidden aria-label="文章库">
@@ -1126,6 +1115,10 @@
           </form>
         </div>
       </aside>
+    </div>
+    <div id="saveFailure" class="row" hidden>
+      <span role="alert">草稿未保存</span>
+      <button data-do="rescue">下载备份</button>
     </div>
     <nav id="tool" class="tool" hidden aria-label="段落操作">
       <button data-do="discuss">问问闻一</button>
@@ -1295,44 +1288,10 @@
         toastTimer,
         typingTimer,
         checkpointTimer,
-        feedbackTimer,
-        feedback = '',
         storageOk = true;
       const minute = 60000,
         backupInterval = 30 * minute,
         automaticLimit = 10;
-      function showStatus() {
-        const label = storageOk ? feedback : '保存失败 · 仅在本页';
-        document.querySelectorAll('.save-state').forEach((el) => {
-          el.hidden = !label;
-          el.title = label;
-          el.setAttribute('aria-label', label || '保存状态');
-          el.querySelector('.save-label').textContent = label;
-          el.querySelector('.dot').classList.toggle(
-            'pending',
-            !storageOk || feedback === '编辑中',
-          );
-        });
-      }
-      function writingFeedback(message) {
-        clearTimeout(feedbackTimer);
-        feedback = message;
-        showStatus();
-        if (message)
-          feedbackTimer = setTimeout(
-            () => {
-              writingFeedback(message === '编辑中' ? '草稿已暂存' : '');
-              if (
-                message === '编辑中' &&
-                rightView === 'history' &&
-                comparison &&
-                a().status === 'active'
-              )
-                renderVersions();
-            },
-            message === '编辑中' ? 900 : 2000,
-          );
-      }
       function persist() {
         try {
           localStorage.setItem(storageKey, JSON.stringify(store));
@@ -1340,7 +1299,7 @@
         } catch {
           storageOk = false;
         }
-        showStatus();
+        $('saveFailure').hidden = storageOk;
       }
       function toast(text, undo) {
         undoAction = undo || null;
@@ -1531,7 +1490,7 @@
         draft.modified = now;
         draft.rev++;
         persist();
-        writingFeedback('编辑中');
+        if (rightView === 'history' && comparison) renderVersions();
         scheduleCheckpoints();
         meta();
         renderProposal();
@@ -1567,9 +1526,8 @@
         delete draft.writing;
         persist();
         scheduleCheckpoints();
-        if (storageOk) writingFeedback('版本已保存');
         if (rightView === 'history') renderVersions();
-        if (storageOk) toast(versionId(v));
+        if (storageOk) toast('版本已保存 · ' + versionId(v));
       }
       function meta() {
         $('rewriteSelected').hidden = !selected;
@@ -2340,7 +2298,6 @@
         stop();
         store.active = x.id;
         versionQuery = '';
-        writingFeedback('');
         selected = null;
         toolTarget = null;
         toolSpan = null;
@@ -2487,7 +2444,6 @@
         let html = !readOnly
           ? '<div class="version-tools">' +
             btn('manual-save', '保存版本', '', 'primary') +
-            btn('status', '草稿保存状态', '', 'text-btn') +
             '</div>'
           : '';
         if (comparison)
@@ -2797,17 +2753,6 @@
             '" disabled>模拟' +
             (x.published ? '更新' : '发布') +
             '</button>',
-        );
-      }
-      function statusPanel() {
-        panel(
-          'status',
-          '工作台状态',
-          '<div class="item">稿件保存 · ' +
-            (storageOk ? '当前浏览器' : '仅当前页') +
-            '</div><div class="item">工作空间 · 独立交互原型</div><div class="item">模型与发布 · 本地示例</div><p>' +
-            (a().status === 'trash' ? '' : btn('rescue', '下载当前稿件 JSON')) +
-            '</p>',
         );
       }
       function chatHistory() {
@@ -3358,8 +3303,8 @@
             keepSnapshot(art, '恢复自「' + versionId(v) + '」', 'milestone');
             delete art.writing;
             scheduleCheckpoints();
-            writingFeedback('版本已恢复');
             persist();
+            if (storageOk) toast('版本已恢复');
             comparison = null;
             renderPaper();
             renderChat();
@@ -3416,9 +3361,6 @@
               if (libraryOpen && tab === '文章') library(tab);
               exportPanel();
             }
-            break;
-          case 'status':
-            statusPanel();
             break;
           case 'rescue':
             download(

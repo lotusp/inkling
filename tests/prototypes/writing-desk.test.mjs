@@ -95,7 +95,9 @@ test('选句改写只替换选区，保留修改前稿并可撤销、恢复', as
   await button(p, '撤销').click();
   await expect(block).toHaveText(original);
   await button(p, '文章菜单').click();
+  await expect(button(p, '保存状态')).toHaveCount(0);
   await button(p, '版本历史').click();
+  await expect(button(p, '草稿保存状态')).toHaveCount(0);
   await expect(button(p, '闻一 · AI 写作助手')).toHaveAttribute(
     'aria-expanded',
     'false',
@@ -172,19 +174,33 @@ test('旧笔记升级只出现一次；保存失败时专注模式也能下载�
     p.locator('#libraryBody .source-row').filter({ hasText: '来自旧版的想法' }),
   ).toHaveCount(1);
   await button(p, '收起文章库').click();
-  await button(p, '文章菜单').click();
-  await button(p, '专注写作').click();
+  const backup = button(p, '下载备份');
+  await expect(backup).toBeHidden();
+  const originalSetItem = await p.evaluateHandle(
+    () => Storage.prototype.setItem,
+  );
   await p.evaluate(() => {
-    globalThis.Storage.prototype.setItem = () => {
+    Storage.prototype.setItem = () => {
       throw new Error('simulated quota');
     };
   });
   await p.locator('.block').first().fill('尚未写入存储的句子。');
-  await button(p, '保存失败 · 仅在本页').click();
+  await expect(p.getByText('草稿未保存', { exact: true })).toBeVisible();
+  await expect(backup).toBeVisible();
+  await button(p, '文章菜单').click();
+  await button(p, '专注写作').click();
   const downloaded = p.waitForEvent('download');
-  await button(p, '下载当前稿件 JSON').click();
+  await backup.click();
   const rescue = JSON.parse(
     readFileSync(await (await downloaded).path(), 'utf8'),
   );
   assert.equal(rescue.blocks[0].text, '尚未写入存储的句子。');
+  await expect(backup).toBeVisible();
+  await p.evaluate((original) => {
+    Storage.prototype.setItem = original;
+  }, originalSetItem);
+  await p.locator('.block').first().fill('已恢复写入。');
+  await expect(backup).toBeHidden();
+  await p.reload();
+  await expect(p.locator('.block').first()).toHaveText('已恢复写入。');
 });
