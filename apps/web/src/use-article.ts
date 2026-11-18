@@ -12,6 +12,7 @@ import {
 import { api, ApiError } from './api';
 import { connectWorkspace } from './access';
 import { useArticleState } from './use-article-state';
+import { useArticlePosition } from './use-article-position';
 import { downloadRescue } from './draft-rescue';
 import { inspectConflict } from './conflict';
 import {
@@ -110,6 +111,27 @@ export function useArticle(
     busy = useRef(false),
     timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined),
     dirtySince = useRef<number | null>(null);
+  const {
+    open: openPosition,
+    flush: flushPosition,
+    unavailable: positionUnavailable,
+  } = useArticlePosition(
+    editor,
+    () => ({
+      article: head.current,
+      workspaceId: identity.current?.workspaceId,
+      clean:
+        valid.current &&
+        !choosing.current &&
+        !conflicted.current &&
+        !inFlight.current &&
+        editSeq.current === savedSeq.current,
+      composing: composing.current || !!editor?.view.composing,
+      navigating: navigating.current,
+    }),
+    snapshot?.headRevisionId,
+    status === 'clean',
+  );
   titleRef.current = title;
   const persist = useCallback((): Promise<boolean> => {
     if (!identity.current || !head.current || !latest.current) {
@@ -211,6 +233,7 @@ export function useArticle(
             choosing.current = choices.length > 0;
             setRecoveries(choices);
             display(article);
+            openPosition(workspace.workspaceId, article, choices.length === 0);
           }
         } else setStatus('empty');
       } catch (error) {
@@ -225,7 +248,15 @@ export function useArticle(
     return () => {
       active = false;
     };
-  }, [connected, editor, display, loadAttempt, initial, checkState]);
+  }, [
+    connected,
+    editor,
+    display,
+    loadAttempt,
+    initial,
+    checkState,
+    openPosition,
+  ]);
   const create = useCallback(async () => {
     try {
       setStatus('loading');
@@ -235,14 +266,17 @@ export function useArticle(
         }),
       );
       await checkState(initial.articleId);
-      display(
-        ArticleSnapshot.parse(await api('/api/articles/' + initial.articleId)),
+      const current = ArticleSnapshot.parse(
+        await api('/api/articles/' + initial.articleId),
       );
+      display(current);
+      if (identity.current)
+        openPosition(identity.current.workspaceId, current, true);
     } catch (error) {
       setStatus('error');
       setMessage(error instanceof Error ? error.message : '创建失败。');
     }
-  }, [display, checkState]);
+  }, [display, checkState, openPosition]);
   const save = useCallback(
     async (forNavigation = false) => {
       if (navigating.current && !forNavigation) return;
@@ -1086,13 +1120,22 @@ export function useArticle(
           editor?.view.composing
         )
           throw new Error('输入已变化，请完成选词后重新切换。');
+        flushPosition();
         return release;
       } catch (error) {
         release();
         throw error;
       }
     },
-    [editor, navigationState, persist, resetConfirmation, save, accessState],
+    [
+      editor,
+      navigationState,
+      persist,
+      resetConfirmation,
+      save,
+      accessState,
+      flushPosition,
+    ],
   );
   const refreshState = useCallback(async () => {
     if (!head.current) return;
@@ -1112,6 +1155,7 @@ export function useArticle(
     }
   }, [editor, checkState]);
   return {
+    positionUnavailable,
     articleState,
     stateReadOnly,
     refreshState,

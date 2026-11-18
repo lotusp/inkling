@@ -233,6 +233,11 @@ function Workbench({
                 )}
               </section>
             )}
+            {article.positionUnavailable && (
+              <p className="backup-notice" role="status">
+                编辑位置无法保留，正文保存不受影响。
+              </p>
+            )}
             {article.snapshot && <HistoryCapacity article={article.snapshot} />}
             {article.damagedArticleId && (
               <DamagedArticlePanel articleId={article.damagedArticleId} />

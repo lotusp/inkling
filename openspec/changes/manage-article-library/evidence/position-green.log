@@ -1,0 +1,45 @@
+Command: fnm exec --using 22.22.2 corepack pnpm test:e2e tests/e2e/article-position.spec.ts --workers=4
+Exit code: 0
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-position.spec.ts --workers=4
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2259 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-C6ThjMeS.css   13.54 kB │ gzip:   3.54 kB
+apps/web/dist/assets/index-DLk6pGBb.js   798.55 kB │ gzip: 247.27 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 345ms
+
+Running 7 tests using 4 workers
+
+(node:32605) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32603) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32606) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › tests/e2e/article-position.spec.ts:85:1 › LIBRARY-POSITION-012 same-revision reload restores backward selection and relative scroll without a revision (4.3s)
+  ✓  4 [chromium] › tests/e2e/article-position.spec.ts:122:1 › LIBRARY-POSITION-012 navigation isolates articles and restores the previous reading position (4.4s)
+  ✓  1 [chromium] › tests/e2e/article-position.spec.ts:156:1 › LIBRARY-POSITION-012 stale, invalid and cross-article positions fall back to the start (5.1s)
+  ✓  3 [chromium] › tests/e2e/article-position.spec.ts:214:1 › LIBRARY-POSITION-012 unavailable position storage does not block body saving or navigation (5.6s)
+  ✓  7 [chromium] › tests/e2e/article-position.spec.ts:300:1 › LIBRARY-POSITION-012 user input before a delayed restoration frame cancels the jump (2.3s)
+  ✓  5 [chromium] › tests/e2e/article-position.spec.ts:247:1 › LIBRARY-POSITION-012 a confirmed save advances the position baseline without adding an extra revision (3.2s)
+  ✓  6 [chromium] › tests/e2e/article-position.spec.ts:278:1 › LIBRARY-POSITION-012 unselected recovery copies do not receive a saved server position (3.6s)
+
+  7 passed (11.1s)

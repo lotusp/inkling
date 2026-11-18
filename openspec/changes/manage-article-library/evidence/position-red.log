@@ -1,0 +1,165 @@
+Command: fnm exec --using 22.22.2 corepack pnpm test:e2e tests/e2e/article-position.spec.ts --workers=4
+Exit code: 1
+
+> inkling@0.1.0 test:e2e <repo>
+> playwright test tests/e2e/article-position.spec.ts --workers=4
+
+
+> inkling@0.1.0 build <repo>
+> vite build --config apps/web/vite.config.ts && node scripts/build-server.mjs
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 2258 modules transformed.
+rendering chunks...
+computing gzip size...
+apps/web/dist/index.html                   0.53 kB │ gzip:   0.35 kB
+apps/web/dist/assets/index-C6ThjMeS.css   13.54 kB │ gzip:   3.54 kB
+apps/web/dist/assets/index-DzC-JNy0.js   794.22 kB │ gzip: 246.04 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 387ms
+
+Running 4 tests using 4 workers
+
+(node:30334) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30335) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30333) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30331) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [chromium] › tests/e2e/article-position.spec.ts:145:1 › LIBRARY-POSITION-012 stale, invalid and cross-article positions fall back to the start (8.2s)
+  ✘  4 [chromium] › tests/e2e/article-position.spec.ts:85:1 › LIBRARY-POSITION-012 same-revision reload restores backward selection and relative scroll without a revision (8.2s)
+  ✘  1 [chromium] › tests/e2e/article-position.spec.ts:122:1 › LIBRARY-POSITION-012 navigation isolates articles and restores the previous reading position (8.3s)
+  ✘  2 [chromium] › tests/e2e/article-position.spec.ts:192:1 › LIBRARY-POSITION-012 unavailable position storage does not block body saving or navigation (8.3s)
+
+
+  1) [chromium] › tests/e2e/article-position.spec.ts:85:1 › LIBRARY-POSITION-012 same-revision reload restores backward selection and relative scroll without a revision
+
+    Error: expect(received).not.toBeNull()
+
+    Received: null
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      94 |   await expect
+      95 |     .poll(() => page.evaluate((key) => localStorage.getItem(key), key))
+    > 96 |     .not.toBeNull();
+         |          ^
+      97 |   await page.reload();
+      98 |   await expect(title(page)).toBeEnabled();
+      99 |   await expect.poll(() => offset(page)).toBeCloseTo(480, 0);
+        at <repo>/tests/e2e/article-position.spec.ts:96:10
+
+    Error Context: test-results/article-position-LIBRARY-P-8ca3e-e-scroll-without-a-revision-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-position-LIBRARY-P-8ca3e-e-scroll-without-a-revision-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-position-LIBRARY-P-8ca3e-e-scroll-without-a-revision-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/article-position.spec.ts:122:1 › LIBRARY-POSITION-012 navigation isolates articles and restores the previous reading position
+
+    Error: expect(received).not.toBeNull()
+
+    Received: null
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      133 |   await expect
+      134 |     .poll(() => page.evaluate((key) => localStorage.getItem(key), key))
+    > 135 |     .not.toBeNull();
+          |          ^
+      136 |   await choose(page, '第二篇');
+      137 |   await expect.poll(() => offset(page)).toBeCloseTo(0, 0);
+      138 |   await choose(page, '长文复盘');
+        at <repo>/tests/e2e/article-position.spec.ts:135:10
+
+    Error Context: test-results/article-position-LIBRARY-P-1cfd1-e-previous-reading-position-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-position-LIBRARY-P-1cfd1-e-previous-reading-position-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-position-LIBRARY-P-1cfd1-e-previous-reading-position-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/article-position.spec.ts:145:1 › LIBRARY-POSITION-012 stale, invalid and cross-article positions fall back to the start
+
+    Error: expect(received).not.toBeNull()
+
+    Received: null
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      151 |   await expect
+      152 |     .poll(() => page.evaluate((key) => localStorage.getItem(key), key))
+    > 153 |     .not.toBeNull();
+          |          ^
+      154 |   const raw = await page.evaluate((key) => localStorage.getItem(key)!, key);
+      155 |   const snapshot = ArticleSnapshot.parse(
+      156 |     await (await page.request.get('/api/articles/' + id)).json(),
+        at <repo>/tests/e2e/article-position.spec.ts:153:10
+
+    Error Context: test-results/article-position-LIBRARY-P-6fb5a-ions-fall-back-to-the-start-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-position-LIBRARY-P-6fb5a-ions-fall-back-to-the-start-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-position-LIBRARY-P-6fb5a-ions-fall-back-to-the-start-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/article-position.spec.ts:192:1 › LIBRARY-POSITION-012 unavailable position storage does not block body saving or navigation
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('编辑位置无法保留，正文保存不受影响。', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('编辑位置无法保留，正文保存不受影响。', { exact: true }) with timeout 5000ms
+      - waiting for getByText('编辑位置无法保留，正文保存不受影响。', { exact: true })
+
+
+      216 |   await expect(
+      217 |     page.getByText('编辑位置无法保留，正文保存不受影响。', { exact: true }),
+    > 218 |   ).toBeVisible();
+          |     ^
+      219 |   await title(page).fill('正文照常保存');
+      220 |   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
+      221 |   await choose(page, '仍能打开');
+        at <repo>/tests/e2e/article-position.spec.ts:218:5
+
+    Error Context: test-results/article-position-LIBRARY-P-21c58-k-body-saving-or-navigation-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/article-position-LIBRARY-P-21c58-k-body-saving-or-navigation-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/article-position-LIBRARY-P-21c58-k-body-saving-or-navigation-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [chromium] › tests/e2e/article-position.spec.ts:85:1 › LIBRARY-POSITION-012 same-revision reload restores backward selection and relative scroll without a revision
+    [chromium] › tests/e2e/article-position.spec.ts:122:1 › LIBRARY-POSITION-012 navigation isolates articles and restores the previous reading position
+    [chromium] › tests/e2e/article-position.spec.ts:145:1 › LIBRARY-POSITION-012 stale, invalid and cross-article positions fall back to the start
+    [chromium] › tests/e2e/article-position.spec.ts:192:1 › LIBRARY-POSITION-012 unavailable position storage does not block body saving or navigation
+ ELIFECYCLE  Command failed with exit code 1.
