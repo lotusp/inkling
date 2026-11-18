@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "changeId": "manage-article-library",
-  "result": "blocked",
+  "result": "passed",
   "testedCommit": "74d23a4f09df7339b41e4baca34a3f140fc4b11f",
   "ciRun": "https://github.com/lotusp/inkling/actions/runs/44335395015",
   "subject": [
@@ -656,7 +656,7 @@
       "command": "node scripts/harness/docs-check.mjs && node scripts/harness/check.mjs manage-article-library --stage plan && OPENSPEC_TELEMETRY=0 openspec validate manage-article-library --strict --no-interactive && git diff --check",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/buttons-checks.log"
+      "log": "evidence/lint-fix-local.log"
     },
     {
       "id": "manual-ime",
