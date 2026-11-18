@@ -145,3 +145,7 @@
 ## 5.1a 目标 Mac 性能已完成
 
 扩展已有存储性能脚本，真实 API 创建千篇文章、设置标签和生命周期后测量过滤/完整分页；无生产逻辑改变，记录 baseline-pass。Apple M1 Pro / Darwin 25.6.0 / Node 22.22.2：60KiB 保存 p95 12.28ms、2MiB 102.13ms、普通稿事件循环 10.06ms；千篇文章过滤与分页 45 样本 p95 1.79ms，300 匹配 ID 完整无重复、无正文，均满足既定门槛。实际命令 exit 0，见 library-performance.log 和 docs/validation/article-storage-performance.md。类型、lint、格式检查通过后独立提交。本任务的 Linux CI 尚待执行，5.1a 暂不勾选。
+
+## 5.1a 自动验收已完成
+
+性能步骤提交 62a4cf4 后，推送 codex/manage-article-library；实际 Linux CI https://github.com/lotusp/inkling/actions/runs/44209951096 对完整 SHA 62a4cf44d504d0c667eb456090884d919ebdd09e 执行锁定安装、Chromium 安装、verify、E2E，全部成功。90 个应用、10 个 Harness、118 个浏览器测试通过，job 3m29s。精简真实日志 linux-ci.log 保留完整 verify/E2E 输出；本机与 Linux 均不使用个人工作空间。5.1a 勾选，5.1b 真实 IME 仍未执行。自动证据独立提交，随后完成 5.2a 自检与 blocked 报告。
