@@ -7,12 +7,17 @@ import {
   type ArticleSearchFilters,
   type ArticleState,
 } from '@inkling/contracts';
-import { BookOpen, FilePlus2, RefreshCw, X } from 'lucide-react';
+import { Ellipsis, FilePlus2, RefreshCw, X } from 'lucide-react';
 import { api } from './api';
+import { DeskMenu } from './DeskMenu';
+import type { LifecycleTarget } from './ArticleLifecycle';
 import { ArticleSearchForm } from './ArticleSearchForm';
 export function ArticleLibrary({
   current,
   initialState,
+  refreshGeneration,
+  refreshArticleState,
+  manageState,
   stateChanged,
   restoreArticle,
   disabled,
@@ -24,6 +29,9 @@ export function ArticleLibrary({
 }: {
   current: ArticleSnapshot | null;
   initialState: ArticleState;
+  refreshGeneration: number;
+  refreshArticleState: () => void;
+  manageState: (target: LifecycleTarget) => void;
   stateChanged: (state: ArticleState) => void;
   restoreArticle: (id: string) => void;
   confirmedMetadata: ArticleListItem | null;
@@ -49,13 +57,20 @@ export function ArticleLibrary({
     state: initialState,
   });
   const generation = useRef(0);
+  const previousRefresh = useRef(refreshGeneration);
   const [loading, setLoading] = useState(true),
     [loaded, setLoaded] = useState(false),
     [error, setError] = useState('');
+  const [creating, setCreating] = useState(false);
   const [title, setTitle] = useState(''),
     [titleError, setTitleError] = useState('');
   const composing = useRef(false);
   useEffect(() => {
+    if (previousRefresh.current !== refreshGeneration) {
+      previousRefresh.current = refreshGeneration;
+      load(null);
+      return;
+    }
     let active = true;
     const requestGeneration = query.attempt;
     const isCurrent = () => active && requestGeneration === generation.current;
@@ -98,7 +113,7 @@ export function ArticleLibrary({
     return () => {
       active = false;
     };
-  }, [query]);
+  }, [query, refreshGeneration]);
   function load(cursor: ArticleListPage['nextCursor']) {
     setLoading(true);
     generation.current++;
@@ -153,24 +168,35 @@ export function ArticleLibrary({
   return (
     <section className="article-library" aria-label="文章列表">
       <div className="library-heading">
-        <div>
-          <h2>
-            <BookOpen size={18} aria-hidden="true" />
-            我的文章
-          </h2>
-          <p>让每个值得记录的想法，都有自己的位置。</p>
-        </div>
+        <h2>文章</h2>
         <div className="library-actions">
-          <button aria-label="刷新文章库" onClick={() => load(null)}>
+          <button
+            disabled={disabled}
+            aria-expanded={creating}
+            onClick={() => setCreating(!creating)}
+          >
+            <FilePlus2 size={15} />
+            新建
+          </button>
+          <button
+            aria-label="刷新文章库"
+            disabled={disabled}
+            onClick={() => {
+              load(null);
+              refreshArticleState();
+            }}
+          >
             <RefreshCw size={16} aria-hidden="true" />
           </button>
-          <button aria-label="关闭文章库" onClick={close}>
+          <button disabled={disabled} aria-label="关闭文章库" onClick={close}>
             <X size={16} aria-hidden="true" />
           </button>
         </div>
       </div>
+
       <form
         className="library-create"
+        hidden={!creating}
         onSubmit={(event) => {
           event.preventDefault();
           if (disabled) return;
@@ -191,7 +217,7 @@ export function ArticleLibrary({
         <div>
           <input
             id="new-article-title"
-            placeholder="一个值得展开的问题…"
+            placeholder="文章标题（可选）"
             value={title}
             maxLength={400}
             disabled={disabled}
@@ -214,27 +240,29 @@ export function ArticleLibrary({
         </div>
         {titleError && <p role="alert">{titleError}</p>}
       </form>
-      <div
-        className="library-state-tabs"
-        role="group"
-        aria-label="文章状态筛选"
-      >
-        {(['active', 'archived', 'trashed'] as const).map((state) => (
-          <button
-            key={state}
-            disabled={disabled}
-            aria-pressed={query.state === state}
-            onClick={() => changeState(state)}
-          >
-            {stateLabels[state]}
-          </button>
-        ))}
-      </div>
+      <label className="library-scope">
+        <select
+          aria-label="文章范围"
+          disabled={disabled}
+          value={query.state}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (
+              value === 'active' ||
+              value === 'archived' ||
+              value === 'trashed'
+            )
+              changeState(value);
+          }}
+        >
+          <option value="active">写作中</option>
+          <option value="archived">已归档</option>
+          <option value="trashed">回收站</option>
+        </select>
+      </label>
       <ArticleSearchForm apply={applyFilters} />
-      <p className="search-summary">
-        {hasFilters
-          ? '当前筛选：' + filterSummary
-          : '全部' + stateLabels[query.state] + ' · 可按标题或标签查找'}
+      <p className="search-summary" hidden={!hasFilters}>
+        当前筛选：{filterSummary}
       </p>
       {error && (
         <div className="library-error">
@@ -284,27 +312,53 @@ export function ArticleLibrary({
                     {new Date(item.createdAt).toLocaleDateString('zh-CN')}
                   </time>
                 </span>
-              </button>
-              <div className="library-card-details">
-                <div className="article-tags" aria-label="文章标签">
-                  {(selected &&
-                  confirmedMetadata &&
+                <span className="article-tags" aria-label="文章标签">
+                  {(confirmedMetadata?.articleId === item.articleId &&
                   confirmedMetadata.metadataVersion >= item.metadataVersion
                     ? confirmedMetadata.tags
                     : item.tags
                   ).map((tag) => (
                     <span key={tag}>{tag}</span>
                   ))}
-                </div>
-                {item.state === 'active' && (
-                  <button
-                    className="organize-button"
+                </span>
+              </button>
+              <div className="library-card-details">
+                {item.state !== 'trashed' && (
+                  <DeskMenu
+                    label={name + '的更多操作'}
+                    trigger={<Ellipsis size={16} />}
                     disabled={disabled}
-                    aria-label={'整理：' + name}
-                    onClick={() => organizeArticle(item.articleId)}
                   >
-                    整理
-                  </button>
+                    {item.state === 'active' && (
+                      <button
+                        aria-label={'整理：' + name}
+                        onClick={() => organizeArticle(item.articleId)}
+                      >
+                        标题与标签
+                      </button>
+                    )}
+                    <button
+                      onClick={() =>
+                        manageState({
+                          articleId: item.articleId,
+                          action:
+                            item.state === 'archived' ? 'unarchive' : 'archive',
+                        })
+                      }
+                    >
+                      {item.state === 'archived' ? '取消归档' : '归档'}
+                    </button>
+                    <button
+                      onClick={() =>
+                        manageState({
+                          articleId: item.articleId,
+                          action: 'trash',
+                        })
+                      }
+                    >
+                      移入回收站
+                    </button>
+                  </DeskMenu>
                 )}
                 {item.state === 'trashed' && (
                   <button

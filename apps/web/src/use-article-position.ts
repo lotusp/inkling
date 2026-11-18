@@ -188,9 +188,11 @@ export function useArticlePosition(
       scrollTop.current = saved?.scrollTop ?? 0;
       window.scrollTo({
         top:
-          window.scrollY +
-          editor.view.dom.getBoundingClientRect().top +
-          scrollTop.current,
+          scrollTop.current > 0
+            ? window.scrollY +
+              editor.view.dom.getBoundingClientRect().top +
+              scrollTop.current
+            : 0,
         behavior: 'instant',
       });
       frame.current = requestAnimationFrame(cancelRestore);

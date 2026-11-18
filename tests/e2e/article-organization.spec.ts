@@ -28,6 +28,7 @@ async function info(page: Page, origin: string) {
 }
 async function organize(page: Page, name = '未命名文章') {
   await page.getByRole('button', { name: '文章库', exact: true }).click();
+  await page.getByRole('button', { name: name + '的更多操作' }).click();
   await page
     .getByRole('button', { name: '整理：' + name, exact: true })
     .click();
@@ -226,7 +227,7 @@ test('LIBRARY-TAGS-007 conflicting tags require explicit reload and keep navigat
   ).toBeVisible();
   await expect(tags(page)).toHaveValue('我的标签');
   await expect(
-    page.getByRole('button', { name: '新建文章', exact: true }),
+    page.getByRole('button', { name: '文章库', exact: true }),
   ).toBeDisabled();
   await page
     .getByRole('button', { name: '放弃输入并载入最新标签', exact: true })
@@ -237,34 +238,129 @@ test('LIBRARY-TAGS-007 conflicting tags require explicit reload and keep navigat
   await expect(page.getByText('标签已保存。', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '关闭整理', exact: true }).click();
   await expect(
-    page.getByRole('button', { name: '新建文章', exact: true }),
+    page.getByRole('button', { name: '文章库', exact: true }),
   ).toBeEnabled();
 });
-test('LIBRARY-RENAME-006 organizing another article uses safe navigation before editing its title', async ({
+test('LIBRARY-RENAME-006 organizing another article preserves the open draft and filtered list', async ({
   page,
   workspace,
 }) => {
   const { id, headers } = await info(page, workspace.origin);
-  await page.request.post('/api/articles', {
-    headers,
-    data: { mutationId: crypto.randomUUID(), title: '第二篇' },
-  });
-  await body(page).fill('原稿尚未保存');
-  await page.getByRole('button', { name: '文章库', exact: true }).click();
-  await page.getByRole('button', { name: '整理：第二篇', exact: true }).click();
-  await page.getByRole('button', { name: '保存后切换', exact: true }).click();
-  await expect(title(page)).toHaveValue('第二篇');
-  await expect(tags(page)).toBeEnabled();
-  await page
-    .getByRole('textbox', { name: '新标题', exact: true })
-    .fill('第二篇改名');
-  await page.getByRole('button', { name: '保存标题', exact: true }).click();
-  await expect(page.getByText('已保存', { exact: true })).toBeVisible();
-  const old = ArticleSnapshot.parse(
-    await (await page.request.get('/api/articles/' + id)).json(),
+  const other = ArticleSnapshot.parse(
+    await (
+      await page.request.post('/api/articles', {
+        headers,
+        data: { mutationId: crypto.randomUUID(), title: '第二篇' },
+      })
+    ).json(),
   );
-  expect(old.document.title).toBe('');
-  expect(JSON.stringify(old.document.doc)).toContain('原稿尚未保存');
+  await body(page).fill('我在写的原稿');
+  await page.getByRole('button', { name: '文章库', exact: true }).click();
+  await page.getByRole('textbox', { name: '按标题查找' }).fill('第二篇');
+  await page.getByRole('textbox', { name: '按标题查找' }).press('Enter');
+  await page.getByRole('button', { name: '第二篇的更多操作' }).click();
+  await page.getByRole('button', { name: '整理：第二篇', exact: true }).click();
+  await expect(tags(page)).toBeEnabled();
+  await page.getByLabel('新标题', { exact: true }).fill('第二篇修订');
+  await page.getByRole('button', { name: '保存标题', exact: true }).click();
+  await tags(page).fill('复盘');
+  await page.getByRole('button', { name: '保存标签', exact: true }).click();
+  await expect(page.getByText('标签已保存。', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '关闭整理', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: '打开：第二篇修订', exact: true }),
+  ).toContainText('复盘');
+  await expect(page.getByRole('textbox', { name: '按标题查找' })).toHaveValue(
+    '第二篇',
+  );
+  await expect(title(page)).toHaveValue('');
+  await expect(body(page)).toHaveText('我在写的原稿');
+  const saved = ArticleSnapshot.parse(
+    await (await page.request.get('/api/articles/' + other.articleId)).json(),
+  );
+  expect(saved.document.title).toBe('第二篇修订');
+  expect(saved.document.doc).toEqual(other.document.doc);
+  await expect
+    .poll(async () =>
+      JSON.stringify(
+        ArticleSnapshot.parse(
+          await (await page.request.get('/api/articles/' + id)).json(),
+        ).document.doc,
+      ),
+    )
+    .toContain('我在写的原稿');
+});
+test('LIBRARY-RENAME-006 library rename reconciles a lost reply and protects a newer remote body', async ({
+  page,
+  workspace,
+}) => {
+  const { headers } = await info(page, workspace.origin);
+  const other = ArticleSnapshot.parse(
+    await (
+      await page.request.post('/api/articles', {
+        headers,
+        data: { mutationId: crypto.randomUUID(), title: '旁稿' },
+      })
+    ).json(),
+  );
+  const path = '/api/articles/' + other.articleId;
+  await organize(page, '旁稿');
+  let writes = 0;
+  await page.route('**' + path + '/content', async (route) => {
+    writes++;
+    await route.fetch();
+    await route.abort();
+  });
+  const input = page.getByLabel('新标题', { exact: true });
+  await input.fill('改过的旁稿');
+  await page.getByRole('button', { name: '保存标题', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: '核对并重试标题' }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: '放弃未提交输入并关闭' }),
+  ).toBeDisabled();
+  await page.getByRole('button', { name: '核对并重试标题' }).click();
+  await expect(page.getByText('标题已保存。', { exact: true })).toBeVisible();
+  expect(writes).toBe(1);
+  await page.unroute('**' + path + '/content');
+  const latest = ArticleSnapshot.parse(
+    await (await page.request.get(path)).json(),
+  );
+  const remote = {
+    ...latest.document,
+    doc: {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: '另一窗口写下的新段落' }],
+        },
+      ],
+    },
+  };
+  expect(
+    (
+      await page.request.put(path + '/content', {
+        headers,
+        data: {
+          mutationId: crypto.randomUUID(),
+          baseRevisionId: latest.headRevisionId,
+          document: remote,
+        },
+      })
+    ).ok(),
+  ).toBe(true);
+  await input.fill('另一份标题提议');
+  await page.getByRole('button', { name: '保存标题', exact: true }).click();
+  await expect(
+    page.getByText('文章已变化。请关闭整理，重新打开后核对最新标题。'),
+  ).toBeVisible();
+  await expect(input).toHaveValue('另一份标题提议');
+  expect(
+    ArticleSnapshot.parse(await (await page.request.get(path)).json()).document,
+  ).toEqual(remote);
+  await expect(title(page)).toHaveValue('');
 });
 for (const field of ['新标题', '文章标签（一行一个）'])
   test(`LIBRARY-TAGS-007 ${field} composition blocks submit and closing the organizer`, async ({

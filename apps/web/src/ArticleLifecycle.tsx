@@ -107,6 +107,7 @@ export function ArticleLifecycle({
     },
     [target.articleId],
   );
+  const affectsEditor = article.snapshot?.articleId === target.articleId;
   async function execute(protection: 'save' | 'keep') {
     if (working.current || !command.current || rejected) return;
     const operation = command.current;
@@ -118,7 +119,7 @@ export function ArticleLifecycle({
     const wasUnknown = sent.current;
     let rejectedWrite = false;
     try {
-      release = await article.prepareNavigation(protection);
+      if (affectsEditor) release = await article.prepareNavigation(protection);
       if (!confirmed.current && sent.current) {
         try {
           confirmed.current = checkResult(
@@ -155,7 +156,7 @@ export function ArticleLifecycle({
         confirmed.current = checkResult(value, operation);
       }
       const current = ArticleListItem.parse(await api(path + '/metadata'));
-      if (article.snapshot?.articleId === target.articleId) {
+      if (affectsEditor) {
         const workspace = WorkspaceInfo.parse(await api('/api/workspace'));
         const destination =
           current.state === 'trashed'
@@ -184,8 +185,6 @@ export function ArticleLifecycle({
         }
         navigate({ workspaceId: workspace.workspaceId, article: snapshot });
       } else {
-        release();
-        release = undefined;
         changed();
         close();
       }
@@ -205,7 +204,8 @@ export function ArticleLifecycle({
     }
   }
   const unsafe =
-    article.dirty || article.recoveries.length > 0 || article.hasConflict;
+    affectsEditor &&
+    (article.dirty || article.recoveries.length > 0 || article.hasConflict);
   return (
     <section className="navigation-confirmation" aria-label="文章状态操作确认">
       <h2>{target.action === 'restore' ? label : label + '文章'}</h2>

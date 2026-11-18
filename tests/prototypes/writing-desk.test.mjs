@@ -177,10 +177,10 @@ test('旧笔记升级只出现一次；保存失败时专注模式也能下载�
   const backup = button(p, '下载备份');
   await expect(backup).toBeHidden();
   const originalSetItem = await p.evaluateHandle(
-    () => Storage.prototype.setItem,
+    () => globalThis.Storage.prototype.setItem,
   );
   await p.evaluate(() => {
-    Storage.prototype.setItem = () => {
+    globalThis.Storage.prototype.setItem = () => {
       throw new Error('simulated quota');
     };
   });
@@ -197,7 +197,7 @@ test('旧笔记升级只出现一次；保存失败时专注模式也能下载�
   assert.equal(rescue.blocks[0].text, '尚未写入存储的句子。');
   await expect(backup).toBeVisible();
   await p.evaluate((original) => {
-    Storage.prototype.setItem = original;
+    globalThis.Storage.prototype.setItem = original;
   }, originalSetItem);
   await p.locator('.block').first().fill('已恢复写入。');
   await expect(backup).toBeHidden();

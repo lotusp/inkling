@@ -3,7 +3,7 @@ test('WORKBENCH-START-001 opens the workbench with real service status', async (
   page,
 }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: '写作工作台' })).toBeVisible();
+  await expect(page.getByRole('main', { name: '写作工作台' })).toBeVisible();
   await expect(page.getByRole('status')).toContainText('本地服务已连接');
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await page.screenshot({
@@ -21,6 +21,12 @@ test('WORKBENCH-EDIT-004 edits Chinese text and basic formatting and preserves i
   await editor.fill('从一次具体的技术选择开始。');
   await page.getByRole('button', { name: '二级标题', exact: true }).click();
   await expect(editor.locator('h2')).toContainText('技术选择');
+  const outline = page.getByRole('button', { name: '本文大纲' });
+  await outline.click();
+  await page
+    .getByRole('button', { name: '从一次具体的技术选择开始。', exact: true })
+    .click();
+  await editor.click();
   await page.getByRole('button', { name: '二级标题', exact: true }).click();
   await editor.press('ControlOrMeta+A');
   await page.getByRole('button', { name: '加粗', exact: true }).click();
@@ -51,13 +57,15 @@ test('WORKBENCH-CHAT-005 focus mode keeps text and never enables AI sending', as
   await page.goto('/');
   const editor = page.getByRole('textbox', { name: '文章正文' });
   await editor.fill('保留我的判断。');
+  await page.getByRole('button', { name: '闻一 · AI 写作助手' }).click();
   await expect(page.getByRole('button', { name: '发送消息' })).toBeDisabled();
   await expect(page.getByText('AI 尚未接入', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '专注写作' }).click();
   await expect(
     page.getByRole('complementary', { name: '写作讨论' }),
   ).toBeHidden();
-  await page.getByRole('button', { name: '显示讨论' }).click();
+  await page.getByRole('button', { name: '退出专注' }).click();
   await expect(
     page.getByRole('complementary', { name: '写作讨论' }),
   ).toBeVisible();
@@ -107,3 +115,37 @@ test('WORKBENCH-EDIT-004 supports lists and code blocks', async ({ page }) => {
   await page.getByRole('button', { name: '代码块', exact: true }).click();
   await expect(editor.locator('pre code')).toHaveText('const insight = true;');
 });
+
+for (const width of [1360, 375]) {
+  test(`LIBRARY-DESK-014 opens a single task and returns to the draft at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 860 });
+    const paper = page.getByRole('textbox', { name: '文章正文' });
+    const assistant = page.getByRole('button', { name: '闻一 · AI 写作助手' });
+    await expect(assistant).toHaveText('');
+    await expect(assistant).toHaveAttribute('aria-expanded', 'false');
+    await page.getByLabel('文章标题').fill('从一次慢查询说起');
+    const paragraph =
+      '那天下午，读请求开始排队。我留下了两份执行计划，决定先弄清楚时间花在哪里。';
+    await paper.fill(paragraph);
+    await expect(page.getByText('已保存', { exact: true })).toBeVisible();
+    await page.getByLabel('文章标题').press('Tab');
+    await page.screenshot({ path: `test-results/desk-v3-${width}.png` });
+    await page.getByRole('button', { name: '文章库', exact: true }).click();
+    await expect(page.getByRole('region', { name: '文章列表' })).toBeVisible();
+    if (width === 375) await expect(paper).toBeHidden();
+    await page.getByRole('button', { name: '关闭文章库' }).click();
+    await assistant.click();
+    await expect(
+      page.getByRole('heading', { name: '闻一', exact: true }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: '关闭闻一' }).click();
+    await page.getByRole('button', { name: '文章菜单' }).click();
+    await expect(page.getByRole('button', { name: '保存状态' })).toHaveCount(0);
+    await page.getByRole('button', { name: '版本历史', exact: true }).click();
+    await expect(page.getByRole('region', { name: '版本历史' })).toBeVisible();
+    await page.getByRole('button', { name: '关闭版本历史' }).click();
+    await expect(paper).toHaveText(paragraph);
+  });
+}

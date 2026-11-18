@@ -6,13 +6,13 @@
 
 | ID | 需求/用户行为 | 层与入口 | 测试或手工流程 | 夹具 | 可观察断言 |
 | --- | --- | --- | --- | --- | --- |
-| LIBRARY-DESK-014 | 写作台按需打开面板 | 真实 UI | tests/e2e/workbench.spec.ts、文章库与恢复 E2E | 已保存文章，桌面和 375px | 默认稿纸，菜单直达版本，闻一标明未接入，侧栏返回和异常备份可用 |
+| LIBRARY-DESK-014 | 写作台按需打开面板 | 真实 UI | tests/e2e/workbench.spec.ts、文章库与恢复 E2E | 已保存文章，桌面和 375px | 默认稿纸，菜单直达版本，闻一标明未接入，窄屏返回长文原位置，普通与专注模式均可下载异常草稿 |
 | LIBRARY-MIGRATE-001 | 旧空间兼容与迁移回滚 | 集成/真实 SQLite | tests/integration/article-library.test.ts | 固定 schema 2 DDL、两修订与命名/去重、迁移故障 | 升级/重开保留全部原记录；失败回滚 |
 | LIBRARY-CREATE-002 | 独立新建与去重 | 真实 API/SQLite | tests/api/article-library.test.ts | 两次新请求、重放、相同 ID 不同标题/操作 | 不同文章、初始修订，重放无副作用 |
 | LIBRARY-LIST-003 | 稳定分页与空态 | API/UI | tests/api/article-library.test.ts；tests/e2e/article-library.spec.ts | 空库、同时间同标题多稿、超界游标 | 不漏/重复，无全文，空态与错误区分 |
 | LIBRARY-OPEN-004 | 打开与最近稿 | API/UI | tests/e2e/article-navigation.spec.ts | 两稿两标签、刷新/重启 | 各页独立，重开最近稿 |
 | LIBRARY-SWITCH-005 | 切换保护 | UI | tests/e2e/article-navigation.spec.ts | 迟到保存、离线副本/失败、冲突、真实 IME 手工 | 旧结果不改新稿；不能安全保留则阻止 |
-| LIBRARY-RENAME-006 | 唯一标题与冲突 | API/UI | tests/e2e/article-organization.spec.ts；tests/api/article-library.test.ts | 有历史的正文，远端先保存 | ID/正文保留、新修订、旧基线拒绝 |
+| LIBRARY-RENAME-006 | 唯一标题与冲突 | API/UI | tests/e2e/article-organization.spec.ts；tests/api/article-library.test.ts | 有历史的正文，远端先保存 | ID/正文保留、新修订、旧基线拒绝；行末整理另一篇时保持当前稿和筛选。 |
 | LIBRARY-TAGS-007 | 标签与元数据基线 | 集成/API/UI | tests/api/article-library.test.ts；tests/e2e/article-organization.spec.ts | 规范化标签、相同基线两请求、重复 ID | 去重限额，CAS，正文 head 不变 |
 | LIBRARY-FIND-008 | 标题与标签查找 | API/UI | tests/api/article-library.test.ts；tests/e2e/article-search.spec.ts | 中文、百分号、同名和状态 | 字面过滤，游标只作用于当前查询 |
 | LIBRARY-ARCHIVE-009 | 归档只读 | 集成/UI | tests/api/article-library.test.ts；tests/e2e/article-lifecycle.spec.ts | 另一个仍编辑的标签 | 保留历史、拒绝新正文写、可取消归档 |

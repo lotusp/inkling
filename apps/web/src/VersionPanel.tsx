@@ -13,6 +13,7 @@ import { DocumentPart } from './DocumentComparison';
 import type { RestoreReview } from './use-article';
 export function VersionPanel({
   article,
+  visible,
   readOnly,
   flush,
   reviewRestore,
@@ -20,6 +21,7 @@ export function VersionPanel({
 }: {
   article: ArticleSnapshot;
   readOnly: boolean;
+  visible: boolean;
   flush: () => Promise<{ revisionId: string; seq: number }>;
   reviewRestore: (source: string) => Promise<RestoreReview>;
   confirmRestore: (review: RestoreReview) => Promise<unknown>;
@@ -80,9 +82,9 @@ export function VersionPanel({
     generation.current++;
   }, []);
   useEffect(() => {
-    void load();
+    if (visible) void load();
     return invalidate;
-  }, [load, invalidate]);
+  }, [load, invalidate, visible]);
   const run = async (fn: () => Promise<void>) => {
     if (action.current) return;
     action.current = true;
@@ -120,8 +122,7 @@ export function VersionPanel({
   const label = (r: RevisionInfo) => `#${r.seq}${r.name ? ' · ' + r.name : ''}`;
   return (
     <section className="version-panel" aria-label="版本历史">
-      <h2>版本历史</h2>
-      <p>当前已知版本 #{article.headSeq}。默认展示恢复点和命名版本。</p>
+      <p>当前已知版本 #{article.headSeq}</p>
       <label>
         <input
           type="checkbox"
@@ -170,13 +171,23 @@ export function VersionPanel({
           </button>
         )}
       </div>
-      <p>命名前先保存本次内容。命名请求未确认时，请重试同一次请求。</p>
+
       <p role="status">{notice}</p>
       {error && <p role="alert">{error}</p>}
       <ol className="revision-list">
         {items.map((r) => (
           <li key={r.revisionId}>
-            <strong>{label(r)}</strong>
+            <strong>
+              {r.name ||
+                (r.seq === 1
+                  ? '初稿'
+                  : r.kind === 'restore'
+                    ? '恢复的稿件'
+                    : r.automaticAt !== null
+                      ? '自动恢复点'
+                      : '保存的稿件')}
+            </strong>{' '}
+            <small>#{r.seq}</small>
             <span>
               {r.current ? ' · 当前' : ''}
               {r.automaticAt !== null ? ' · 自动恢复点' : ''}
@@ -191,6 +202,7 @@ export function VersionPanel({
                 !name.trim() ||
                 [...name].length > 80
               }
+              aria-label={'命名版本 #' + r.seq}
               onClick={() =>
                 void run(() =>
                   submit({
@@ -201,10 +213,11 @@ export function VersionPanel({
                 )
               }
             >
-              命名版本 #{r.seq}
+              命名
             </button>
             <button
               disabled={readOnly || busy}
+              aria-label={'查看并恢复版本 #' + r.seq}
               onClick={() =>
                 void run(async () => {
                   setReview(null);
@@ -212,7 +225,7 @@ export function VersionPanel({
                 })
               }
             >
-              查看并恢复版本 #{r.seq}
+              查看并恢复…
             </button>
           </li>
         ))}
@@ -220,42 +233,45 @@ export function VersionPanel({
       {cursor && (
         <button onClick={() => void load(cursor)}>加载更早版本</button>
       )}
-      <div className="version-selectors">
-        {(['比较左侧版本', '比较右侧版本'] as const).map((text, i) => (
-          <label key={text}>
-            {text}
-            <select
-              disabled={busy}
-              value={i ? right : left}
-              onChange={(e) => {
-                setPair(null);
-                (i ? setRight : setLeft)(e.target.value);
-              }}
-            >
-              <option value="">选择版本</option>
-              {items.map((r) => (
-                <option value={r.revisionId} key={r.revisionId}>
-                  {label(r)}
-                </option>
-              ))}
-            </select>
-          </label>
-        ))}
-      </div>
-      <button
-        disabled={busy || !left || !right}
-        onClick={() =>
-          void run(async () => {
-            const [a, b] = await Promise.all([
-              api(path + '/revisions/' + left),
-              api(path + '/revisions/' + right),
-            ]);
-            setPair([RevisionDetail.parse(a), RevisionDetail.parse(b)]);
-          })
-        }
-      >
-        比较所选版本
-      </button>
+      <details className="compare-options">
+        <summary>比较两个版本</summary>
+        <div className="version-selectors">
+          {(['比较左侧版本', '比较右侧版本'] as const).map((text, i) => (
+            <label key={text}>
+              {text}
+              <select
+                disabled={busy}
+                value={i ? right : left}
+                onChange={(e) => {
+                  setPair(null);
+                  (i ? setRight : setLeft)(e.target.value);
+                }}
+              >
+                <option value="">选择版本</option>
+                {items.map((r) => (
+                  <option value={r.revisionId} key={r.revisionId}>
+                    {label(r)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+        </div>
+        <button
+          disabled={busy || !left || !right}
+          onClick={() =>
+            void run(async () => {
+              const [a, b] = await Promise.all([
+                api(path + '/revisions/' + left),
+                api(path + '/revisions/' + right),
+              ]);
+              setPair([RevisionDetail.parse(a), RevisionDetail.parse(b)]);
+            })
+          }
+        >
+          比较所选版本
+        </button>
+      </details>
       {review && (
         <section aria-label="待恢复版本" className="restore-preview">
           <h3>恢复版本 #{review.source.seq}</h3>

@@ -1,10 +1,10 @@
 # C03 验证报告
 
-日期：2026-11-18。结论：**blocked，尚不可合入**。功能任务 1.1–4.3 已实现；本机自动验收与真实 Linux CI 全部通过。用户本日明确回复新增真实中文输入法检查“仍待检查，先完成其余工作”，不得沿用 C02 的手工通过结论。未 archive、未更新 Living Spec、未 merge、未创建 C04。
+日期：2026-11-18。C03 尚在验收。4.4 已将已有功能接到 V3 写作台。作者此前确认中文输入正常。新版界面的自动验收见文末 4.4 记录，Linux CI 与逐项真实候选窗记录分别标注。
 
-## 实现与验证基线
+## 4.3 时的实现与验证基线
 
-产品代码基线 `add70c7`，性能脚本基线 `62a4cf44d504d0c667eb456090884d919ebdd09e`；其后收口仅更新文档和证据，不改被测产品代码。subject 指纹覆盖当前 delta、实现、测试、配置、依赖、夹具和开发规则，证据文件不自我引用。
+当时的产品代码基线 `add70c7`，性能脚本基线 `62a4cf44d504d0c667eb456090884d919ebdd09e`；其后收口仅更新文档和证据，不改被测产品代码。subject 指纹覆盖当前 delta、实现、测试、配置、依赖、夹具和开发规则，证据文件不自我引用。
 
 - 本机 Node 22.22.2 / pnpm 10.34.9 / Apple M1 Pro / Darwin 25.6.0 arm64。
 - `fnm exec --using 22.22.2 corepack pnpm verify`：exit 0，90 个应用测试、10 个 Harness 测试；格式、lint、类型、依赖边界、构建、文档与 OpenSpec 校验通过。日志 `evidence/position-checks.log`。
@@ -51,10 +51,25 @@ acceptance.md 保留 17 个唯一场景，已修正早期计划中尚未拆分�
 
 发现并修正的文档问题：验收表仍引用拆分前的 organization/search/position 测试路径；知识索引仍称导航/整理未接入。已更新。此前的格式、布局时序与测试等待错误及修正保留在 progress 与失败日志，不删证据。当前未发现新的产品代码阻断问题；真实 IME 是剩余验收阻断，不是已证实的产品缺陷。
 
-## 剩余手工验收与收口
+## 4.3 时的手工验收与收口记录
 
 在最新版分别保持标题/正文拼音候选窗，尝试切换、新建、归档和移入回收站；应保持原稿，结束选词后重新操作，最新输入仍能保存或恢复。整理标题/标签和查找表单在选词期间不得提交。用户本日回复“仍待检查，先完成其余工作”，记录 `evidence/manual-ime-pending.log`，status=not-run、exitCode=null。
 
 最终文档链接、plan 结构、OpenSpec strict 和 diff 空白检查均 exit 0，日志 `evidence/closeout-checks.log`。`node scripts/harness/check.mjs manage-article-library --stage verify` 实际 exit 1，日志 `evidence/g2-blocked.log`：仅未完成任务、blocked 结论和手工关联场景未通过；无缺失日志、缺失 delta 或过期指纹。141 项 subject 指纹已核对。此失败是如实执行 G2，不宣称验证全绿。
 
 待真实反馈通过后，补操作环境与结果、刷新指纹，勾选 5.1b；必要检查仍有效后执行 Harness verify/G2。G2 通过才 archive、核对 Living Spec、merge 和 G3；随后开启 C04。不要把当前 blocked 的证据当成可合入许可。
+
+## 4.4 正式写作台的本机验收
+
+旧界面下，桌面与 375px 的写作台用例均因找不到闻一图标而失败。旁稿整理用例在等待标签可编辑时失败，旧入口要求先切换文章。保留了正文、版本和恢复测试的原有数据断言。最终本机验收使用临时工作空间及真实 SQLite，顺序执行构建校验、浏览器回归和性能测试。
+
+| 检查 | 结果 |
+| --- | --- |
+| 工程检查 | 格式、lint、类型、依赖边界、构建、90 项应用测试、10 项 Harness 测试、文档及 OpenSpec 检查通过 |
+| Chromium | 122 项全部通过。包含桌面和窄屏切换、大纲跳转、长文返回原段落、旁稿整理、改名回复丢失与并发冲突，以及普通和专注模式下载最新草稿 |
+| 原型 | 4 项独立交互回归通过 |
+| Mac 性能 | 常规稿与上限稿保存、千篇文章的分页与筛选通过原有阈值 |
+
+[本机运行日志](evidence/desk-v3-checks.log) · [桌面稿纸](evidence/desk-v3-desktop.png) · [窄屏稿纸](evidence/desk-v3-mobile.png) · [窄屏文章库](evidence/desk-v3-library-mobile.png)
+
+作者已反馈“中文输入没问题”。该反馈早于新版界面，尚无新入口逐项使用系统候选窗的记录。Linux 通过记录对应旧提交 `62a4cf4`。本轮只在本机验证，C03 的 G2/G3 仍待收口。

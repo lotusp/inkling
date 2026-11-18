@@ -5,3 +5,6 @@ Exit code: not applicable
 User response: 仍待检查，先完成其余工作
 Scope: title/body candidate window during open/create/archive/trash, organizer title/tags, search form submission.
 Automated composition events passed but do not replace this manual acceptance.
+
+Subsequent author feedback (2026-11-18, before the V3 application layout): 中文输入没问题。
+No per-action or environment detail was provided for the new layout.

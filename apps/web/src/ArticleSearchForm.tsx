@@ -53,25 +53,28 @@ export function ArticleSearchForm({
           onCompositionEnd={() => composing.current.delete('q')}
         />
       </div>
-      <div className="search-field">
-        <label htmlFor="article-search-tag">精确标签</label>
-        <input
-          id="article-search-tag"
-          type="text"
-          placeholder="完整标签名称"
-          maxLength={120}
-          value={tag}
-          onChange={(event) => setTag(event.target.value)}
-          onCompositionStart={() => composing.current.add('tag')}
-          onCompositionEnd={() => composing.current.delete('tag')}
-        />
-      </div>
+      <details className="search-tag">
+        <summary>标签筛选</summary>
+        <div className="search-field">
+          <label htmlFor="article-search-tag">精确标签</label>
+          <input
+            id="article-search-tag"
+            type="text"
+            placeholder="完整标签名称"
+            maxLength={120}
+            value={tag}
+            onChange={(event) => setTag(event.target.value)}
+            onCompositionStart={() => composing.current.add('tag')}
+            onCompositionEnd={() => composing.current.delete('tag')}
+          />
+        </div>
+      </details>
       <div className="search-actions">
-        <button type="submit">
+        <button type="submit" aria-label="查找文章" title="查找文章">
           <Search size={15} aria-hidden="true" />
-          查找文章
         </button>
         <button
+          hidden={!q && !tag}
           type="button"
           onClick={() => {
             if (!ready()) return;

@@ -47,6 +47,8 @@ async function create(
 }
 async function search(page: Page, title: string, label = '') {
   await q(page).fill(title);
+  if (!(await tag(page).isVisible()))
+    await page.getByText('标签筛选', { exact: true }).click();
   await tag(page).fill(label);
   await page.getByRole('button', { name: '查找文章', exact: true }).click();
 }
@@ -205,6 +207,8 @@ for (const field of ['按标题查找', '精确标签'])
       requests++;
       await route.continue();
     });
+    if (field === '精确标签')
+      await page.getByText('标签筛选', { exact: true }).click();
     const input = page.getByRole('textbox', { name: field, exact: true });
     await input.fill(field === '按标题查找' ? '输入法' : '标签');
     await input.dispatchEvent('compositionstart');

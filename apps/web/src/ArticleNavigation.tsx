@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArticleSnapshot,
   WorkspaceInfo,
@@ -7,28 +7,30 @@ import {
 } from '@inkling/contracts';
 import { api, ApiError } from './api';
 import { ArticleLibrary } from './ArticleLibrary';
+import { LibraryArticleOrganizer } from './LibraryArticleOrganizer';
 import { ArticleOrganizer } from './ArticleOrganizer';
 import { ArticleLifecycle, type LifecycleTarget } from './ArticleLifecycle';
-import { Library } from 'lucide-react';
 import { ownDraftClient } from './draft-store';
 import type { ArticleSession, useArticle } from './use-article';
 type Intent = {
   mutationId: string;
   articleId?: string;
   title?: string;
-  organize?: boolean;
 };
 export function ArticleNavigation({
   article,
   navigate,
-  organizeInitially,
+  open,
+  close,
+  busyChanged,
 }: {
   article: ReturnType<typeof useArticle>;
-  organizeInitially: boolean;
+  open: boolean;
+  close: () => void;
+  busyChanged: (busy: boolean) => void;
   navigate: (session: ArticleSession) => void;
 }) {
-  const [open, setOpen] = useState(organizeInitially);
-  const [organizing, setOrganizing] = useState(organizeInitially);
+  const [organizing, setOrganizing] = useState<string | null>(null);
   const [confirmedMetadata, setConfirmedMetadata] =
     useState<ArticleListItem | null>(null);
   const [lifecycle, setLifecycle] = useState<LifecycleTarget | null>(null);
@@ -41,6 +43,10 @@ export function ArticleNavigation({
   const [running, setRunning] = useState(false);
   const executing = useRef(false),
     sent = useRef(false);
+  const busy = !!intent || !!organizing || !!lifecycle;
+  useEffect(() => {
+    busyChanged(busy);
+  }, [busy, busyChanged]);
   async function execute(target: Intent, mode: 'save' | 'keep') {
     if (executing.current) return;
     executing.current = true;
@@ -78,7 +84,6 @@ export function ArticleNavigation({
       navigate({
         workspaceId: workspace.workspaceId,
         article: snapshot,
-        organize: target.organize,
       });
     } catch (error) {
       release?.();
@@ -114,6 +119,10 @@ export function ArticleNavigation({
       setMessage(error instanceof Error ? error.message : '暂时无法切换。');
     }
   }
+  function finishOrganizing() {
+    setOrganizing(null);
+    setLibraryGeneration((n) => n + 1);
+  }
   function retry() {
     if (!intent) return;
     try {
@@ -138,60 +147,12 @@ export function ArticleNavigation({
     }
   }
   return (
-    <section className="article-navigation" aria-label="文章导航">
-      <button
-        aria-expanded={open}
-        onClick={() => {
-          setOpen(!open);
-        }}
-      >
-        <Library size={16} aria-hidden="true" />
-        文章库
-      </button>
-      {article.snapshot && (
-        <div className="lifecycle-actions" aria-label="当前文章管理">
-          {article.articleState === 'active' && (
-            <button
-              disabled={!!intent || organizing || !!lifecycle}
-              onClick={() =>
-                requestLifecycle({
-                  articleId: article.snapshot!.articleId,
-                  action: 'archive',
-                })
-              }
-            >
-              归档当前文章
-            </button>
-          )}
-          {article.articleState === 'archived' && (
-            <button
-              disabled={!!intent || organizing || !!lifecycle}
-              onClick={() =>
-                requestLifecycle({
-                  articleId: article.snapshot!.articleId,
-                  action: 'unarchive',
-                })
-              }
-            >
-              取消归档
-            </button>
-          )}
-          {(article.articleState === 'active' ||
-            article.articleState === 'archived') && (
-            <button
-              disabled={!!intent || organizing || !!lifecycle}
-              onClick={() =>
-                requestLifecycle({
-                  articleId: article.snapshot!.articleId,
-                  action: 'trash',
-                })
-              }
-            >
-              移入回收站
-            </button>
-          )}
-        </div>
-      )}
+    <section
+      className="article-navigation"
+      id="article-library"
+      aria-label="文章导航"
+      hidden={!open}
+    >
       {lifecycleMessage && <p role="alert">{lifecycleMessage}</p>}
       {lifecycle && (
         <ArticleLifecycle
@@ -203,41 +164,48 @@ export function ArticleNavigation({
         />
       )}
       {open && (
-        <ArticleLibrary
-          key={libraryGeneration}
-          initialState={libraryState}
-          stateChanged={setLibraryState}
-          restoreArticle={(articleId) =>
-            requestLifecycle({ articleId, action: 'restore' })
-          }
-          current={article.snapshot}
-          confirmedMetadata={confirmedMetadata}
-          organizeArticle={(articleId) => {
-            if (articleId === article.snapshot?.articleId) setOrganizing(true);
-            else
-              request({
-                mutationId: crypto.randomUUID(),
-                articleId,
-                organize: true,
-              });
-          }}
-          disabled={!!intent || organizing || !!lifecycle}
-          openArticle={(articleId) =>
-            request({ mutationId: crypto.randomUUID(), articleId })
-          }
-          createArticle={(title) =>
-            request({ mutationId: crypto.randomUUID(), title })
-          }
-          close={() => setOpen(false)}
-        />
+        <div hidden={!!organizing || !!lifecycle}>
+          <ArticleLibrary
+            refreshGeneration={libraryGeneration}
+            refreshArticleState={article.refreshState}
+            manageState={requestLifecycle}
+            initialState={libraryState}
+            stateChanged={setLibraryState}
+            restoreArticle={(articleId) =>
+              requestLifecycle({ articleId, action: 'restore' })
+            }
+            current={article.snapshot}
+            confirmedMetadata={confirmedMetadata}
+            organizeArticle={setOrganizing}
+            disabled={busy}
+            openArticle={(articleId) =>
+              request({ mutationId: crypto.randomUUID(), articleId })
+            }
+            createArticle={(title) =>
+              request({ mutationId: crypto.randomUUID(), title })
+            }
+            close={close}
+          />
+        </div>
       )}
-      {organizing && article.snapshot && (
-        <ArticleOrganizer
-          article={article}
-          onConfirmed={setConfirmedMetadata}
-          close={() => setOrganizing(false)}
-        />
-      )}
+      {organizing &&
+        (organizing === article.snapshot?.articleId ? (
+          <ArticleOrganizer
+            articleId={organizing}
+            initialTitle={article.document?.title ?? ''}
+            renameTitle={article.renameTitle}
+            locked={article.navigationLocked}
+            onConfirmed={setConfirmedMetadata}
+            close={finishOrganizing}
+          />
+        ) : (
+          <LibraryArticleOrganizer
+            key={organizing}
+            articleId={organizing}
+            onConfirmed={setConfirmedMetadata}
+            close={finishOrganizing}
+          />
+        ))}
       {intent && (
         <section
           className="navigation-confirmation"

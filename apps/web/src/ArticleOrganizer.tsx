@@ -1,24 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArticleTitle, type ArticleListItem } from '@inkling/contracts';
-import type { useArticle } from './use-article';
 import { useArticleTags } from './use-article-tags';
 export function ArticleOrganizer({
-  article,
+  articleId,
+  initialTitle: initial,
+  renameTitle,
+  locked = false,
+  pendingTitle = false,
   onConfirmed,
   close,
 }: {
-  article: ReturnType<typeof useArticle>;
+  articleId: string;
+  initialTitle: string;
+  renameTitle: (title: string) => Promise<unknown>;
+  locked?: boolean;
+  pendingTitle?: boolean;
   onConfirmed: (metadata: ArticleListItem) => void;
   close: () => void;
 }) {
-  const initial = article.document?.title ?? '';
   const [title, setTitle] = useState(initial),
     [committedTitle, setCommittedTitle] = useState(initial),
     [renaming, setRenaming] = useState(false),
     [titleMessage, setTitleMessage] = useState('');
   const composing = useRef(false),
     renamingRef = useRef(false);
-  const tags = useArticleTags(article.snapshot!.articleId, onConfirmed);
+  const tags = useArticleTags(articleId, onConfirmed);
   const dirty = title !== committedTitle || tags.dirty;
   useEffect(() => {
     if (!dirty && !renaming) return;
@@ -44,9 +50,9 @@ export function ArticleOrganizer({
     setRenaming(true);
     setTitleMessage('');
     try {
-      await article.renameTitle(parsed.data);
+      await renameTitle(parsed.data);
       setCommittedTitle(parsed.data);
-      setTitleMessage('标题修改已提交，后续输入按正文保存状态继续同步。');
+      setTitleMessage('标题已保存。');
     } catch (error) {
       setTitleMessage(
         error instanceof Error
@@ -66,7 +72,7 @@ export function ArticleOrganizer({
           <p>标题跟随正文保存，标签帮助你整理想法。</p>
         </div>
         <button
-          disabled={renaming || tags.busy || tags.pending}
+          disabled={renaming || pendingTitle || tags.busy || tags.pending}
           onClick={() => {
             if (composing.current) {
               setTitleMessage('请先完成标题选词。');
@@ -89,6 +95,7 @@ export function ArticleOrganizer({
           <input
             id="organizer-title"
             value={title}
+            disabled={pendingTitle}
             maxLength={400}
             onChange={(event) => setTitle(event.target.value)}
             onCompositionStart={() => {
@@ -102,9 +109,9 @@ export function ArticleOrganizer({
                 event.preventDefault();
             }}
           />
-          <p>改名会保留本页最新正文，并形成一次正文保存。</p>
-          <button disabled={renaming || article.navigationLocked} type="submit">
-            保存标题
+          <p>改名会生成一个文章版本。</p>
+          <button disabled={renaming || locked} type="submit">
+            {pendingTitle ? '核对并重试标题' : '保存标题'}
           </button>
           {titleMessage && <p role="status">{titleMessage}</p>}
         </form>

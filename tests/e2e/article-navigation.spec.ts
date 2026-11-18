@@ -171,7 +171,7 @@ test('LIBRARY-SWITCH-005 failed draft protection prevents navigation and keeps r
   ).toBeVisible();
   await expect(body(page)).toHaveText('必须保留的输入');
   await expect(
-    page.getByRole('button', { name: '下载救援稿', exact: true }),
+    page.getByRole('button', { name: '下载备份', exact: true }),
   ).toBeVisible();
 });
 test('LIBRARY-SWITCH-005 composition blocks navigation and requires a fresh action after selection', async ({
@@ -294,6 +294,7 @@ test('LIBRARY-SWITCH-005 offline navigation preserves the source and title compo
   await setup(page, workspace.origin);
   await title(page).dispatchEvent('compositionstart');
   await page.getByRole('button', { name: '文章库', exact: true }).click();
+  await page.getByRole('button', { name: '新建', exact: true }).click();
   await page.getByRole('button', { name: '新建文章', exact: true }).click();
   await expect(
     page.getByText('请先完成中文选词，再重新切换文章。'),

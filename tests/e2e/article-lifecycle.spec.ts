@@ -68,6 +68,7 @@ test('LIBRARY-ARCHIVE-009 archived reopening is read-only with readable history 
   await expect(
     page.getByText('文章已归档，当前为只读。', { exact: true }),
   ).toBeVisible();
+  await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   await expect(
     page.getByRole('button', { name: '保存并命名当前稿', exact: true }),
@@ -75,6 +76,7 @@ test('LIBRARY-ARCHIVE-009 archived reopening is read-only with readable history 
   await expect(
     page.getByRole('button', { name: '查看并恢复版本 #1', exact: true }),
   ).toBeDisabled();
+  await page.getByText('比较两个版本', { exact: true }).click();
   await page.getByLabel('比较左侧版本').selectOption({ label: '#1' });
   await page.getByLabel('比较右侧版本').selectOption({ label: '#2' });
   await page.getByRole('button', { name: '比较所选版本', exact: true }).click();
@@ -102,7 +104,7 @@ test('LIBRARY-ARCHIVE-009 another tab archives while typing; refused save keeps 
     page.getByText('浏览器恢复副本已更新', { exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole('button', { name: '下载救援稿', exact: true }),
+    page.getByRole('button', { name: '下载备份', exact: true }),
   ).toBeVisible();
   await transition(page, workspace.origin, id, 'unarchive');
   await page.getByRole('button', { name: '核对文章状态', exact: true }).click();
@@ -121,7 +123,9 @@ test('LIBRARY-ARCHIVE-009 failed state check pauses writes without replacing inp
 }) => {
   await body(page).fill('核对失败仍在本页');
   await page.route('**/api/articles/*/metadata', (route) => route.abort());
-  await page.getByRole('button', { name: '核对文章状态', exact: true }).click();
+  await page.getByRole('button', { name: '文章库', exact: true }).click();
+  await page.getByRole('button', { name: '刷新文章库' }).click();
+  await page.getByRole('button', { name: '关闭文章库' }).click();
   await expect(
     page.getByText('文章状态尚未确认，已暂停编辑。', { exact: true }),
   ).toBeVisible();
@@ -201,7 +205,18 @@ async function library(page: Page, state: string) {
       .isVisible())
   )
     await page.getByRole('button', { name: '文章库', exact: true }).click();
-  await page.getByRole('button', { name: state, exact: true }).click();
+  await page
+    .getByLabel('文章范围')
+    .selectOption({ label: state === '活动文章' ? '写作中' : state });
+}
+async function currentAction(page: Page, action: string) {
+  await library(page, action === '取消归档' ? '已归档' : '活动文章');
+  await page
+    .getByRole('listitem')
+    .filter({ has: page.locator('[aria-current="page"]') })
+    .getByRole('button', { name: /的更多操作$/ })
+    .click();
+  await page.getByRole('button', { name: action, exact: true }).click();
 }
 test('LIBRARY-ARCHIVE-009/TRASH-010/RESTORE-011 author archives, unarchives, cancels trash, trashes last draft and restores without losing history', async ({
   page,
@@ -214,7 +229,7 @@ test('LIBRARY-ARCHIVE-009/TRASH-010/RESTORE-011 author archives, unarchives, can
   const original = await (
     await page.request.get(`/api/articles/${id}/revisions?all=true`)
   ).json();
-  await page.getByRole('button', { name: '归档当前文章', exact: true }).click();
+  await currentAction(page, '归档');
   await confirmation(page)
     .getByRole('button', { name: '确认归档', exact: true })
     .click();
@@ -227,12 +242,12 @@ test('LIBRARY-ARCHIVE-009/TRASH-010/RESTORE-011 author archives, unarchives, can
   await expect(
     page.getByRole('list', { name: '已归档', exact: true }),
   ).toContainText('数据库取舍');
-  await page.getByRole('button', { name: '取消归档', exact: true }).click();
+  await currentAction(page, '取消归档');
   await confirmation(page)
     .getByRole('button', { name: '确认取消归档', exact: true })
     .click();
   await expect(title(page)).toBeEnabled();
-  await page.getByRole('button', { name: '移入回收站', exact: true }).click();
+  await currentAction(page, '移入回收站');
   await confirmation(page)
     .getByRole('button', { name: '取消操作', exact: true })
     .click();
@@ -241,7 +256,7 @@ test('LIBRARY-ARCHIVE-009/TRASH-010/RESTORE-011 author archives, unarchives, can
       await (await page.request.get(`/api/articles/${id}/metadata`)).json(),
     ).state,
   ).toBe('active');
-  await page.getByRole('button', { name: '移入回收站', exact: true }).click();
+  await currentAction(page, '移入回收站');
   await expect(confirmation(page)).toContainText(
     '保留正文、历史和浏览器恢复副本',
   );
@@ -301,7 +316,7 @@ test('LIBRARY-ARCHIVE-009 explicit keep preserves an unsaved draft across archiv
   await expect(
     page.getByRole('button', { name: '重试保存', exact: true }),
   ).toBeVisible();
-  await page.getByRole('button', { name: '归档当前文章', exact: true }).click();
+  await currentAction(page, '归档');
   await confirmation(page)
     .getByRole('button', { name: '保留草稿并归档', exact: true })
     .click();
@@ -312,7 +327,7 @@ test('LIBRARY-ARCHIVE-009 explicit keep preserves an unsaved draft across archiv
     page.getByRole('button', { name: '恢复此草稿', exact: true }),
   ).toBeDisabled();
   await page.unroute('**/api/articles/*/content');
-  await page.getByRole('button', { name: '取消归档', exact: true }).click();
+  await currentAction(page, '取消归档');
   await confirmation(page)
     .getByRole('button', { name: '保留草稿并取消归档', exact: true })
     .click();
@@ -328,7 +343,7 @@ test('LIBRARY-TRASH-010 a stale confirmation cannot adopt newer metadata or disc
   workspace,
 }) => {
   const { id, headers } = await context(page, workspace.origin);
-  await page.getByRole('button', { name: '移入回收站', exact: true }).click();
+  await currentAction(page, '移入回收站');
   await expect(
     confirmation(page).getByRole('button', {
       name: '确认移入回收站',
@@ -371,7 +386,7 @@ test('LIBRARY-ARCHIVE-009 unknown lifecycle result is queried before retry; fail
     await route.fetch();
     await route.abort();
   });
-  await page.getByRole('button', { name: '归档当前文章', exact: true }).click();
+  await currentAction(page, '归档');
   await confirmation(page)
     .getByRole('button', { name: '确认归档', exact: true })
     .click();
@@ -407,10 +422,10 @@ test('LIBRARY-TRASH-010 lifecycle cannot interrupt title composition or execute 
 }) => {
   const { id } = await context(page, workspace.origin);
   await title(page).dispatchEvent('compositionstart');
-  await page.getByRole('button', { name: '移入回收站', exact: true }).click();
+  await currentAction(page, '移入回收站');
   await expect(confirmation(page)).toHaveCount(0);
   await title(page).dispatchEvent('compositionend');
-  await page.getByRole('button', { name: '移入回收站', exact: true }).click();
+  await currentAction(page, '移入回收站');
   await expect(
     confirmation(page).getByRole('button', {
       name: '确认移入回收站',
@@ -484,7 +499,7 @@ test('LIBRARY-TRASH-010 failed browser draft protection prevents lifecycle write
     };
   });
   await body(page).fill('不能因删除而丢弃的输入');
-  await page.getByRole('button', { name: '移入回收站', exact: true }).click();
+  await currentAction(page, '移入回收站');
   await confirmation(page)
     .getByRole('button', { name: '保留草稿并移入回收站', exact: true })
     .click();
@@ -494,7 +509,7 @@ test('LIBRARY-TRASH-010 failed browser draft protection prevents lifecycle write
   expect(writes).toBe(0);
   await expect(body(page)).toHaveText('不能因删除而丢弃的输入');
   await expect(
-    page.getByRole('button', { name: '下载救援稿', exact: true }),
+    page.getByRole('button', { name: '下载备份', exact: true }),
   ).toBeVisible();
 });
 test('LIBRARY-ARCHIVE-009 an uncommitted unknown operation retries its original payload and a rejected retry cannot erase it', async ({
@@ -516,7 +531,7 @@ test('LIBRARY-ARCHIVE-009 an uncommitted unknown operation retries its original 
       });
     else await route.continue();
   });
-  await page.getByRole('button', { name: '归档当前文章', exact: true }).click();
+  await currentAction(page, '归档');
   await confirmation(page)
     .getByRole('button', { name: '确认归档', exact: true })
     .click();
@@ -553,7 +568,7 @@ test('LIBRARY-ARCHIVE-009 a failed handoff retries opening without repeating the
     if (opens.length === 1) await route.abort();
     else await route.fulfill({ response });
   });
-  await page.getByRole('button', { name: '归档当前文章', exact: true }).click();
+  await currentAction(page, '归档');
   await confirmation(page)
     .getByRole('button', { name: '确认归档', exact: true })
     .click();
@@ -625,7 +640,7 @@ test('LIBRARY-FIND-008 switching state discards a late archived list and renders
   });
   await library(page, '已归档');
   await received;
-  await page.getByRole('button', { name: '回收站', exact: true }).click();
+  await library(page, '回收站');
   await expect(
     page.getByRole('list', { name: '回收站', exact: true }),
   ).toContainText('回收站中的复盘');
@@ -666,7 +681,7 @@ test('LIBRARY-TRASH-010 a missing unknown mutation with a newer metadata baselin
     writes++;
     await route.abort();
   });
-  await page.getByRole('button', { name: '移入回收站', exact: true }).click();
+  await currentAction(page, '移入回收站');
   await confirmation(page)
     .getByRole('button', { name: '确认移入回收站', exact: true })
     .click();

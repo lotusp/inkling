@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
@@ -6,21 +6,23 @@ import {
   Heading2,
   List,
   Code2,
-  PanelRightClose,
-  PanelRightOpen,
+  Library,
+  Ellipsis,
+  X,
+  ListTree,
   Sparkles,
-  ArrowUp,
   RefreshCw,
   CircleCheck,
   CircleAlert,
-  MessageSquare,
 } from 'lucide-react';
 import { useHealth } from './use-health';
 import { useAccess } from './access';
 import { useArticle, type ArticleSession } from './use-article';
+import { ArticleSaveFeedback } from './ArticleSaveFeedback';
 import { ArticleNavigation } from './ArticleNavigation';
 import { RecoveryPanel } from './RecoveryPanel';
 import { ConflictPanel } from './ConflictPanel';
+import { DeskMenu } from './DeskMenu';
 import { VersionPanel } from './VersionPanel';
 import { DamagedArticlePanel } from './DamagedArticlePanel';
 import { HistoryCapacity } from './HistoryCapacity';
@@ -52,7 +54,24 @@ function Workbench({
   navigate: (session: ArticleSession) => void;
 }) {
   const [title, setTitle] = useState('');
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [panel, setPanel] = useState<
+    'library' | 'assistant' | 'history' | null
+  >(null);
+  const [historyVisited, setHistoryVisited] = useState(false);
+  const [navigationBusy, setNavigationBusy] = useState(false);
+  const libraryButton = useRef<HTMLButtonElement>(null);
+  const assistantButton = useRef<HTMLButtonElement>(null);
+  const header = useRef<HTMLElement>(null);
+  const [outline, setOutline] = useState<HTMLElement[]>([]);
+  function closePanel() {
+    setPanel(null);
+    if (panel === 'assistant') assistantButton.current?.focus();
+    else if (panel === 'library') libraryButton.current?.focus();
+    else
+      header.current
+        ?.querySelector<HTMLButtonElement>('[aria-label="文章菜单"]')
+        ?.focus();
+  }
   const [focused, setFocused] = useState(false);
   const health = useHealth();
   const access = useAccess();
@@ -129,64 +148,86 @@ function Workbench({
     },
   ];
   return (
-    <div className="workbench">
-      <header className="app-header">
+    <div
+      className={focused ? 'workbench is-focused' : 'workbench'}
+      onKeyDown={(event) => {
+        if (
+          event.key !== 'Escape' ||
+          event.nativeEvent.isComposing ||
+          navigationBusy ||
+          document.querySelector(':popover-open')
+        )
+          return;
+        if (focused) setFocused(false);
+        else if (panel) closePanel();
+      }}
+    >
+      <header ref={header} className="app-header" hidden={focused}>
         <img
           className="brand"
           src="/inkling-logo.svg"
-          width={122}
-          height={29}
+          width={112}
+          height={32}
           alt="Inkling"
         />
-        <div className="header-divider" />
-        <h1>写作工作台</h1>
-        <span className="preview-label">本地预览</span>
+        <span className="header-divider" />
         <button
-          className="focus-button"
-          aria-pressed={focused}
-          onClick={() => setFocused((value) => !value)}
+          ref={libraryButton}
+          aria-controls="article-library"
+          aria-expanded={panel === 'library'}
+          disabled={access.status !== 'connected' || navigationBusy}
+          onClick={() => setPanel(panel === 'library' ? null : 'library')}
         >
-          {focused ? (
-            <PanelRightOpen size={17} aria-hidden="true" />
-          ) : (
-            <PanelRightClose size={17} aria-hidden="true" />
-          )}
-          {focused ? '显示讨论' : '专注写作'}
+          <Library size={16} />
+          文章库
         </button>
+        <span className="header-space" />
+        <button
+          ref={assistantButton}
+          aria-label="闻一 · AI 写作助手"
+          title="闻一 · AI 写作助手"
+          disabled={navigationBusy}
+          aria-controls="assistant-panel"
+          aria-expanded={panel === 'assistant'}
+          onClick={() => setPanel(panel === 'assistant' ? null : 'assistant')}
+        >
+          <Sparkles size={20} />
+        </button>
+        <DeskMenu
+          label="文章菜单"
+          trigger={<Ellipsis size={20} />}
+          disabled={navigationBusy}
+        >
+          <button
+            disabled={!article.snapshot}
+            onClick={() => {
+              setHistoryVisited(true);
+              setPanel('history');
+            }}
+          >
+            版本历史
+          </button>
+          <button onClick={() => setFocused(true)}>专注写作</button>
+        </DeskMenu>
       </header>
-      {access.status === 'connected' && (
-        <ArticleNavigation
-          article={article}
-          navigate={navigate}
-          organizeInitially={initial?.organize ?? false}
-        />
+      {focused && (
+        <button className="exit-focus" onClick={() => setFocused(false)}>
+          退出专注
+        </button>
       )}
-      <div className={`workspace ${focused ? 'is-focused' : ''}`}>
-        <main className="document-pane">
-          <div className="format-bar" role="toolbar" aria-label="正文格式">
-            <span className="document-label">草稿</span>
-            <button
-              disabled={!article.snapshot}
-              aria-expanded={historyOpen}
-              onClick={() => setHistoryOpen((x) => !x)}
-            >
-              版本历史
-            </button>
-            <div className="format-actions">
-              {tools.map(({ label, Icon, active, run }) => (
-                <button
-                  key={label}
-                  aria-label={label}
-                  aria-pressed={active ?? false}
-                  disabled={!editor || !article.editable}
-                  onClick={run}
-                >
-                  <Icon size={17} aria-hidden="true" />
-                </button>
-              ))}
-            </div>
-            <span className="format-note">慢慢想，清楚地写。</span>
-          </div>
+      <div
+        className={'workspace' + (!focused && panel ? ' with-' + panel : '')}
+      >
+        {access.status === 'connected' && (
+          <ArticleNavigation
+            article={article}
+            navigate={navigate}
+            open={!focused && panel === 'library'}
+            close={closePanel}
+            busyChanged={setNavigationBusy}
+          />
+        )}
+        <main className="document-pane" aria-label="写作工作台">
           <article className="writing-sheet">
             {article.status === 'empty' && (
               <button onClick={() => void article.create()}>开始写作</button>
@@ -196,41 +237,91 @@ function Workbench({
             )}
             <div className="document-eyebrow">
               <span />
-              从一个值得追问的问题开始
+              {article.articleState === 'archived' ? '已归档' : '草稿'}
             </div>
-            <input
-              className="article-title"
-              aria-label="文章标题"
-              placeholder="给这个想法一个标题"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              onCompositionStart={article.compositionStart}
-              onCompositionEnd={article.compositionEnd}
-              disabled={!article.editable}
-              maxLength={400}
-            />
-            {article.snapshot && (
+            <div className="title-row">
+              <input
+                className="article-title"
+                aria-label="文章标题"
+                placeholder="文章标题"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                onCompositionStart={article.compositionStart}
+                onCompositionEnd={article.compositionEnd}
+                disabled={!article.editable}
+                maxLength={400}
+              />
+              {article.snapshot && (
+                <DeskMenu
+                  label="本文大纲"
+                  onOpen={() =>
+                    setOutline(
+                      Array.from(
+                        editor?.view.dom.querySelectorAll<HTMLElement>(
+                          'h2,h3',
+                        ) ?? [],
+                      ),
+                    )
+                  }
+                  trigger={
+                    <>
+                      <ListTree size={15} />
+                      大纲
+                    </>
+                  }
+                >
+                  {outline.map((heading, i) => (
+                    <button
+                      key={i}
+                      onClick={() =>
+                        heading.scrollIntoView({ block: 'center' })
+                      }
+                    >
+                      {heading.textContent || '未命名章节'}
+                    </button>
+                  ))}
+                  {!outline.length && <small>还没有章节标题</small>}
+                </DeskMenu>
+              )}
+            </div>
+            {article.editable && (
+              <div
+                className="format-actions"
+                role="toolbar"
+                aria-label="正文格式"
+              >
+                {tools.map(({ label, Icon, active, run }) => (
+                  <button
+                    key={label}
+                    aria-label={label}
+                    title={label}
+                    aria-pressed={active ?? false}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={run}
+                  >
+                    <Icon size={16} />
+                  </button>
+                ))}
+              </div>
+            )}
+            {article.snapshot && article.stateReadOnly && (
               <section className="article-state" aria-label="文章状态">
-                {article.stateReadOnly && (
-                  <p role="status">
-                    {article.articleState === 'archived'
-                      ? '文章已归档，当前为只读。'
-                      : article.articleState === 'trashed'
-                        ? '文章已移入回收站，本页输入仍保留。'
-                        : '文章状态尚未确认，已暂停编辑。'}
-                  </p>
-                )}
+                <p role="status">
+                  {article.articleState === 'archived'
+                    ? '文章已归档，当前为只读。'
+                    : article.articleState === 'trashed'
+                      ? '文章已移入回收站，本页输入仍保留。'
+                      : '文章状态尚未确认，已暂停编辑。'}
+                </p>
                 <button
                   disabled={article.navigationLocked}
                   onClick={() => void article.refreshState()}
                 >
                   核对文章状态
                 </button>
-                {article.stateReadOnly && (
-                  <p>
-                    可保留草稿后切换文章；重新启用编辑前请先恢复文章状态并核对。
-                  </p>
-                )}
+                <p>
+                  可保留草稿后切换文章；重新启用编辑前请先恢复文章状态并核对。
+                </p>
               </section>
             )}
             {article.positionUnavailable && (
@@ -289,106 +380,57 @@ function Workbench({
                 confirm={article.confirmMerge}
               />
             )}
-            {historyOpen && article.snapshot && (
-              <VersionPanel
-                article={article.snapshot}
-                readOnly={article.stateReadOnly || article.navigationLocked}
-                flush={article.flushForVersion}
-                reviewRestore={article.reviewRestore}
-                confirmRestore={article.confirmRestore}
-              />
-            )}
             <div className="document-meta">
               <span>{format?.length ?? 0} 字</span>
-              <span>中文写作</span>
             </div>
-            <div
-              className={`save-notice ${article.status === 'clean' ? 'is-saved' : ''}`}
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              {article.status === 'clean' ? (
-                <CircleCheck size={15} aria-hidden="true" />
-              ) : (
-                <CircleAlert size={15} aria-hidden="true" />
-              )}
-              <span>
-                {article.status === 'clean'
-                  ? '已保存'
-                  : article.status === 'saving'
-                    ? '保存中…'
-                    : article.status === 'loading'
-                      ? '正在打开稿件…'
-                      : article.status === 'empty'
-                        ? '创建稿件后开始写作'
-                        : '尚未保存'}
-              </span>
-              {(article.status === 'error' ||
-                article.status === 'conflict') && (
-                <>
-                  <span>{article.message}</span>
-                  {article.status === 'error' && (
-                    <button onClick={() => void article.save()}>
-                      重试保存
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-            {article.snapshot &&
-              article.recoveries.length === 0 &&
-              article.backup !== 'idle' && (
-                <div className="backup-notice" aria-live="polite">
-                  {article.backup === 'durable'
-                    ? '浏览器恢复副本已更新'
-                    : article.backup === 'pending'
-                      ? '正在更新浏览器恢复副本…'
-                      : '浏览器恢复副本不可用。未保存内容仅留在本页，请先重试保存或下载救援稿。'}
-                </div>
-              )}
-            {article.snapshot &&
-              article.recoveries.length === 0 &&
-              (article.dirty || article.backup === 'unavailable') && (
-                <div className="rescue-actions">
-                  <button onClick={article.download}>下载救援稿</button>
-                  <span>包含正文与恢复信息的 JSON，不含访问凭证。</span>
-                </div>
-              )}
           </article>
         </main>
-        <aside className="chat-pane" aria-label="写作讨论" hidden={focused}>
-          <div className="chat-heading">
-            <Sparkles size={17} aria-hidden="true" />
-            <h2>与 Inkling 一起想</h2>
-          </div>
-          <div className="chat-empty">
-            <div className="chat-symbol">
-              <MessageSquare size={23} strokeWidth={1.4} aria-hidden="true" />
-            </div>
-            <h3>让想法慢慢变清楚</h3>
-            <p>这里将是你推敲判断、寻找依据、整理表达的地方。</p>
-            <div className="connection-note">AI 尚未接入</div>
-            <p className="chat-detail">
-              先从左侧记下想法。模型连接与文章上下文将在后续版本中加入。
-            </p>
-          </div>
-          <div className="chat-composer">
-            <label htmlFor="chat-input">写作讨论</label>
-            <textarea
-              id="chat-input"
-              placeholder="这段判断站得住脚吗？"
-              disabled
-              rows={3}
+        <aside
+          className="desk-rail"
+          id="assistant-panel"
+          aria-label="写作讨论"
+          hidden={focused || panel !== 'assistant'}
+        >
+          <header className="rail-heading">
+            <h2>闻一</h2>
+            <button aria-label="关闭闻一" onClick={closePanel}>
+              <X size={17} />
+            </button>
+          </header>
+          <p className="rail-note">AI 尚未接入</p>
+          <textarea
+            aria-label="给闻一的消息"
+            placeholder="和闻一聊聊这篇文章…"
+            disabled
+          />
+          <button aria-label="发送消息" disabled>
+            发送
+          </button>
+        </aside>
+        <aside
+          className="desk-rail history-rail"
+          hidden={focused || panel !== 'history'}
+          aria-label="历史侧栏"
+        >
+          <header className="rail-heading">
+            <h2>版本历史</h2>
+            <button aria-label="关闭版本历史" onClick={closePanel}>
+              <X size={17} />
+            </button>
+          </header>
+          {historyVisited && article.snapshot && (
+            <VersionPanel
+              article={article.snapshot}
+              visible={panel === 'history' && !focused}
+              readOnly={article.stateReadOnly || article.navigationLocked}
+              flush={article.flushForVersion}
+              reviewRestore={article.reviewRestore}
+              confirmRestore={article.confirmRestore}
             />
-            <div className="composer-footer">
-              <span>连接模型后可使用</span>
-              <button aria-label="发送消息" disabled>
-                <ArrowUp size={17} aria-hidden="true" />
-              </button>
-            </div>
-          </div>
+          )}
         </aside>
       </div>
+      <ArticleSaveFeedback article={article} />
       <footer className="app-footer">
         <div
           className={`service-state ${health.status}`}

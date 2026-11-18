@@ -37,6 +37,7 @@ test('LIBRARY-LIST-003 paginates real metadata and marks current article on desk
     fullPage: true,
   });
   await page.setViewportSize({ width: 375, height: 900 });
+  await page.getByRole('button', { name: '新建', exact: true }).click();
   await expect(
     page.getByRole('textbox', { name: '新文章标题（可选）', exact: true }),
   ).toBeVisible();
@@ -78,6 +79,7 @@ test('LIBRARY-CREATE-002 named creation protects the source and lost response re
     .getByRole('textbox', { name: '文章正文', exact: true })
     .fill('第一篇的个人洞见');
   await page.getByRole('button', { name: '文章库', exact: true }).click();
+  await page.getByRole('button', { name: '新建', exact: true }).click();
   await page
     .getByRole('textbox', { name: '新文章标题（可选）', exact: true })
     .fill('缓存一致性的取舍');
@@ -152,6 +154,7 @@ test.describe('empty library', () => {
     await expect(
       page.getByText('还没有文章，从一个问题开始写作。', { exact: true }),
     ).toBeVisible();
+    await page.getByRole('button', { name: '新建', exact: true }).click();
     await page.getByRole('button', { name: '新建文章', exact: true }).click();
     await expect(
       page.getByRole('textbox', { name: '文章标题', exact: true }),
@@ -191,6 +194,7 @@ test('LIBRARY-FAILURE-013 definitive rejection can be cancelled without abandoni
   await expect(
     page.getByRole('textbox', { name: '文章标题', exact: true }),
   ).toBeEnabled();
+  await page.getByRole('button', { name: '新建', exact: true }).click();
   await expect(
     page.getByRole('button', { name: '新建文章', exact: true }),
   ).toBeEnabled();
@@ -199,6 +203,7 @@ test('LIBRARY-CREATE-002 invalid or composing new title never creates an article
   page,
 }) => {
   await page.getByRole('button', { name: '文章库', exact: true }).click();
+  await page.getByRole('button', { name: '新建', exact: true }).click();
   const input = page.getByRole('textbox', {
     name: '新文章标题（可选）',
     exact: true,

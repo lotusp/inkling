@@ -6,6 +6,7 @@ async function prepare(page: Page) {
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await editor.fill('后来的第二版');
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' });
   await panel

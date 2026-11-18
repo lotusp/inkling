@@ -14,6 +14,7 @@ test('ARTICLE-QUOTA-013 warns before the limit and retains refused input and nam
   await expect(page.getByRole('status', { name: '历史容量' })).toContainText(
     '历史占用较多',
   );
+  await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' });
   await panel.getByLabel('版本名称', { exact: true }).fill('保留的命名版');

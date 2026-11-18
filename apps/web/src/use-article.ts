@@ -28,7 +28,6 @@ import {
   type RecoveryChoice,
 } from './draft-store';
 export interface ArticleSession {
-  organize?: boolean;
   workspaceId: string;
   article: ArticleSnapshot | null;
 }

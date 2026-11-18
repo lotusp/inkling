@@ -135,17 +135,7 @@ test('LIBRARY-POSITION-012 navigation isolates articles and restores the previou
     .not.toBeNull();
   await choose(page, '第二篇');
   await expect(body(page)).toBeInViewport();
-  await expect
-    .poll(() =>
-      body(page).evaluate((element) => {
-        const target = Math.min(
-          window.scrollY + element.getBoundingClientRect().top,
-          document.documentElement.scrollHeight - innerHeight,
-        );
-        return Math.abs(window.scrollY - target);
-      }),
-    )
-    .toBeLessThan(1);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
   await choose(page, '长文复盘');
   await expect.poll(() => offset(page)).toBeCloseTo(480, 0);
   expect(
@@ -176,7 +166,8 @@ test('LIBRARY-POSITION-012 stale, invalid and cross-article positions fall back 
   });
   await page.reload();
   await expect(title(page)).toHaveValue('新修订');
-  await expect.poll(() => offset(page)).toBeCloseTo(0, 0);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await expect(title(page)).toBeInViewport();
   const latest = ArticleSnapshot.parse(
     await (await page.request.get('/api/articles/' + id)).json(),
   );
@@ -208,7 +199,8 @@ test('LIBRARY-POSITION-012 stale, invalid and cross-article positions fall back 
     // pagehide must not replace the deliberately invalid fixture with a new position.
     await page.reload();
     await expect(title(page)).toBeEnabled();
-    await expect.poll(() => offset(page)).toBeCloseTo(0, 0);
+    await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+    await expect(title(page)).toBeInViewport();
   }
 });
 test('LIBRARY-POSITION-012 unavailable position storage does not block body saving or navigation', async ({
@@ -321,4 +313,22 @@ test('LIBRARY-POSITION-012 user input before a delayed restoration frame cancels
   expect(await page.evaluate(() => window.scrollY)).toBeCloseTo(before, 0);
   await expect(title(page)).toBeFocused();
   await expect(title(page)).toHaveValue('打开后立即输入');
+});
+
+test('LIBRARY-DESK-014 closing the narrow library returns to the same paragraph', async ({
+  page,
+  workspace,
+}) => {
+  await page.setViewportSize({ width: 375, height: 860 });
+  await seed(page, workspace.origin);
+  await place(page);
+  const before = await page.evaluate(() => window.scrollY);
+  await page.getByRole('button', { name: '文章库', exact: true }).click();
+  await expect(body(page)).toBeHidden();
+  await page.getByRole('button', { name: '关闭文章库' }).press('Escape');
+  await expect(body(page)).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => window.scrollY))
+    .toBeCloseTo(before, 0);
+  await expect.poll(() => offset(page)).toBeCloseTo(480, 0);
 });

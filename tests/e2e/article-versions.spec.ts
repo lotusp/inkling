@@ -5,6 +5,7 @@ test('REVISION-HISTORY-001 saves and names the clicked draft; REVISION-COMPARE-0
 }) => {
   const editor = page.getByRole('textbox', { name: '文章正文', exact: true });
   await editor.fill('独立思考的第一稿');
+  await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' });
   await panel.getByLabel('版本名称', { exact: true }).fill('观点形成');
@@ -20,6 +21,7 @@ test('REVISION-HISTORY-001 saves and names the clicked draft; REVISION-COMPARE-0
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await panel.getByLabel('所有保存记录', { exact: true }).check();
   await panel.getByRole('button', { name: '刷新历史', exact: true }).click();
+  await page.getByText('比较两个版本', { exact: true }).click();
   await panel
     .getByLabel('比较左侧版本')
     .selectOption({ label: '#2 · 观点形成' });
@@ -57,6 +59,7 @@ test('REVISION-HISTORY-001 a lost naming response retries the same revision and 
   });
   const editor = page.getByRole('textbox', { name: '文章正文', exact: true });
   await editor.fill('命名时的内容');
+  await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' });
   await panel.getByLabel('版本名称', { exact: true }).fill('固定版本');
@@ -98,6 +101,7 @@ test('REVISION-HISTORY-001 naming flush pins the saved revision while the author
     }
     await route.fulfill({ response });
   });
+  await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' }),
     editor = page.getByRole('textbox', { name: '文章正文', exact: true });
@@ -137,6 +141,7 @@ test('REVISION-COMPARE-002 restore preview contains long code lines within a nar
   await editor.fill('const message = "' + 'long_code_'.repeat(60) + '";');
   await page.getByRole('button', { name: '代码块', exact: true }).click();
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' });
   await panel

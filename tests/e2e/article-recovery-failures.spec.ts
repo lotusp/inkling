@@ -140,10 +140,10 @@ for (const fault of ['unavailable', 'quota', 'abort'] as const) {
       ).toBe(true);
     }
     await expect(
-      page.getByRole('button', { name: '下载救援稿', exact: true }),
+      page.getByRole('button', { name: '下载备份', exact: true }),
     ).toBeVisible();
     const downloading = page.waitForEvent('download');
-    await page.getByRole('button', { name: '下载救援稿', exact: true }).click();
+    await page.getByRole('button', { name: '下载备份', exact: true }).click();
     const download = await downloading;
     const file = await download.path();
     expect(file).not.toBeNull();
@@ -190,10 +190,10 @@ test('ARTICLE-IDB-008 rescue includes invalid unsaved input rather than the last
     .getByRole('textbox', { name: '文章正文', exact: true })
     .fill('尚未通过保存校验的内容');
   await expect(
-    page.getByRole('button', { name: '下载救援稿', exact: true }),
+    page.getByRole('button', { name: '下载备份', exact: true }),
   ).toBeVisible();
   const downloading = page.waitForEvent('download');
-  await page.getByRole('button', { name: '下载救援稿', exact: true }).click();
+  await page.getByRole('button', { name: '下载备份', exact: true }).click();
   const file = await (await downloading).path();
   expect(JSON.parse(await readFile(file!, 'utf8'))).toMatchObject({
     draft: { document: { title } },
