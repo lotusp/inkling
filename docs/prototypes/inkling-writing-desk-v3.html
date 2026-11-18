@@ -500,13 +500,6 @@
         display: block;
         margin: 10px 0 5px;
       }
-      .tabs {
-        display: flex;
-        gap: 3px;
-        border-bottom: 1px solid var(--line);
-        padding-bottom: 10px;
-        margin-bottom: 14px;
-      }
       .revision-diff {
         white-space: pre-wrap;
         overflow-wrap: anywhere;
@@ -590,25 +583,130 @@
       .revision-picks select {
         width: 100%;
       }
-      .shelves {
+      #libraryRail {
         display: flex;
-        gap: 3px;
-        flex-wrap: wrap;
-        margin-bottom: 9px;
+        flex-direction: column;
       }
-      .shelves button {
+      #libraryRail > header {
+        flex: none;
+      }
+      #libraryBody {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 14px 12px;
+      }
+      #libraryMaterials {
+        flex: none;
+        display: flex;
+        gap: 12px;
+        border-top: 1px solid var(--line);
+        margin: 0 16px;
+        padding: 12px 0;
+      }
+      #libraryMaterials button,
+      .library-scope button {
+        color: var(--muted);
         font-size: 12px;
-        padding: 4px 6px;
       }
-      .shelves [aria-pressed='true'] {
-        background: var(--wash);
-        color: var(--green);
-        font-weight: 600;
+      #libraryMaterials button {
+        padding: 4px 2px;
       }
-      .shelf-result {
-        border-left: 2px solid #819784;
-        padding-left: 10px;
+      .library-scope {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0 4px 9px;
+      }
+      .library-scope strong {
+        font-size: 13px;
         overflow-wrap: anywhere;
+      }
+      .library-scope small {
+        white-space: nowrap;
+      }
+      .article-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 5px 4px 9px;
+        border-left: 2px solid transparent;
+        border-radius: 4px;
+      }
+      .article-row + .article-row {
+        margin-top: 3px;
+      }
+      .article-row.current {
+        background: var(--wash);
+        border-left-color: var(--green);
+      }
+      .article-name {
+        display: block;
+        background: none;
+        padding: 5px 0;
+        text-align: left;
+        line-height: 1.5;
+        width: 100%;
+        overflow-wrap: anywhere;
+      }
+      .article-row > div:first-child {
+        flex: 1;
+        min-width: 0;
+      }
+      .article-row small:not(:empty) {
+        display: block;
+        padding-bottom: 4px;
+        font-size: 11px;
+      }
+      .article-more {
+        align-self: center;
+        color: var(--muted);
+        letter-spacing: 1px;
+        min-width: 30px;
+        min-height: 32px;
+      }
+      .library-popup {
+        position: fixed;
+        inset: auto;
+        margin: 0;
+        padding: 5px;
+        background: #fffefb;
+        color: inherit;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 6px 22px #24392c1e;
+        max-width: calc(100vw - 16px);
+        max-height: 70dvh;
+        overflow: auto;
+      }
+      .library-popup button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 7px 12px;
+      }
+      .library-popup .lined {
+        border: 0;
+      }
+      .library-popup .trash-action {
+        border-top: 1px solid var(--line);
+        border-radius: 0;
+        color: #83473b;
+        margin-top: 3px;
+      }
+      .library-filter {
+        width: 210px;
+        padding: 10px 14px;
+      }
+      .library-filter label:first-child {
+        margin-top: 0;
+      }
+      .library-filter select {
+        width: 100%;
+      }
+      .library-filter button {
+        margin-top: 12px;
+        text-align: center;
       }
       .item {
         padding: 13px 0;
@@ -813,8 +911,25 @@
     <div class="layout">
       <section id="libraryRail" hidden aria-label="文章库">
         <header>
-          <h2>文章库</h2>
+          <button
+            id="libraryBack"
+            class="ib"
+            data-do="library"
+            aria-label="返回文章列表"
+            title="返回文章列表"
+            hidden
+          >
+            ‹
+          </button>
+          <h2 id="libraryHeading">文章库</h2>
           <span class="grow"></span
+          ><button
+            id="libraryNew"
+            data-do="create"
+            class="with lined"
+            aria-label="新建文章"
+          >
+            <i data-icon="plus"></i>新建</button
           ><button
             class="ib"
             data-do="hide-library"
@@ -825,6 +940,7 @@
           </button>
         </header>
         <div class="inside" id="libraryBody"></div>
+        <nav id="libraryMaterials" aria-label="写作材料"></nav>
       </section>
       <main id="paper">
         <article class="sheet" id="draftSheet">
@@ -1067,7 +1183,6 @@
       let tab = '文章',
         folder = a().status,
         topic = '',
-        shelfResult = '',
         selected = null,
         toolTarget = null,
         versionQuery = '',
@@ -1351,7 +1466,13 @@
         const entry = $('libraryBody').querySelector(
           '[data-do="open"][data-key="' + a().id + '"]',
         );
-        if (entry) entry.textContent = a().title || '未命名文章';
+        if (entry) {
+          entry.textContent = a().title || '未命名文章';
+          entry
+            .closest('.article-row')
+            .querySelector('.article-more')
+            .setAttribute('aria-label', entry.textContent + '的更多操作');
+        }
         const summary = $('libraryBody').querySelector(
           '[data-summary="' + a().id + '"]',
         );
@@ -1719,6 +1840,8 @@
           libraryOpen && !focus && (!both || lastRail === 'left');
         const rightVisible =
           canDiscuss && rightOpen && !focus && (!both || lastRail === 'right');
+        if (!leftVisible)
+          $('libraryBody').querySelector(':popover-open')?.hidePopover();
         $('libraryRail').hidden = !leftVisible;
         $('rightRail').hidden = !rightVisible;
         $('libraryToggle').setAttribute('aria-expanded', String(leftVisible));
@@ -1785,14 +1908,73 @@
       });
       function articleSummary(x) {
         const publication = x.published
-          ? '已发表 ' +
-            publishedId(x) +
-            (x.rev !== x.published ? ' · 有本地修改' : '')
+          ? x.rev === x.published
+            ? '已发表'
+            : '已发表 · 有本地修改'
           : '';
-        return [...(x.topics || []), publication, x.parked ? '已搁置' : '']
+        return [
+          publication,
+          x.parked
+            ? '已搁置'
+            : folder === 'all' && x.status === 'archived'
+              ? '已归档'
+              : '',
+        ]
           .filter(Boolean)
           .join(' · ');
       }
+      function positionLibraryPopup() {
+        const popup = $('libraryBody').querySelector(':popover-open');
+        if (!popup) return;
+        const anchor = $('libraryBody')
+          .querySelector('[popovertarget="' + CSS.escape(popup.id) + '"]')
+          .getBoundingClientRect();
+        if (
+          popup.id !== 'libraryFilter' &&
+          anchor.left >= popup.offsetWidth + 12
+        ) {
+          popup.style.left = anchor.left - popup.offsetWidth - 4 + 'px';
+          popup.style.top =
+            Math.max(
+              5,
+              Math.min(anchor.top, innerHeight - popup.offsetHeight - 8),
+            ) + 'px';
+          return;
+        }
+        popup.style.left =
+          Math.max(
+            8,
+            Math.min(
+              innerWidth - popup.offsetWidth - 8,
+              anchor.right - popup.offsetWidth,
+            ),
+          ) + 'px';
+        popup.style.top =
+          (anchor.bottom + popup.offsetHeight + 6 <= innerHeight
+            ? anchor.bottom + 3
+            : Math.max(5, anchor.top - popup.offsetHeight - 3)) + 'px';
+      }
+      $('libraryBody').addEventListener(
+        'toggle',
+        (e) => {
+          if (e.target.matches('.library-popup') && e.newState === 'open') {
+            positionLibraryPopup();
+          }
+        },
+        true,
+      );
+      $('libraryBody').addEventListener(
+        'beforetoggle',
+        (e) => {
+          if (e.target.id === 'libraryFilter' && e.newState === 'open') {
+            $('libraryFolder').value = folder;
+            $('topicFilter').value = topic;
+          }
+        },
+        true,
+      );
+      $('libraryBody').addEventListener('scroll', positionLibraryPopup);
+      addEventListener('resize', positionLibraryPopup);
       function inCollection(x, view) {
         if (view === 'all') return x.status !== 'trash';
         if (view === 'published')
@@ -1801,51 +1983,57 @@
       }
       function library(next = tab, highlight = '') {
         tab = next;
-        const tabs =
-          a().status === 'active'
-            ? ['文章', '灵感', '资料', '大纲']
-            : ['文章', '灵感', '资料'];
-        if (!tabs.includes(tab)) tab = '文章';
-        let html =
-          '<nav class="tabs">' +
-          tabs
-            .map((t) => btn('tab', t, t, t === tab ? 'active' : ''))
-            .join('') +
-          '</nav>';
-        if (tab === '文章') {
+        const materials =
+          a().status === 'active' ? ['灵感', '资料', '大纲'] : ['灵感', '资料'];
+        if (tab !== '文章' && !materials.includes(tab)) tab = '文章';
+        const listing = tab === '文章';
+        $('libraryHeading').textContent = listing
+          ? '文章库'
+          : tab === '大纲'
+            ? '本文大纲'
+            : tab;
+        $('libraryBack').hidden = listing;
+        $('libraryNew').hidden = !listing;
+        $('libraryMaterials').hidden = !listing;
+        $('libraryMaterials').innerHTML = materials
+          .map((t) => btn('tab', t === '大纲' ? '本文大纲' : t, t, 'text-btn'))
+          .join('');
+        let html = '';
+        if (listing) {
           const shelves = {
-            all: '全部',
-            published: '已发表',
             active: '草稿',
+            all: '全部文章',
+            published: '已发表',
             archived: '已归档',
             trash: '回收站',
           };
-          html +=
-            '<nav class="shelves" aria-label="文章位置">' +
-            Object.entries(shelves)
-              .map(
-                ([value, label]) =>
-                  '<button data-do="folder" data-key="' +
-                  value +
-                  '" aria-pressed="' +
-                  (value === folder) +
-                  '">' +
-                  label +
-                  ' ' +
-                  store.articles.filter(
-                    (x) =>
-                      inCollection(x, value) &&
-                      (!topic || x.topics?.includes(topic)),
-                  ).length +
-                  '</button>',
-              )
-              .join('') +
-            '</nav>';
+          const list = store.articles.filter(
+            (x) =>
+              inCollection(x, folder) && (!topic || x.topics?.includes(topic)),
+          );
           const topics = [
             ...new Set(store.articles.flatMap((x) => x.topics || [])),
           ].sort((x, y) => x.localeCompare(y, 'zh-CN'));
-          html +=
-            '<label for="topicFilter">主题分类</label><select id="topicFilter"><option value="">所有分类</option>' +
+          html =
+            '<div class="library-scope"><strong>' +
+            esc(shelves[folder] + (topic ? ' · ' + topic : '')) +
+            '</strong><small>' +
+            list.length +
+            ' 篇</small><span class="grow"></span><button popovertarget="libraryFilter">筛选</button></div>' +
+            '<div popover="auto" id="libraryFilter" class="library-popup library-filter"><label for="libraryFolder">文章范围</label><select id="libraryFolder">' +
+            Object.entries(shelves)
+              .map(
+                ([key, label]) =>
+                  '<option value="' +
+                  key +
+                  '" ' +
+                  (folder === key ? 'selected' : '') +
+                  '>' +
+                  label +
+                  '</option>',
+              )
+              .join('') +
+            '</select><label for="topicFilter">主题分类</label><select id="topicFilter"><option value="">所有分类</option>' +
             topics
               .map(
                 (t) =>
@@ -1858,64 +2046,59 @@
                   '</option>',
               )
               .join('') +
-            '</select>';
-          if (shelfResult)
-            html +=
-              '<p class="shelf-result" role="status">' +
-              esc(shelfResult) +
-              '</p>';
-          if (folder === 'all' || folder === 'active')
-            html += btn('create', '＋ 新文章');
-          const list = store.articles.filter(
-            (x) =>
-              inCollection(x, folder) && (!topic || x.topics?.includes(topic)),
-          );
+            '</select>' +
+            btn('apply-library-filter', '查看文章', '', 'primary') +
+            '</div>';
           for (const x of list) {
+            const title = x.title || '未命名文章',
+              key = esc(x.id),
+              popup = 'article-actions-' + key;
             html +=
-              '<div class="item"><div class="row">' +
+              '<div class="article-row' +
+              (x === a() ? ' current' : '') +
+              '"><div>' +
               (folder === 'trash'
-                ? esc(x.title || '未命名文章')
-                : btn(
-                    'open',
-                    x.title || '未命名文章',
-                    x.id,
-                    x === a() ? 'active' : '',
-                  )) +
-              '</div>';
-            if (folder === 'trash') {
+                ? '<span class="article-name">' + esc(title) + '</span>'
+                : '<button class="article-name" data-do="open" data-key="' +
+                  key +
+                  '" ' +
+                  (x === a() ? 'aria-current="page"' : '') +
+                  '>' +
+                  esc(title) +
+                  '</button>') +
+              '<small data-summary="' +
+              key +
+              '">' +
+              esc(articleSummary(x)) +
+              '</small></div>';
+            if (folder === 'trash')
               html += btn(
                 'recover',
-                '恢复到' + (x.beforeTrash === 'archived' ? '已归档' : '草稿'),
+                x.beforeTrash === 'archived' ? '恢复到已归档' : '恢复到草稿',
                 x.id,
                 'text-btn',
               );
-            } else {
+            else
               html +=
-                '<div><small data-summary="' +
-                x.id +
-                '">' +
-                esc(articleSummary(x)) +
-                '</small></div>';
-              if (x.status === 'archived')
-                html +=
-                  '<small>只读 · ' +
-                  x.versions.filter((v) => versionKind(x, v) !== 'recovery')
-                    .length +
-                  ' 个关键稿次</small>';
-              html +=
-                '<details><summary>文章操作</summary><div class="actions">' +
+                '<button class="article-more" popovertarget="' +
+                popup +
+                '" title="更多操作" aria-label="' +
+                esc(title) +
+                '的更多操作">⋯</button>' +
+                '<div id="' +
+                popup +
+                '" class="library-popup" popover="auto">' +
+                (x.status === 'active'
+                  ? btn('topics', '设置分类', x.id) +
+                    btn('park', '暂时搁置…', x.id)
+                  : '') +
                 btn(
                   'archive',
                   x.status === 'active' ? '归档留存' : '移回草稿',
                   x.id,
                 ) +
-                (x.status === 'active'
-                  ? btn('park', '暂时搁置', x.id) +
-                    btn('topics', '设置分类', x.id)
-                  : '') +
-                btn('trash', '移入回收站', x.id) +
-                '</div></details>';
-            }
+                btn('trash', '移入回收站…', x.id, 'trash-action') +
+                '</div>';
             html += '</div>';
           }
           if (!list.length)
@@ -2031,17 +2214,18 @@
         if (x.status === 'active') delete x.parked;
         scheduleCheckpoints();
         folder = x.status;
-        shelfResult =
+        toast(
           '「' +
-          (x.title || '未命名文章') +
-          '」' +
-          (action === 'trash'
-            ? '已移入回收站，可恢复。'
-            : action === 'recover'
-              ? '已恢复到' + (folder === 'archived' ? '已归档。' : '草稿。')
-              : folder === 'archived'
-                ? '已归档，可只读查阅。'
-                : '已移回草稿，可继续编辑。');
+            (x.title || '未命名文章') +
+            '」' +
+            (action === 'trash'
+              ? '已移入回收站，可恢复。'
+              : action === 'recover'
+                ? '已恢复到' + (folder === 'archived' ? '已归档。' : '草稿。')
+                : folder === 'archived'
+                  ? '已归档，可只读查阅。'
+                  : '已移回草稿，可继续编辑。'),
+        );
         if (x === a()) {
           stop();
           selected = null;
@@ -2419,12 +2603,6 @@
           scheduleCheckpoints();
           return;
         }
-        if (el.id === 'topicFilter') {
-          topic = el.value;
-          shelfResult = '';
-          library('文章');
-          return;
-        }
         if (el.dataset.src) {
           const key = el.dataset.src;
           a().attached = el.checked
@@ -2443,6 +2621,8 @@
         const key = trigger.dataset.key,
           op = trigger.dataset.do,
           art = a();
+        const popup = trigger.closest('.library-popup:popover-open');
+        if (popup) popup.hidePopover();
         switch (op) {
           case 'toggle-library':
             if (!$('libraryRail').hidden) hideLibrary();
@@ -2464,10 +2644,13 @@
           case 'library':
             library('文章');
             break;
-          case 'folder':
-            folder = key;
-            shelfResult = '';
+          case 'apply-library-filter':
+            folder = $('libraryFolder').value;
+            topic = $('topicFilter').value;
             library('文章');
+            $('libraryBody')
+              .querySelector('[popovertarget="libraryFilter"]')
+              .focus();
             break;
           case 'tab':
             library(key);
@@ -2482,7 +2665,6 @@
           case 'create': {
             folder = 'active';
             topic = '';
-            shelfResult = '';
             const x = article('未命名文章', [block()]);
             store.articles.unshift(x);
             switchTo(x);
@@ -2941,6 +3123,11 @@
           if (!e.isComposing && !composing && !$('panel').open) manualSave();
           return;
         }
+        if (
+          e.key === 'Escape' &&
+          document.querySelector('.library-popup:popover-open')
+        )
+          return;
         if (e.key === 'Escape' && !$('panel').open) {
           if (document.body.classList.contains('focus')) {
             document.body.classList.remove('focus');
