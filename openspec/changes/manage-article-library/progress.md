@@ -141,3 +141,7 @@
 4 项最初验收因缺少位置记录/故障提示有效 Red；补足基线推进、恢复副本和延迟帧共 7 项 Green。短文断言按实际窗口可滚范围校正；进一步发现恢复帧早于 React 布局提交时产生约 59px 偏移，将恢复调度移至 useLayoutEffect 后修复。失败证据 position-layout-failure.log 保留，未通过扩大误差或跳过测试解决。完整 verify 通过（90 应用、10 Harness），118 项 E2E 全通过；position-red/green/checks/regression.log 为实际证据。
 
 已更新本地运行指南；无新依赖或服务端位置存储。下一步执行目标 Mac 性能、Linux CI 与 G2 自检/证据，真实 IME 仍按用户最新反馈待检查，不能 archive 或开始 C04。
+
+## 5.1a 目标 Mac 性能已完成
+
+扩展已有存储性能脚本，真实 API 创建千篇文章、设置标签和生命周期后测量过滤/完整分页；无生产逻辑改变，记录 baseline-pass。Apple M1 Pro / Darwin 25.6.0 / Node 22.22.2：60KiB 保存 p95 12.28ms、2MiB 102.13ms、普通稿事件循环 10.06ms；千篇文章过滤与分页 45 样本 p95 1.79ms，300 匹配 ID 完整无重复、无正文，均满足既定门槛。实际命令 exit 0，见 library-performance.log 和 docs/validation/article-storage-performance.md。类型、lint、格式检查通过后独立提交。本任务的 Linux CI 尚待执行，5.1a 暂不勾选。

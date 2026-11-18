@@ -1,0 +1,60 @@
+Command: fnm exec --using 22.22.2 corepack pnpm test:storage-performance
+Exit code: 0
+> inkling@0.1.0 test:storage-performance <repo>
+> tsx tests/performance/storage-performance.ts
+
+{
+  "node": "v22.22.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "osRelease": "25.6.0",
+  "cpu": "Apple M1 Pro",
+  "sqliteDurability": "WAL / synchronous FULL / fullfsync ON",
+  "fixture": "Chinese technical paragraphs with mixed marks, heading, list and multiline code; exact UTF-8 JSON sizes",
+  "transport": "authenticated loopback HTTP; body creation excluded, response decoding included",
+  "eventLoop": "measured inside server process; 1ms resolution; normal p95 limit 50ms",
+  "groups": [
+    {
+      "label": "normal",
+      "documentBytes": 61440,
+      "samples": 30,
+      "warmup": 2,
+      "p95Ms": 12.28,
+      "maxMs": 12.38,
+      "thresholdMs": 250,
+      "eventLoopP95Ms": 10.06,
+      "eventLoopMaxMs": 11.95,
+      "eventLoopSamples": 42,
+      "passed": true
+    },
+    {
+      "label": "maximum",
+      "documentBytes": 2097152,
+      "samples": 30,
+      "warmup": 2,
+      "p95Ms": 102.13,
+      "maxMs": 105.22,
+      "thresholdMs": 1000,
+      "eventLoopP95Ms": 89.72,
+      "eventLoopMaxMs": 100.93,
+      "eventLoopSamples": 354,
+      "passed": true
+    }
+  ],
+  "library": {
+    "articleCount": 1000,
+    "active": 900,
+    "archived": 50,
+    "trashed": 50,
+    "matchedArticles": 300,
+    "samples": 45,
+    "p95Ms": 1.79,
+    "maxMs": 3.24,
+    "maxResponseBytes": 3843,
+    "thresholdMs": 250,
+    "passed": true
+  },
+  "historyBytes": 69075028,
+  "reopenAndHashScanMs": 936.5,
+  "passed": true
+}

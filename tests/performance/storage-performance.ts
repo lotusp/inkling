@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir, cpus, platform, arch, release } from 'node:os';
 import { join } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { benchmarkLibrary } from './library-benchmark';
 import { randomUUID } from 'node:crypto';
 import {
   ArticleDocument,
@@ -236,6 +237,7 @@ try {
         (label !== 'normal' || loopP95Ms <= 50),
     });
   }
+  const library = await benchmarkLibrary(call);
   const head = ArticleSnapshot.parse(
     await call('/api/articles/' + initial.articleId, 'GET'),
   );
@@ -255,9 +257,10 @@ try {
     eventLoop:
       'measured inside server process; 1ms resolution; normal p95 limit 50ms',
     groups,
+    library,
     historyBytes: head.revisionBytes,
     reopenAndHashScanMs: Number(numeric(reopened.ready.startupMs).toFixed(2)),
-    passed: groups.every((g) => g.passed === true),
+    passed: groups.every((g) => g.passed === true) && library.passed,
   };
   console.log(JSON.stringify(report, null, 2));
   if (!report.passed) process.exitCode = 1;
