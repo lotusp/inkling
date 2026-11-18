@@ -1,0 +1,11 @@
+Command: node scripts/harness/docs-check.mjs
+Exit code: 0
+Checked 82 Markdown files; 0 local path / directory errors. Anchor contents and external URLs are not checked.
+Command: node scripts/harness/check.mjs manage-article-library --stage plan
+Exit code: 0
+Artifact structure checks passed. This does not prove test quality, spec semantics, or Git merge completion.
+Command: fnm exec --using 22.22.2 corepack pnpm exec openspec validate manage-article-library --strict --no-interactive
+Exit code: 0
+Change 'manage-article-library' is valid
+Command: git diff --check
+Exit code: 0

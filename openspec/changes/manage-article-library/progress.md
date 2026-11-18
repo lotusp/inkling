@@ -149,3 +149,9 @@
 ## 5.1a 自动验收已完成
 
 性能步骤提交 62a4cf4 后，推送 codex/manage-article-library；实际 Linux CI https://github.com/lotusp/inkling/actions/runs/44209951096 对完整 SHA 62a4cf44d504d0c667eb456090884d919ebdd09e 执行锁定安装、Chromium 安装、verify、E2E，全部成功。90 个应用、10 个 Harness、118 个浏览器测试通过，job 3m29s。精简真实日志 linux-ci.log 保留完整 verify/E2E 输出；本机与 Linux 均不使用个人工作空间。5.1a 勾选，5.1b 真实 IME 仍未执行。自动证据独立提交，随后完成 5.2a 自检与 blocked 报告。
+
+## 5.2a 自检与可审阅证据已完成
+
+自检 delta 与 17 个场景，对照当前实现/真实测试，复核迁移事务、访问限制、CAS/重放、会话与迟到响应隔离、未知生命周期核对和位置便利边界。没有独立评审。修正验收表过时测试路径和知识索引的旧进度；更新 AGENTS、路线图、运行知识链接。verification.md/evidence.json 记录本机与真实 Linux 成功结果，完整性指纹覆盖 delta/代码/测试/配置/依赖/夹具/规则；手工 IME 明确 not-run，7 个包含其操作的场景整体 blocked，其他自动场景通过。
+
+G2 结构检查必须因真实未完成任务和手工证据而拒绝；未修改门禁或把手工项改成可选。5.1b、5.2b 保持未完成，不 archive/merge、不修改 Living Spec、不新建 C04。待用户真实输入法反馈后继续最后收口；自动检查没有发现新产品代码阻断。

@@ -1,6 +1,6 @@
 # Inkling 产品知识库
 
-更新日期：2026-11-17。当前阶段：C02 正文持久化已实现并归档，已有在线自动保存、重开、草稿恢复、冲突比较/显式合并与救援下载；版本历史、命名、比较和恢复已接通，AI 协作尚未完成。MVP 目标为单台 Mac 本地运行。此目录保存产品为什么存在、依据什么做决定、计划如何实现，以及实际验证了什么。
+更新日期：2026-11-18。当前阶段：C02 正文持久化已实现并归档，已有在线自动保存、重开、草稿恢复、冲突比较/显式合并与救援下载；版本历史、命名、比较和恢复已接通，AI 协作尚未完成。MVP 目标为单台 Mac 本地运行。此目录保存产品为什么存在、依据什么做决定、计划如何实现，以及实际验证了什么。
 
 ## 从这里开始
 
@@ -26,11 +26,11 @@
 | 产品定位决策 | [DEC-0001](decisions/0001-thinking-partner-positioning.md) | 记录作者明确提出的方向与范围 |
 | 本地部署决策 | [DEC-0002](decisions/0002-local-macos-mvp.md) | 单台 Mac 目标已明确，实现选择仍为提案 |
 | 实现架构 | [单台 Mac 本地架构](architecture/local-macos-mvp.md) | 当前 MVP 提案，Pi 优先 POC，尚未冻结、未实现 |
-| 文章保存设计 | [DEC-0004](decisions/0004-article-storage-and-revisions.md)、[存储 POC](validation/article-storage-poc.md) | JSON 正文 + SQLite 已接入开发分支；完整 change 尚未通过 G2 |
+| 文章保存设计 | [DEC-0004](decisions/0004-article-storage-and-revisions.md)、[存储 POC](validation/article-storage-poc.md) | JSON 正文 + SQLite 已通过 C02 验收并归档合入 |
 | 框架选择 | [框架复评](research/framework-evaluation.md) | 需同任务 POC 验证；不是依赖清单 |
 | 本地工程 | [运行与检查](engineering/local-development.md) | 本机服务、持久编辑、草稿恢复、真实工程检查；AI 待接入 |
 | 开发方法 | [Harness](engineering/harness.md)、[DEC-0003](decisions/0003-openspec-atdd-harness.md) | OpenSpec、ATDD 与首批应用检查已建立 |
-| V1 Change 路线图 | [Change 拆分与依赖](engineering/v1-change-roadmap.md) | 建议 17 条，bootstrap 已完成，文章持久化正在分步骤实现 |
+| V1 Change 路线图 | [Change 拆分与依赖](engineering/v1-change-roadmap.md) | 建议 17 条，C01/C02 完成，C03 功能已实现、收口验收中 |
 | 代码规范 | [架构边界](engineering/code-architecture.md)、[日常规范](engineering/development-rules.md) | 新代码应遵循；模块随实现建立 |
 | 验收与证据 | [ATDD 约定](engineering/atdd-and-evidence.md)、[Harness 验证](validation/harness-bootstrap.md) | 已验证流程工具，不代表应用通过验收 |
 | 未决事项 | [开放问题](product/open-questions.md) | 进入对应阶段时验证，不要求一次回答所有问题 |
@@ -66,4 +66,4 @@
 
 当前有原型、Harness 与本地工作台的检查记录，尚无正式上线或真实用户访谈结论。已交付行为由仓库 `openspec/specs/` 维护；实施中的契约与证据在对应 `openspec/changes/` 目录。
 
-当前 C02 的存储故障与容量边界已有自动验收，目标 Mac 的测量结果见[存储性能验证](validation/article-storage-performance.md)。真实中文输入法已由用户手工确认通过；Linux CI 与 G2 验收已通过，见[验收报告](../openspec/changes/archive/2026-11-17-persist-article-revisions/verification.md)。该 change 已归档并合入主分支，G3 验证通过；当前进入 [C03 文章库设计](../openspec/changes/manage-article-library/design.md)，已完成兼容迁移及新建/列表 API；多文章导航和整理界面仍待接入，完整 C03 尚未交付。
+当前 C02 的存储故障与容量边界已有自动验收，目标 Mac 的测量结果见[存储性能验证](validation/article-storage-performance.md)。真实中文输入法已由用户手工确认通过；Linux CI 与 G2 验收已通过，见[验收报告](../openspec/changes/archive/2026-11-17-persist-article-revisions/verification.md)。该 change 已归档并合入主分支，G3 验证通过；当前 [C03 文章库](../openspec/changes/manage-article-library/design.md) 已实现兼容迁移、多文章导航、整理/查找、归档/回收站与恢复、编辑位置恢复；本机与 Linux 完整自动回归、目标 Mac 千篇文章性能通过；[收口报告](../openspec/changes/manage-article-library/verification.md)已整理。新增真实 IME 仍待检查，C03 尚未通过 G2/G3，C04 尚未创建。

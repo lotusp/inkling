@@ -1,0 +1,7 @@
+Date: 2026-11-18
+Check: actual Chinese IME candidate window on local Mac
+Status: not-run
+Exit code: not applicable
+User response: 仍待检查，先完成其余工作
+Scope: title/body candidate window during open/create/archive/trash, organizer title/tags, search form submission.
+Automated composition events passed but do not replace this manual acceptance.

@@ -1,6 +1,6 @@
 # Acceptance design
 
-状态：实施前计划；下列新测试入口按切片建立，不能当作已通过。
+状态：功能切片已实现；本表记录验收设计与实际入口，通过情况以 verification.md 和 evidence.json 为准，真实 IME 仍待检查。
 
 ## Scenario mapping
 
@@ -11,13 +11,13 @@
 | LIBRARY-LIST-003 | 稳定分页与空态 | API/UI | tests/api/article-library.test.ts；tests/e2e/article-library.spec.ts | 空库、同时间同标题多稿、超界游标 | 不漏/重复，无全文，空态与错误区分 |
 | LIBRARY-OPEN-004 | 打开与最近稿 | API/UI | tests/e2e/article-navigation.spec.ts | 两稿两标签、刷新/重启 | 各页独立，重开最近稿 |
 | LIBRARY-SWITCH-005 | 切换保护 | UI | tests/e2e/article-navigation.spec.ts | 迟到保存、离线副本/失败、冲突、真实 IME 手工 | 旧结果不改新稿；不能安全保留则阻止 |
-| LIBRARY-RENAME-006 | 唯一标题与冲突 | API/UI | tests/e2e/article-library.spec.ts；tests/api/article-library.test.ts | 有历史的正文，远端先保存 | ID/正文保留、新修订、旧基线拒绝 |
-| LIBRARY-TAGS-007 | 标签与元数据基线 | 集成/API/UI | tests/integration/article-library.test.ts；tests/e2e/article-library.spec.ts | 规范化标签、相同基线两请求、重复 ID | 去重限额，CAS，正文 head 不变 |
-| LIBRARY-FIND-008 | 标题与标签查找 | API/UI | tests/api/article-library.test.ts；tests/e2e/article-library.spec.ts | 中文、百分号、同名和状态 | 字面过滤，游标只作用于当前查询 |
-| LIBRARY-ARCHIVE-009 | 归档只读 | 集成/UI | tests/integration/article-library.test.ts；tests/e2e/article-lifecycle.spec.ts | 另一个仍编辑的标签 | 保留历史、拒绝新正文写、可取消归档 |
+| LIBRARY-RENAME-006 | 唯一标题与冲突 | API/UI | tests/e2e/article-organization.spec.ts；tests/api/article-library.test.ts | 有历史的正文，远端先保存 | ID/正文保留、新修订、旧基线拒绝 |
+| LIBRARY-TAGS-007 | 标签与元数据基线 | 集成/API/UI | tests/api/article-library.test.ts；tests/e2e/article-organization.spec.ts | 规范化标签、相同基线两请求、重复 ID | 去重限额，CAS，正文 head 不变 |
+| LIBRARY-FIND-008 | 标题与标签查找 | API/UI | tests/api/article-library.test.ts；tests/e2e/article-search.spec.ts | 中文、百分号、同名和状态 | 字面过滤，游标只作用于当前查询 |
+| LIBRARY-ARCHIVE-009 | 归档只读 | 集成/UI | tests/api/article-library.test.ts；tests/e2e/article-lifecycle.spec.ts | 另一个仍编辑的标签 | 保留历史、拒绝新正文写、可取消归档 |
 | LIBRARY-TRASH-010 | 确认软删除 | UI/API | tests/e2e/article-lifecycle.spec.ts；tests/api/article-library.test.ts | 取消/确认、未保存稿、过期状态 | 保留正文/副本，取消不变，指针安全 |
-| LIBRARY-RESTORE-011 | 恢复原状态 | 集成/UI | tests/integration/article-library.test.ts；tests/e2e/article-lifecycle.spec.ts | 活动/归档来源和重复请求 | 身份/标签/历史不变，返回原状态 |
-| LIBRARY-POSITION-012 | 文章位置 | UI | tests/e2e/article-navigation.spec.ts | 同修订、已变修订、非法坐标/存储失败 | 恢复或安全回文首，不改正文 |
+| LIBRARY-RESTORE-011 | 恢复原状态 | 集成/UI | tests/api/article-library.test.ts；tests/e2e/article-lifecycle.spec.ts | 活动/归档来源和重复请求 | 身份/标签/历史不变，返回原状态 |
+| LIBRARY-POSITION-012 | 文章位置 | UI | tests/e2e/article-position.spec.ts | 同修订、已变修订、非法坐标/存储失败 | 恢复或安全回文首，不改正文 |
 | LIBRARY-FAILURE-013 | 边界失败与访问控制 | API/集成/UI | tests/api/article-library.test.ts；tests/e2e/article-library.spec.ts | 无会话/跨源/非法数据、SQL trigger 异常 | 不泄漏、不留半状态、旧稿仍在 |
 | ARTICLE-CREATE-001 | ensure 与显式新建区分 | API/UI | tests/api/article-library.test.ts；tests/e2e/article-save.spec.ts | 空库并发 ensure、多稿已有最近 | ensure 不重复创建，打开正确最近稿 |
 | ARTICLE-SAVE-002 | 原保存/重启兼容 | API/UI | tests/api/article-persistence.test.ts；tests/e2e/article-save.spec.ts | 中文/格式稿 | 内容和标题投影保持一致 |

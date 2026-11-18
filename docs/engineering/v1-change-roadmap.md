@@ -1,6 +1,6 @@
 # V1 Change 路线图
 
-更新日期：2026-11-17。状态：当前 C01 已交付，C02 已实现、验收、归档并合入主分支，G3 通过；C03 manage-article-library 已开始设计；C04–C17 尚未创建。范围依据为 [V1 功能范围](../product/v1-scope.md)，已实现行为以 `openspec/specs/` 为准。
+更新日期：2026-11-18。状态：当前 C01 已交付，C02 已实现、验收、归档并合入主分支，G3 通过；C03 manage-article-library 功能切片已实现，本机与 Linux 自动验收通过，真实 IME 待检查，尚未通过 G2/G3；C04–C17 尚未创建。范围依据为 [V1 功能范围](../product/v1-scope.md)，已实现行为以 `openspec/specs/` 为准。
 
 ## 数量与拆分原则
 

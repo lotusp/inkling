@@ -1,0 +1,12 @@
+Command: node scripts/harness/check.mjs manage-article-library --stage verify
+Exit code: 1
+FAIL: Unfinished implementation tasks.
+FAIL: Evidence must match the change, schemaVersion 1, and actual passed result.
+FAIL: Check not passed or missing command: manual-ime
+FAIL: Invalid scenario evidence: LIBRARY-CREATE-002
+FAIL: Invalid scenario evidence: LIBRARY-SWITCH-005
+FAIL: Invalid scenario evidence: LIBRARY-RENAME-006
+FAIL: Invalid scenario evidence: LIBRARY-TAGS-007
+FAIL: Invalid scenario evidence: LIBRARY-FIND-008
+FAIL: Invalid scenario evidence: LIBRARY-ARCHIVE-009
+FAIL: Invalid scenario evidence: LIBRARY-TRASH-010
