@@ -130,6 +130,7 @@ test('LIBRARY-FAILURE-013 list loading failure and retry preserve the draft; sta
   await page.getByRole('button', { name: '文章库', exact: true }).click();
   await waiting;
   await expect(page.getByText('正在读取文章…', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '搜索选项' }).click();
   await page.getByRole('button', { name: '刷新文章库', exact: true }).click();
   await expect(
     page.getByText('文章库读取失败，请重试。', { exact: true }),

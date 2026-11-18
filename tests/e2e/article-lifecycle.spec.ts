@@ -71,15 +71,17 @@ test('LIBRARY-ARCHIVE-009 archived reopening is read-only with readable history 
   await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   await expect(
-    page.getByRole('button', { name: '保存并命名当前稿', exact: true }),
-  ).toBeDisabled();
+    page.getByRole('button', { name: '保存版本', exact: true }),
+  ).toBeHidden();
   await expect(
-    page.getByRole('button', { name: '查看并恢复版本 #1', exact: true }),
-  ).toBeDisabled();
-  await page.getByText('比较两个版本', { exact: true }).click();
-  await page.getByLabel('比较左侧版本').selectOption({ label: '#1' });
+    page.getByRole('button', { name: '版本 #1的更多操作' }),
+  ).toBeHidden();
+  await page
+    .getByRole('listitem')
+    .filter({ hasText: '初稿' })
+    .getByRole('button', { name: '比较', exact: true })
+    .click();
   await page.getByLabel('比较右侧版本').selectOption({ label: '#2' });
-  await page.getByRole('button', { name: '比较所选版本', exact: true }).click();
   await expect(
     page.getByRole('region', { name: '版本差异', exact: true }),
   ).toBeVisible();
@@ -124,6 +126,7 @@ test('LIBRARY-ARCHIVE-009 failed state check pauses writes without replacing inp
   await body(page).fill('核对失败仍在本页');
   await page.route('**/api/articles/*/metadata', (route) => route.abort());
   await page.getByRole('button', { name: '文章库', exact: true }).click();
+  await page.getByRole('button', { name: '搜索选项' }).click();
   await page.getByRole('button', { name: '刷新文章库' }).click();
   await page.getByRole('button', { name: '关闭文章库' }).click();
   await expect(

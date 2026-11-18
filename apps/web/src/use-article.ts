@@ -1165,6 +1165,7 @@ export function useArticle(
     navigationLocked,
     damagedArticleId,
     flushForVersion,
+    currentDocument: () => latest.current,
     reviewRestore,
     confirmRestore,
     status,

@@ -112,7 +112,7 @@ it('LIBRARY-LIST-003 lists empty and duplicate-title articles with stable tied-t
     headers: f.headers,
   });
   expect(empty.statusCode).toBe(200);
-  expect(empty.json()).toEqual({ items: [], nextCursor: null });
+  expect(empty.json()).toEqual({ items: [], nextCursor: null, total: 0 });
   const ids: string[] = [];
   for (let i = 0; i < 5; i++)
     ids.push((await f.create('同名')).article.articleId);
@@ -774,6 +774,40 @@ it('LIBRARY-FIND-008 combines literal title fragments and exact normalized tags 
   await list('技术');
   expect(f.service.read(a.article.articleId)).toEqual(after);
   expect(f.service.workspace().currentArticleId).toBe(c.article.articleId);
+});
+it('LIBRARY-DESK-014 all articles spans active and archived with a full count across pages', async () => {
+  const f = await setup();
+  const active = (await f.create('同组一')).article;
+  const archive = (await f.create('同组二')).article;
+  const trash = (await f.create('同组三')).article;
+  expect((await lifecycle(f, archive.articleId, 'archive')).statusCode).toBe(
+    200,
+  );
+  expect((await lifecycle(f, trash.articleId, 'trash')).statusCode).toBe(200);
+  const params = new URLSearchParams({
+    state: 'all',
+    term: '同组',
+    limit: '1',
+  });
+  const read = async () =>
+    ArticleListPage.parse(
+      (
+        await f.app.inject({
+          url: '/api/articles?' + params,
+          headers: f.headers,
+        })
+      ).json(),
+    );
+  const first = await read();
+  expect(first.total).toBe(2);
+  params.set('beforeId', first.nextCursor!.articleId);
+  params.set('beforeCreatedAt', String(first.nextCursor!.createdAt));
+  const next = await read();
+  expect(next.total).toBe(2);
+  expect(next.nextCursor).toBeNull();
+  expect(
+    [...first.items, ...next.items].map((item) => item.articleId).sort(),
+  ).toEqual([active.articleId, archive.articleId].sort());
 });
 it('LIBRARY-FIND-008 filtered pagination is stable and excludes inactive articles', async () => {
   const f = await setup();

@@ -37,6 +37,7 @@ export type RevisionPage = z.infer<typeof RevisionPage>;
 export const NameRevisionCommand = z
   .object({
     mutationId: Id,
+    keepExistingName: z.literal(true).optional(),
     name: z
       .string()
       .refine(

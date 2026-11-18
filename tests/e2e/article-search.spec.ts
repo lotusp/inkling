@@ -46,9 +46,9 @@ async function create(
   return article;
 }
 async function search(page: Page, title: string, label = '') {
+  if (!(await q(page).isVisible()))
+    await page.getByRole('button', { name: '搜索选项' }).click();
   await q(page).fill(title);
-  if (!(await tag(page).isVisible()))
-    await page.getByText('标签筛选', { exact: true }).click();
   await tag(page).fill(label);
   await page.getByRole('button', { name: '查找文章', exact: true }).click();
 }
@@ -91,6 +91,7 @@ test('LIBRARY-FIND-008 changing filters resets pagination and retains applied fi
   await page.getByRole('button', { name: '文章库', exact: true }).click();
   await search(page, '前组', '系列');
   await expect(list(page).getByRole('listitem')).toHaveCount(20);
+  await expect(list(page).getByText('22 篇', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '加载更多文章', exact: true }).click();
   await expect(list(page).getByRole('listitem')).toHaveCount(22);
   const request = page.waitForRequest((r) => {
@@ -207,8 +208,7 @@ for (const field of ['按标题查找', '精确标签'])
       requests++;
       await route.continue();
     });
-    if (field === '精确标签')
-      await page.getByText('标签筛选', { exact: true }).click();
+    await page.getByRole('button', { name: '搜索选项' }).click();
     const input = page.getByRole('textbox', { name: field, exact: true });
     await input.fill(field === '按标题查找' ? '输入法' : '标签');
     await input.dispatchEvent('compositionstart');
@@ -224,3 +224,22 @@ for (const field of ['按标题查找', '精确标签'])
     await expect(list(page).getByRole('listitem')).toHaveCount(1);
     expect(requests).toBe(1);
   });
+
+test('LIBRARY-FIND-008 single search matches a title or part of a tag after Chinese composition', async ({
+  page,
+  workspace,
+}) => {
+  await create(page, workspace.origin, '复盘记录', ['慢查询']);
+  await create(page, workspace.origin, '查询优化');
+  await page.getByRole('button', { name: '文章库', exact: true }).click();
+  const quick = list(page).getByRole('searchbox', { name: '搜标题或标签' });
+  await expect(list(page).getByText('3 篇', { exact: true })).toBeVisible();
+  await quick.dispatchEvent('compositionstart');
+  await quick.fill('查询');
+  await expect(list(page).getByText('3 篇', { exact: true })).toBeVisible();
+  await quick.dispatchEvent('compositionend', { data: '查询' });
+  await expect(list(page).getByText('2 篇', { exact: true })).toBeVisible();
+  await expect(list(page).getByRole('listitem')).toHaveCount(2);
+  await quick.fill('慢查');
+  await expect(list(page).getByRole('listitem')).toHaveText([/复盘记录/]);
+});

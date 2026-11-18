@@ -1,14 +1,31 @@
 import { useRef, useState } from 'react';
 import { ArticleSearchFilters } from '@inkling/contracts';
-import { Search } from 'lucide-react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 export function ArticleSearchForm({
   apply,
+  refresh,
+  disabled,
 }: {
-  apply: (filters: ArticleSearchFilters) => void;
+  apply: (filters: ArticleSearchFilters & { term?: string }) => void;
+  refresh: () => void;
+  disabled: boolean;
 }) {
   const [q, setQ] = useState(''),
     [tag, setTag] = useState(''),
     [message, setMessage] = useState('');
+  const [term, setTerm] = useState('');
+  const [advanced, setAdvanced] = useState(false);
+  function search(text: string) {
+    const value = text.trim().normalize('NFC');
+    if ([...value].length > 100) {
+      setMessage('搜索词最多 100 个字符。');
+      return;
+    }
+    setMessage('');
+    setQ('');
+    setTag('');
+    apply({ q: '', tag: '', term: value });
+  }
   const composing = useRef(new Set<string>());
   function ready() {
     if (composing.current.size) {
@@ -25,69 +42,104 @@ export function ArticleSearchForm({
       return;
     }
     setMessage('');
+    setTerm('');
     apply(parsed.data);
   }
   return (
-    <form
-      className="library-search"
-      aria-label="查找文章"
-      onSubmit={(event) => {
-        event.preventDefault();
-        submit();
-      }}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' && event.nativeEvent.isComposing)
-          event.preventDefault();
-      }}
-    >
-      <div className="search-field">
-        <label htmlFor="article-search-title">按标题查找</label>
+    <div className="library-query">
+      <div className="quick-query">
         <input
-          id="article-search-title"
-          type="text"
-          placeholder="标题中的字词"
+          type="search"
+          aria-label="搜标题或标签"
+          placeholder="搜标题或标签"
+          value={term}
+          disabled={disabled}
           maxLength={400}
-          value={q}
-          onChange={(event) => setQ(event.target.value)}
-          onCompositionStart={() => composing.current.add('q')}
-          onCompositionEnd={() => composing.current.delete('q')}
+          onChange={(e) => {
+            setTerm(e.target.value);
+            if (!composing.current.has('term')) search(e.target.value);
+          }}
+          onCompositionStart={() => composing.current.add('term')}
+          onCompositionEnd={(e) => {
+            composing.current.delete('term');
+            search(e.currentTarget.value);
+          }}
         />
+        <button
+          type="button"
+          aria-label="搜索选项"
+          aria-expanded={advanced}
+          title="搜索选项"
+          disabled={disabled}
+          onClick={() => setAdvanced(!advanced)}
+        >
+          <SlidersHorizontal size={14} />
+        </button>
       </div>
-      <details className="search-tag">
-        <summary>标签筛选</summary>
+      <form
+        hidden={!advanced}
+        className="library-search"
+        aria-label="查找文章"
+        onSubmit={(event) => {
+          event.preventDefault();
+          submit();
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && event.nativeEvent.isComposing)
+            event.preventDefault();
+        }}
+      >
         <div className="search-field">
-          <label htmlFor="article-search-tag">精确标签</label>
+          <label htmlFor="article-search-title">按标题查找</label>
           <input
-            id="article-search-tag"
+            id="article-search-title"
             type="text"
-            placeholder="完整标签名称"
-            maxLength={120}
-            value={tag}
-            onChange={(event) => setTag(event.target.value)}
-            onCompositionStart={() => composing.current.add('tag')}
-            onCompositionEnd={() => composing.current.delete('tag')}
+            placeholder="标题中的字词"
+            maxLength={400}
+            value={q}
+            onChange={(event) => setQ(event.target.value)}
+            onCompositionStart={() => composing.current.add('q')}
+            onCompositionEnd={() => composing.current.delete('q')}
           />
         </div>
-      </details>
-      <div className="search-actions">
-        <button type="submit" aria-label="查找文章" title="查找文章">
-          <Search size={15} aria-hidden="true" />
-        </button>
-        <button
-          hidden={!q && !tag}
-          type="button"
-          onClick={() => {
-            if (!ready()) return;
-            setQ('');
-            setTag('');
-            setMessage('');
-            apply({ q: '', tag: '' });
-          }}
-        >
-          清除筛选
-        </button>
-      </div>
+        <div className="search-tag">
+          <div className="search-field">
+            <label htmlFor="article-search-tag">精确标签</label>
+            <input
+              id="article-search-tag"
+              type="text"
+              placeholder="完整标签名称"
+              maxLength={120}
+              value={tag}
+              onChange={(event) => setTag(event.target.value)}
+              onCompositionStart={() => composing.current.add('tag')}
+              onCompositionEnd={() => composing.current.delete('tag')}
+            />
+          </div>
+        </div>
+        <div className="search-actions">
+          <button type="button" disabled={disabled} onClick={refresh}>
+            刷新文章库
+          </button>
+          <button type="submit" aria-label="查找文章" title="查找文章">
+            <Search size={15} aria-hidden="true" />
+          </button>
+          <button
+            hidden={!q && !tag}
+            type="button"
+            onClick={() => {
+              if (!ready()) return;
+              setQ('');
+              setTag('');
+              setMessage('');
+              apply({ q: '', tag: '' });
+            }}
+          >
+            清除筛选
+          </button>
+        </div>
+      </form>
       {message && <p role="alert">{message}</p>}
-    </form>
+    </div>
   );
 }

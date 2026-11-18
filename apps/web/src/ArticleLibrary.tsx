@@ -5,9 +5,9 @@ import {
   type ArticleSnapshot,
   type ArticleListItem,
   type ArticleSearchFilters,
-  type ArticleState,
+  ArticleShelf,
 } from '@inkling/contracts';
-import { Ellipsis, FilePlus2, RefreshCw, X } from 'lucide-react';
+import { Ellipsis, Plus, X } from 'lucide-react';
 import { api } from './api';
 import { DeskMenu } from './DeskMenu';
 import type { LifecycleTarget } from './ArticleLifecycle';
@@ -28,11 +28,11 @@ export function ArticleLibrary({
   close,
 }: {
   current: ArticleSnapshot | null;
-  initialState: ArticleState;
+  initialState: ArticleShelf;
   refreshGeneration: number;
   refreshArticleState: () => void;
   manageState: (target: LifecycleTarget) => void;
-  stateChanged: (state: ArticleState) => void;
+  stateChanged: (state: ArticleShelf) => void;
   restoreArticle: (id: string) => void;
   confirmedMetadata: ArticleListItem | null;
   organizeArticle: (id: string) => void;
@@ -43,13 +43,14 @@ export function ArticleLibrary({
 }) {
   const [page, setPage] = useState<ArticleListPage>({
     items: [],
+    total: 0,
     nextCursor: null,
   });
   const [query, setQuery] = useState<{
     attempt: number;
-    state: ArticleState;
+    state: ArticleShelf;
     cursor: ArticleListPage['nextCursor'];
-    filters: ArticleSearchFilters;
+    filters: ArticleSearchFilters & { term?: string };
   }>({
     attempt: 0,
     cursor: null,
@@ -78,6 +79,7 @@ export function ArticleLibrary({
     setError('');
     const params = new URLSearchParams({ limit: '20' });
     if (query.state !== 'active') params.set('state', query.state);
+    if (query.filters.term) params.set('term', query.filters.term);
     if (query.filters.q) params.set('q', query.filters.q);
     if (query.filters.tag) params.set('tag', query.filters.tag);
     if (query.cursor) {
@@ -101,6 +103,7 @@ export function ArticleLibrary({
               ]
             : result.items,
           nextCursor: result.nextCursor,
+          total: result.total,
         }));
         setLoaded(true);
       })
@@ -123,12 +126,16 @@ export function ArticleLibrary({
       cursor,
     }));
   }
-  function applyFilters(filters: ArticleSearchFilters) {
+  function applyFilters(filters: ArticleSearchFilters & { term?: string }) {
     generation.current++;
     setLoading(true);
     setError('');
-    if (filters.q !== query.filters.q || filters.tag !== query.filters.tag) {
-      setPage({ items: [], nextCursor: null });
+    if (
+      filters.term !== query.filters.term ||
+      filters.q !== query.filters.q ||
+      filters.tag !== query.filters.tag
+    ) {
+      setPage({ items: [], total: 0, nextCursor: null });
       setLoaded(false);
     }
     setQuery((previous) => ({
@@ -139,14 +146,15 @@ export function ArticleLibrary({
     }));
   }
   const stateLabels = {
+    all: '全部文章',
     active: '活动文章',
     archived: '已归档',
     trashed: '回收站',
   };
-  function changeState(state: ArticleState) {
+  function changeState(state: ArticleShelf) {
     if (disabled || state === query.state) return;
     generation.current++;
-    setPage({ items: [], nextCursor: null });
+    setPage({ items: [], total: 0, nextCursor: null });
     setLoading(true);
     setLoaded(false);
     setError('');
@@ -158,8 +166,13 @@ export function ArticleLibrary({
     }));
     stateChanged(state);
   }
-  const hasFilters = !!(query.filters.q || query.filters.tag);
+  const hasFilters = !!(
+    query.filters.q ||
+    query.filters.tag ||
+    query.filters.term
+  );
   const filterSummary = [
+    query.filters.term ? '“' + query.filters.term + '”' : '',
     query.filters.q ? '标题“' + query.filters.q + '”' : '',
     query.filters.tag ? '标签“' + query.filters.tag + '”' : '',
   ]
@@ -168,25 +181,23 @@ export function ArticleLibrary({
   return (
     <section className="article-library" aria-label="文章列表">
       <div className="library-heading">
-        <h2>文章</h2>
+        <div className="library-tabs">
+          <button type="button" aria-pressed="true">
+            文章
+          </button>
+          <button type="button" disabled title="素材尚未接入">
+            素材
+          </button>
+        </div>
         <div className="library-actions">
           <button
             disabled={disabled}
+            className="library-new"
             aria-expanded={creating}
             onClick={() => setCreating(!creating)}
           >
-            <FilePlus2 size={15} />
+            <Plus size={15} />
             新建
-          </button>
-          <button
-            aria-label="刷新文章库"
-            disabled={disabled}
-            onClick={() => {
-              load(null);
-              refreshArticleState();
-            }}
-          >
-            <RefreshCw size={16} aria-hidden="true" />
           </button>
           <button disabled={disabled} aria-label="关闭文章库" onClick={close}>
             <X size={16} aria-hidden="true" />
@@ -234,34 +245,45 @@ export function ArticleLibrary({
             }}
           />
           <button type="submit" disabled={disabled}>
-            <FilePlus2 size={16} aria-hidden="true" />
+            <Plus size={16} aria-hidden="true" />
             新建文章
           </button>
         </div>
         {titleError && <p role="alert">{titleError}</p>}
       </form>
-      <label className="library-scope">
+      <ArticleSearchForm
+        apply={applyFilters}
+        disabled={disabled}
+        refresh={() => {
+          load(null);
+          refreshArticleState();
+        }}
+      />
+      <div className="library-scope">
         <select
           aria-label="文章范围"
           disabled={disabled}
           value={query.state}
           onChange={(e) => {
             const value = e.target.value;
-            if (
-              value === 'active' ||
-              value === 'archived' ||
-              value === 'trashed'
-            )
-              changeState(value);
+            const parsed = ArticleShelf.safeParse(value);
+            if (parsed.success) changeState(parsed.data);
           }}
         >
           <option value="active">写作中</option>
+          <option value="all">全部文章</option>
+          <option value="published" disabled>
+            已发表
+          </option>
           <option value="archived">已归档</option>
           <option value="trashed">回收站</option>
         </select>
-      </label>
-      <ArticleSearchForm apply={applyFilters} />
-      <p className="search-summary" hidden={!hasFilters}>
+        <small>{!loading && !error ? page.total + ' 篇' : ''}</small>
+      </div>
+      <p
+        className="search-summary"
+        hidden={!query.filters.q && !query.filters.tag}
+      >
         当前筛选：{filterSummary}
       </p>
       {error && (
@@ -277,7 +299,7 @@ export function ArticleLibrary({
         <p className="library-empty">
           {hasFilters
             ? '没有匹配的文章，试试其他标题或标签。'
-            : query.state === 'active'
+            : query.state === 'active' || query.state === 'all'
               ? '还没有文章，从一个问题开始写作。'
               : query.state === 'archived'
                 ? '还没有归档文章。'
@@ -383,11 +405,6 @@ export function ArticleLibrary({
         >
           加载更多文章
         </button>
-      )}
-      {loaded && page.items.length > 0 && (
-        <p className="library-count">
-          已显示 {page.items.length} 篇 · 按创建时间排序
-        </p>
       )}
     </section>
   );

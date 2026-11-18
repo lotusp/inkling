@@ -3,7 +3,7 @@ import {
   ArticleSnapshot,
   WorkspaceInfo,
   type ArticleListItem,
-  type ArticleState,
+  type ArticleShelf,
 } from '@inkling/contracts';
 import { api, ApiError } from './api';
 import { ArticleLibrary } from './ArticleLibrary';
@@ -34,7 +34,7 @@ export function ArticleNavigation({
   const [confirmedMetadata, setConfirmedMetadata] =
     useState<ArticleListItem | null>(null);
   const [lifecycle, setLifecycle] = useState<LifecycleTarget | null>(null);
-  const [libraryState, setLibraryState] = useState<ArticleState>('active');
+  const [libraryState, setLibraryState] = useState<ArticleShelf>('active');
   const [libraryGeneration, setLibraryGeneration] = useState(0);
   const [lifecycleMessage, setLifecycleMessage] = useState('');
   const [intent, setIntent] = useState<Intent | null>(null);

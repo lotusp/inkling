@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { Id, ArticleTitle } from './article';
 export const ArticleState = z.enum(['active', 'archived', 'trashed']);
+export const ArticleShelf = z.enum([...ArticleState.options, 'all']);
+export type ArticleShelf = z.infer<typeof ArticleShelf>;
 export type ArticleState = z.infer<typeof ArticleState>;
 export const CreateArticleCommand = z
   .object({ mutationId: Id, title: ArticleTitle.default('') })
@@ -33,7 +35,12 @@ export type ArticleSearchFilters = z.infer<typeof ArticleSearchFilters>;
 export const ArticleListQuery = z
   .object({
     ...ArticleSearchFilters.shape,
-    state: ArticleState.default('active'),
+    state: ArticleShelf.default('active'),
+    term: z
+      .string()
+      .normalize('NFC')
+      .refine((s) => [...s].length <= 100)
+      .optional(),
     limit: z.coerce.number().int().min(1).max(100).default(20),
     beforeCreatedAt: z.coerce
       .number()
@@ -65,6 +72,7 @@ export const ArticleListItem = z.object({
 });
 export const ArticleListPage = z.object({
   items: z.array(ArticleListItem),
+  total: z.number().int().nonnegative(),
   nextCursor: z
     .object({ createdAt: z.number().int().nonnegative(), articleId: Id })
     .nullable(),

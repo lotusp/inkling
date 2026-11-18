@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures';
+import { openRevisionMenu } from './revision-menu';
 import type { Page } from '@playwright/test';
 async function prepare(page: Page) {
   const editor = page.getByRole('textbox', { name: '文章正文', exact: true });
@@ -9,6 +10,7 @@ async function prepare(page: Page) {
   await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' });
+  await openRevisionMenu(panel, 2);
   await panel
     .getByRole('button', { name: '查看并恢复版本 #2', exact: true })
     .click();
@@ -26,8 +28,7 @@ test('REVISION-RESTORE-003 restores a reviewed version as a new head and retains
     .click();
   await expect(editor).toHaveText('值得保留的第一版');
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
-  await panel.getByLabel('所有保存记录', { exact: true }).check();
-  await panel.getByRole('button', { name: '刷新历史', exact: true }).click();
+
   await expect(panel.locator('.revision-list > li')).toHaveCount(4);
   await page.reload();
   await expect(editor).toHaveText('值得保留的第一版');
@@ -43,6 +44,7 @@ test('REVISION-CONFLICT-004 typing or composition invalidates a restore confirma
   await expect(panel.getByRole('alert')).toContainText('草稿已变化');
   await expect(editor).toHaveText('确认后继续形成的新判断');
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
+  await openRevisionMenu(panel, 2);
   await panel
     .getByRole('button', { name: '查看并恢复版本 #2', exact: true })
     .click();
@@ -169,6 +171,7 @@ test('REVISION-CONFLICT-004 unsaved input blocks restore review; cancel leaves t
     route.abort('failed'),
   );
   await editor.fill('尚未确认保存的判断');
+  await openRevisionMenu(panel, 2);
   await panel
     .getByRole('button', { name: '查看并恢复版本 #2', exact: true })
     .click();

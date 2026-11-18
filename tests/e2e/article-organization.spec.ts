@@ -256,8 +256,8 @@ test('LIBRARY-RENAME-006 organizing another article preserves the open draft and
   );
   await body(page).fill('我在写的原稿');
   await page.getByRole('button', { name: '文章库', exact: true }).click();
-  await page.getByRole('textbox', { name: '按标题查找' }).fill('第二篇');
-  await page.getByRole('textbox', { name: '按标题查找' }).press('Enter');
+  await page.getByRole('searchbox', { name: '搜标题或标签' }).fill('第二篇');
+  await page.getByRole('searchbox', { name: '搜标题或标签' }).press('Enter');
   await page.getByRole('button', { name: '第二篇的更多操作' }).click();
   await page.getByRole('button', { name: '整理：第二篇', exact: true }).click();
   await expect(tags(page)).toBeEnabled();
@@ -270,9 +270,9 @@ test('LIBRARY-RENAME-006 organizing another article preserves the open draft and
   await expect(
     page.getByRole('button', { name: '打开：第二篇修订', exact: true }),
   ).toContainText('复盘');
-  await expect(page.getByRole('textbox', { name: '按标题查找' })).toHaveValue(
-    '第二篇',
-  );
+  await expect(
+    page.getByRole('searchbox', { name: '搜标题或标签' }),
+  ).toHaveValue('第二篇');
   await expect(title(page)).toHaveValue('');
   await expect(body(page)).toHaveText('我在写的原稿');
   const saved = ArticleSnapshot.parse(

@@ -1,3 +1,4 @@
+import { openRevisionMenu } from './revision-menu';
 import { test, expect } from './fixtures';
 test.use({
   autoCreateArticle: false,
@@ -17,14 +18,18 @@ test('ARTICLE-QUOTA-013 warns before the limit and retains refused input and nam
   await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' });
-  await panel.getByLabel('版本名称', { exact: true }).fill('保留的命名版');
+  await openRevisionMenu(panel, 2);
   await panel.getByRole('button', { name: '命名版本 #2', exact: true }).click();
+  await panel.getByLabel('版本名称', { exact: true }).fill('保留的命名版');
+  await panel.getByRole('button', { name: '保存名称', exact: true }).click();
   await expect(panel.getByRole('status')).toContainText('已命名版本 #2');
   await editor.fill('新的判断'.repeat(200));
   await expect(page.getByText(/历史容量已达上限/)).toBeVisible();
   await expect(editor).toHaveText('新的判断'.repeat(200));
   await expect(page.getByText('已保存', { exact: true })).not.toBeVisible();
-  await panel.getByRole('button', { name: '刷新历史', exact: true }).click();
+  await page.getByRole('button', { name: '关闭版本历史' }).click();
+  await page.getByRole('button', { name: '文章菜单' }).click();
+  await page.getByRole('button', { name: '版本历史', exact: true }).click();
   await expect(panel.locator('.revision-list > li')).toHaveCount(2);
   await expect(panel).toContainText('保留的命名版');
   await page

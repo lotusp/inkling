@@ -333,15 +333,39 @@ export class SqliteArticles implements ArticleRepository {
       .immediate();
   }
   list(query: ArticleListQuery): ArticleListPage {
+    const shelf =
+      query.state === 'all' ? "state IN ('active','archived')" : 'state = ?';
+    const filters = [shelf];
+    const args: string[] = query.state === 'all' ? [] : [query.state];
+    if (query.q) {
+      filters.push('instr(lower(title),lower(?)) > 0');
+      args.push(query.q);
+    }
+    if (query.tag) {
+      filters.push(
+        'EXISTS(SELECT 1 FROM article_tags t WHERE t.article_id=article_library.article_id AND t.tag=?)',
+      );
+      args.push(query.tag);
+    }
+    if (query.term) {
+      filters.push(
+        "(instr(lower(CASE WHEN title='' THEN '未命名文章' ELSE title END),lower(?)) > 0 OR EXISTS(SELECT 1 FROM article_tags t WHERE t.article_id=article_library.article_id AND instr(lower(t.tag),lower(?)) > 0))",
+      );
+      args.push(query.term, query.term);
+    }
+    const from = ' FROM article_library WHERE ' + filters.join(' AND ');
+    const total = Number(
+      row(this.db.prepare('SELECT count(*) AS total' + from).get(...args))
+        .total,
+    );
     const values = this.db
       .prepare(
-        "SELECT article_id,title,state,metadata_version,created_at,updated_at,(SELECT json_group_array(tag) FROM article_tags WHERE article_tags.article_id=article_library.article_id) tags_json FROM article_library WHERE state=? AND instr(lower(title),lower(?))>0 AND (?='' OR EXISTS(SELECT 1 FROM article_tags WHERE article_tags.article_id=article_library.article_id AND tag=?)) AND (? IS NULL OR created_at < ? OR (created_at = ? AND article_id < ?)) ORDER BY created_at DESC,article_id DESC LIMIT ?",
+        'SELECT article_id,title,state,metadata_version,created_at,updated_at,(SELECT json_group_array(tag) FROM article_tags WHERE article_tags.article_id=article_library.article_id) tags_json' +
+          from +
+          ' AND (? IS NULL OR created_at < ? OR (created_at = ? AND article_id < ?)) ORDER BY created_at DESC,article_id DESC LIMIT ?',
       )
       .all(
-        query.state,
-        query.q,
-        query.tag,
-        query.tag,
+        ...args,
         query.beforeCreatedAt ?? null,
         query.beforeCreatedAt ?? null,
         query.beforeCreatedAt ?? null,
@@ -354,6 +378,7 @@ export class SqliteArticles implements ArticleRepository {
     const last = items.at(-1);
     return {
       items,
+      total,
       nextCursor:
         values.length > query.limit && last
           ? { createdAt: last.createdAt, articleId: last.articleId }
@@ -597,18 +622,27 @@ export class SqliteArticles implements ArticleRepository {
         if (old !== undefined) return NameRevisionResult.parse(old);
         this.assertActive(articleId);
         this.read(articleId);
-        this.revision(articleId, revisionId);
+        const revision = this.revision(articleId, revisionId);
+        const retainedName =
+          revision.kind === 'initial'
+            ? '初稿'
+            : revision.kind === 'restore'
+              ? '恢复的稿件'
+              : command.name;
+        const name = command.keepExistingName
+          ? (revision.name ?? retainedName)
+          : command.name;
         const updatedAt = this.now();
         this.db
           .prepare(
             'INSERT INTO revision_markers VALUES(?,?,NULL,?,?) ON CONFLICT(revision_id) DO UPDATE SET name=excluded.name,updated_at=excluded.updated_at',
           )
-          .run(articleId, revisionId, command.name, updatedAt);
+          .run(articleId, revisionId, name, updatedAt);
         const result = {
           mutationId: command.mutationId,
           articleId,
           revisionId,
-          name: command.name,
+          name,
           updatedAt,
         };
         this.remember(

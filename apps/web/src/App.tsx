@@ -207,6 +207,16 @@ function Workbench({
           >
             版本历史
           </button>
+          <button disabled title="文件导出尚未接入">
+            导出文件…
+          </button>
+          <button disabled title="博客发布尚未接入">
+            发布到博客…
+          </button>
+          <hr />
+          <button disabled title="写作偏好尚未接入">
+            写作偏好
+          </button>
           <button onClick={() => setFocused(true)}>专注写作</button>
         </DeskMenu>
       </header>
@@ -423,6 +433,7 @@ function Workbench({
               article={article.snapshot}
               visible={panel === 'history' && !focused}
               readOnly={article.stateReadOnly || article.navigationLocked}
+              currentDocument={article.currentDocument}
               flush={article.flushForVersion}
               reviewRestore={article.reviewRestore}
               confirmRestore={article.confirmRestore}

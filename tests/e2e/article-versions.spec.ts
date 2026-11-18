@@ -1,3 +1,4 @@
+import { openRevisionMenu } from './revision-menu';
 import { test, expect } from './fixtures';
 
 test('REVISION-HISTORY-001 saves and names the clicked draft; REVISION-COMPARE-002 compares without changing the editor', async ({
@@ -8,27 +9,31 @@ test('REVISION-HISTORY-001 saves and names the clicked draft; REVISION-COMPARE-0
   await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' });
+  await panel.getByRole('button', { name: '保存版本', exact: true }).click();
+  await expect(panel.getByText('手动保存', { exact: true })).toBeVisible();
+  await openRevisionMenu(panel, 2);
+  await panel.getByRole('button', { name: '命名版本 #2', exact: true }).click();
   await panel.getByLabel('版本名称', { exact: true }).fill('观点形成');
-  await panel
-    .getByRole('button', { name: '保存并命名当前稿', exact: true })
-    .click();
+  await panel.getByRole('button', { name: '保存名称', exact: true }).click();
   await expect(panel.getByRole('status')).toContainText('已命名版本 #2');
   await expect(
     panel.getByRole('listitem').filter({ hasText: '观点形成' }),
   ).toHaveCount(1);
+  await panel.getByRole('button', { name: '保存版本', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('版本已保存');
+  await expect(panel.getByText('观点形成', { exact: true })).toBeVisible();
   await editor.press('ControlOrMeta+a');
   await page.getByRole('button', { name: '加粗', exact: true }).click();
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
-  await panel.getByLabel('所有保存记录', { exact: true }).check();
-  await panel.getByRole('button', { name: '刷新历史', exact: true }).click();
-  await page.getByText('比较两个版本', { exact: true }).click();
+  await panel
+    .getByRole('listitem')
+    .filter({ hasText: '观点形成' })
+    .getByRole('button', { name: '比较', exact: true })
+    .click();
   await panel
     .getByLabel('比较左侧版本')
     .selectOption({ label: '#2 · 观点形成' });
   await panel.getByLabel('比较右侧版本').selectOption({ label: '#3' });
-  await panel
-    .getByRole('button', { name: '比较所选版本', exact: true })
-    .click();
   await expect(panel.getByText(/格式或结构变化/)).toBeVisible();
   await expect(editor.locator('strong')).toHaveText('独立思考的第一稿');
   await editor.fill('比较期间继续写作的新判断');
@@ -62,16 +67,15 @@ test('REVISION-HISTORY-001 a lost naming response retries the same revision and 
   await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' });
-  await panel.getByLabel('版本名称', { exact: true }).fill('固定版本');
-  await panel
-    .getByRole('button', { name: '保存并命名当前稿', exact: true })
-    .click();
+  await panel.getByRole('button', { name: '保存版本', exact: true }).click();
   await expect(
-    panel.getByRole('button', { name: '重试命名', exact: true }),
+    panel.getByRole('button', { name: '重试保存版本', exact: true }),
   ).toBeVisible();
   await editor.fill('命名后继续写的内容');
-  await panel.getByRole('button', { name: '重试命名', exact: true }).click();
-  await expect(panel.getByRole('status')).toContainText('已命名版本 #2');
+  await panel
+    .getByRole('button', { name: '重试保存版本', exact: true })
+    .click();
+  await expect(panel.getByRole('status')).toContainText('版本已保存 · #2');
   expect(ids).toHaveLength(2);
   expect(ids[0]).toBe(ids[1]);
   await expect(editor).toHaveText('命名后继续写的内容');
@@ -105,16 +109,14 @@ test('REVISION-HISTORY-001 naming flush pins the saved revision while the author
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' }),
     editor = page.getByRole('textbox', { name: '文章正文', exact: true });
-  await panel.getByLabel('版本名称', { exact: true }).fill('等待期间仍固定');
   await editor.fill('点击命名时的原稿');
-  await panel
-    .getByRole('button', { name: '保存并命名当前稿', exact: true })
-    .click();
+  await panel.getByRole('button', { name: '保存版本', exact: true }).click();
   await waiting;
   await editor.fill('保存等待期间继续写的新稿');
   release();
-  await expect(panel.getByRole('status')).toContainText('已命名版本 #2');
+  await expect(panel.getByRole('status')).toContainText('版本已保存 · #2');
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
+  await openRevisionMenu(panel, 2);
   await panel
     .getByRole('button', { name: '查看并恢复版本 #2', exact: true })
     .click();
@@ -144,6 +146,7 @@ test('REVISION-COMPARE-002 restore preview contains long code lines within a nar
   await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' });
+  await openRevisionMenu(panel, 2);
   await panel
     .getByRole('button', { name: '查看并恢复版本 #2', exact: true })
     .click();
