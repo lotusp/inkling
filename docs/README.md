@@ -12,6 +12,7 @@
 6. [知识组织与维护规则](handbook/knowledge-management.md)：知识如何分类、更新、追溯与沉淀。
 7. [单台 Mac 本地架构](architecture/local-macos-mvp.md)：进程、编辑、Agent 与恢复提案；文章存储设计已选定，分步骤实施。
 8. [开发 Harness](engineering/harness.md)：串行 change、ATDD、开发规范、证据与 Living Spec 收口。
+9. [剩余开发任务与完成条件](engineering/v1-change-roadmap.md#当前要做的事)列出 C03 收口、正式稿纸对齐和闻一首个协作闭环，后续 C08–C17 的交付与依赖见同页清单。
 
 ## 当前知识地图
 
