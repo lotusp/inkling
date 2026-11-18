@@ -5,6 +5,7 @@
 [打开独立交互原型](inkling-writing-desk-v3.html) · [桌面截图](inkling-writing-desk-v3.png) · [V1 产品范围](../product/v1-scope.md)
 
 [写作台 V3 任务评审](../validation/writing-desk-v3-task-review.md)记录了切稿续写、选句改写与昨日版本找回的结果和改进顺序。
+[文章库与写作素材评审](../validation/writing-desk-v3-library-review.md)覆盖找稿、整理、回收站，以及灵感、资料和本文大纲在 V1 的取舍。
 
 2026-11-18。依据作者提供的 Claude V3 评审说明和 HTML 原型重新设计。首次打开直接回到《我为什么把草稿留在本机》和一段尚待验证的判断。右栏的示例讨论区分作者亲历的现象和仍然缺少的证据。作者可以留在稿纸上继续写，也可以沿引用回看摘记。
 
