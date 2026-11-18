@@ -54,8 +54,15 @@ test('纸面起笔，文章库整理、独立素材、本文大纲', async (t) =
   await button(p, '大纲').click();
   await button(p, '给这个判断划一道边界').click();
   await expect(p.locator('#context')).not.toContainText('选中');
-  await button(p, '讨论').click();
-  await p.getByLabel('讨论问题').fill('这条观察够吗？');
+  const assistant = button(p, '闻一 · AI 写作助手');
+  await expect(assistant).toHaveText('');
+  await expect(assistant.locator('svg')).toBeVisible();
+  await assistant.focus();
+  await p.keyboard.press('Enter');
+  await expect(assistant).toHaveAttribute('aria-expanded', 'true');
+  await expect(p.locator('#railTitle')).toHaveText('闻一');
+  await expect(p.locator('#thread .by')).toHaveText(['我', '闻一']);
+  await p.getByLabel('给闻一的消息').fill('这条观察够吗？');
   await button(p, '文章库').click();
   await p.getByRole('searchbox', { name: '搜标题或标签' }).fill('');
   await p
@@ -64,7 +71,7 @@ test('纸面起笔，文章库整理、独立素材、本文大纲', async (t) =
   await p
     .getByRole('button', { name: '我为什么把草稿留在本机', exact: true })
     .click();
-  await expect(p.getByLabel('讨论问题')).toHaveValue('这条观察够吗？');
+  await expect(p.getByLabel('给闻一的消息')).toHaveValue('这条观察够吗？');
 });
 
 test('选句改写只替换选区，保留修改前稿并可撤销、恢复', async (t) => {
@@ -89,7 +96,10 @@ test('选句改写只替换选区，保留修改前稿并可撤销、恢复', as
   await expect(block).toHaveText(original);
   await button(p, '文章菜单').click();
   await button(p, '版本历史').click();
-  await expect(button(p, '讨论')).toHaveAttribute('aria-expanded', 'false');
+  await expect(button(p, '闻一 · AI 写作助手')).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  );
   await p
     .getByRole('searchbox', { name: '查找日期、名称或版本号' })
     .fill('今天');
@@ -116,7 +126,8 @@ test('窄屏只展示当前任务，关闭文章菜单时停留在原列表', as
   await p.getByLabel('章节标题').fill('恢复实验');
   await button(p, '添加').click();
   await expect(p.locator('.block.h2').last()).toHaveText('恢复实验');
-  await button(p, '讨论').click();
+  await button(p, '闻一 · AI 写作助手').click();
+  await expect(p.locator('#railTitle')).toHaveText('闻一');
   await p.getByRole('button', { name: '1 份资料' }).click();
   await expect(p.getByRole('checkbox').first()).toBeChecked();
   await p.getByRole('checkbox').first().uncheck();

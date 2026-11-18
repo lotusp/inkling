@@ -147,6 +147,15 @@
       .top button {
         font-size: 13px;
       }
+      #rightToggle {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+      }
+      #rightToggle .icon {
+        width: 20px;
+        height: 20px;
+      }
       .dot {
         display: inline-block;
         width: 7px;
@@ -966,14 +975,15 @@
       >
         <i class="dot"></i><span class="save-label">本页草稿</span></button
       ><button
-        class="with"
+        class="ib"
         id="rightToggle"
         data-do="talk"
-        aria-label="讨论"
+        aria-label="闻一 · AI 写作助手"
+        title="闻一 · AI 写作助手"
         aria-expanded="false"
         aria-controls="rightRail"
       >
-        <i data-icon="chat"></i>讨论
+        <i data-icon="sparkles"></i>
       </button>
       <button
         id="articleMore"
@@ -1051,7 +1061,7 @@
       </main>
       <aside id="rightRail" aria-label="文章侧栏">
         <header class="rail-head">
-          <strong id="railTitle">讨论</strong>
+          <strong id="railTitle">闻一</strong>
           <span class="grow"></span>
           <div class="row" id="discussionActions">
             <small>示例</small>
@@ -1082,7 +1092,7 @@
           </button>
         </header>
         <section id="rightDetail" class="inside" hidden></section>
-        <section id="thread" class="thread" aria-label="当前讨论"></section>
+        <section id="thread" class="thread" aria-label="与闻一的对话"></section>
         <div class="compose">
           <div class="quick" id="quick">
             <button data-do="question">推敲判断</button
@@ -1096,8 +1106,8 @@
             <div id="context" class="context"></div>
             <textarea
               id="prompt"
-              aria-label="讨论问题"
-              placeholder="写下想推敲的问题…"
+              aria-label="给闻一的消息"
+              placeholder="和闻一聊聊这篇文章…"
               rows="2"
             ></textarea>
             <div class="row">
@@ -1118,7 +1128,7 @@
       </aside>
     </div>
     <nav id="tool" class="tool" hidden aria-label="段落操作">
-      <button data-do="discuss">讨论选区</button>
+      <button data-do="discuss">问问闻一</button>
       <button data-do="rewrite">改写选区</button>
       <button data-do="format-block">段落格式…</button>
     </nav>
@@ -1155,7 +1165,8 @@
         clock: 'M3 5v5h5 M4 9a8 8 0 1 1 0 7 M12 7v5l4 2',
         sliders: 'M3 7h4m5 0h9 M3 17h10m5 0h3 M10 4v6m6 4v6',
         export: 'M12 15V3m-4 4 4-4 4 4 M5 12v8h14v-8',
-        chat: 'M4 4h16v12H9l-5 4z',
+        sparkles:
+          'M9 5Q10.4 12.6 16 14Q10.4 15.4 9 22Q7.6 15.4 2 14Q7.6 12.6 9 5Z M18 2Q18.6 5.4 22 6Q18.6 6.6 18 10Q17.4 6.6 14 6Q17.4 5.4 18 2Z',
         focus: 'M3 8V3h5m8 0h5v5m0 8v5h-5m-8 0H3v-5',
         plus: 'M12 4v16M4 12h16',
         close: 'M6 6l12 12M18 6 6 18',
@@ -1758,7 +1769,7 @@
                 '<div class="msg ' +
                 (m.who === 'user' ? 'user' : '') +
                 '"><div class="by">' +
-                (m.who === 'user' ? '我' : 'Inkling') +
+                (m.who === 'user' ? '我' : '闻一') +
                 '</div><p>' +
                 esc(m.text) +
                 '</p>' +
@@ -2007,7 +2018,7 @@
         $('railTitle').textContent = {
           history: '版本历史',
           chats: '讨论历史',
-          discussion: '讨论',
+          discussion: '闻一',
         }[rightView];
         for (const el of document.querySelectorAll(
           '#discussionActions,#thread,.compose',
