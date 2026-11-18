@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "changeId": "manage-article-library",
   "result": "blocked",
-  "testedCommit": "5c664e6d45477073b716c50176c61bf518603ddc",
+  "testedCommit": "ad738a85bcdbb1f3894ff79fa1dfcb801fce45d9",
   "ciRun": null,
   "subject": [
     {
@@ -43,11 +43,11 @@
     },
     {
       "path": "@change/acceptance.md",
-      "sha256": "2f23631072eec39376cfa05bfee481bc6af24f8100ec013cc76609874734f4cc"
+      "sha256": "95f476c0b1d20a7f3c16e266b11c0ec6a7a95a29369e47fe1d1c7059303d14f1"
     },
     {
       "path": "@change/design.md",
-      "sha256": "be42168ce88d06609c93e395124aafa05cee5f2aa0563a915452e4a500840406"
+      "sha256": "a68b63db8c7df92a7de103d803e01b5c8b5f9b4e1d38499b38c4af07a4e82d1e"
     },
     {
       "path": "@change/proposal.md",
@@ -55,7 +55,7 @@
     },
     {
       "path": "@change/specs/article-library/spec.md",
-      "sha256": "c6ec89ff3d87b8d16efa1b884555b4ea29b9978f7729d4e047ad1ad67adfe1e3"
+      "sha256": "e23640a408bf5502b53d669b9009d0a3bbd39715523ac2bc9f11c094724d89de"
     },
     {
       "path": "@change/specs/article-persistence/spec.md",
@@ -107,11 +107,11 @@
     },
     {
       "path": "apps/web/src/App.tsx",
-      "sha256": "d915343e82dcd78f8c72adeb85eac4ca0dc47b4da5ac4eb04ae62de00e260a11"
+      "sha256": "a9637212a7f08de99d4ebe2aa382b26b8bd3075151f6dc47505543906923b8c5"
     },
     {
       "path": "apps/web/src/ArticleLibrary.tsx",
-      "sha256": "a55a6c4a8307a98bb1b5dce144c769c6dfdd4132d70a488e33999e5e5b6ae82c"
+      "sha256": "560c4b2cc84ef12b4adeae7caec5ee9d3c64768a0a80d09e3c0a5b5220ab9180"
     },
     {
       "path": "apps/web/src/ArticleLifecycle.tsx",
@@ -119,11 +119,15 @@
     },
     {
       "path": "apps/web/src/ArticleNavigation.tsx",
-      "sha256": "0a5935ec578f44f3436ae29b6c8a8960e3af16beb8c47d942218fd4216464972"
+      "sha256": "e3cf014e674f5307b55da334c30384e0f031e99bf0439ec0a091fbf0d4b4e9c8"
     },
     {
       "path": "apps/web/src/ArticleOrganizer.tsx",
-      "sha256": "0e31d79dd1ca53cdc0cd30c7b7afdcc5074ddcb7fb6e57b85390b3b4ea1ea6ef"
+      "sha256": "d96db4fcd39fd4f86053f2658d255dae257dd28c7040cc18d2c5fee1b181f902"
+    },
+    {
+      "path": "apps/web/src/ArticleOutline.tsx",
+      "sha256": "425faf1e9d27a1358427a1fcdc3037333544ed2312032d926ea5fe6d097dd44d"
     },
     {
       "path": "apps/web/src/ArticleSaveFeedback.tsx",
@@ -131,7 +135,7 @@
     },
     {
       "path": "apps/web/src/ArticleSearchForm.tsx",
-      "sha256": "6680cfff68bf62924103c82555e4d46d01b8b10277a2011d85358c40cf1b1e81"
+      "sha256": "8a716fbcbe75c7d63e65b397eab83b6bffaf40c967d146cd1f0450a344c5a97a"
     },
     {
       "path": "apps/web/src/ConflictPanel.tsx",
@@ -140,6 +144,10 @@
     {
       "path": "apps/web/src/DamagedArticlePanel.tsx",
       "sha256": "2e793c6fcec4fef7282063dc4a6b4b4f05a933b1c80e8fdeac6f07ccc8b75182"
+    },
+    {
+      "path": "apps/web/src/DeskDialog.tsx",
+      "sha256": "a1d2a845f9213bb0ea0e92861164cfe466a08a8dd4cde406ebfaab2af7b2a73a"
     },
     {
       "path": "apps/web/src/DeskMenu.tsx",
@@ -155,7 +163,11 @@
     },
     {
       "path": "apps/web/src/LibraryArticleOrganizer.tsx",
-      "sha256": "2553c1bfe6f4756e920bcc7c523355883226e3e7688fa71a85ce1b41bf43772c"
+      "sha256": "410e4b08d2945cbeef7540462257a880086092fb5cab92b6024a5dd9ae6ff499"
+    },
+    {
+      "path": "apps/web/src/ParagraphFormat.tsx",
+      "sha256": "a5b349a18f2387691f7b0eb389db5c003b2de6d0d825e8f1c9b96faf96e5f3a2"
     },
     {
       "path": "apps/web/src/RecoveryPanel.tsx",
@@ -163,11 +175,11 @@
     },
     {
       "path": "apps/web/src/RevisionComparison.tsx",
-      "sha256": "2408beeaf964ee2b1b8b09a9a210ef1ae1828ed89bdf8d670fe826a1e98e0042"
+      "sha256": "c840eb197e94a40cbb68088c5e954ae3a7d1bdab11387c055a7cd5c3576248c0"
     },
     {
       "path": "apps/web/src/VersionPanel.tsx",
-      "sha256": "c86a600b336d4bd45b5fae3d78b27f685afecb1c1454cc29efafb4b8e2c97be9"
+      "sha256": "ac24103ad87b67d69d5b9155f07968eae1788f3aca71800a3228123330b4bc89"
     },
     {
       "path": "apps/web/src/access.ts",
@@ -183,7 +195,7 @@
     },
     {
       "path": "apps/web/src/document-diff.ts",
-      "sha256": "9cfbaca715994caf071d7f5e690999101b445c1161c0a53ecc5826d1a3f26c9a"
+      "sha256": "786cdac4e0a19809d750335e431a91170af2249a94eecce9c8a7c3733ec92f64"
     },
     {
       "path": "apps/web/src/draft-rescue.ts",
@@ -199,7 +211,7 @@
     },
     {
       "path": "apps/web/src/styles.css",
-      "sha256": "7e79307eb6c7c732acd66d03a57624793661cbd1e225f776958c6804bc076d41"
+      "sha256": "78ac4e3c6de29befe16ee92ada2ef50ce4a9bcc54dd8304fba600f9a3e9b31cf"
     },
     {
       "path": "apps/web/src/use-article-position.ts",
@@ -211,11 +223,11 @@
     },
     {
       "path": "apps/web/src/use-article-tags.ts",
-      "sha256": "c2af5dd9ff34ee886c821680ce20a1eb11d051e7f01e94d46c63fe2e7b9288bb"
+      "sha256": "f5ca04725ff1a9fc1d168e335c4891e9b73f801eac405762aa42311808f736bc"
     },
     {
       "path": "apps/web/src/use-article.ts",
-      "sha256": "680c715dcf90448ab41cc4e6121e747ec7632b3fcd4a15dee1cc7c1bd2452c3d"
+      "sha256": "57fd55d4ba80cf5a7543df215a6a11317898f1174266d315399c6dcd46f6cc76"
     },
     {
       "path": "apps/web/src/use-health.ts",
@@ -223,7 +235,7 @@
     },
     {
       "path": "apps/web/src/use-revision-index.ts",
-      "sha256": "b4edbfa1688ab2b5280365264cebabc9c315ac8b5eaafcf46403c890dd6d8926"
+      "sha256": "25c55e3100ac9a592303311aae4216e823d5040f0492cdb3deebecf4271aa721"
     },
     {
       "path": "apps/web/vite.config.ts",
@@ -247,7 +259,7 @@
     },
     {
       "path": "docs/engineering/local-development.md",
-      "sha256": "e3c2310c92f8fe007302ef35dabda93f57b69422b68fd103b97b2daeef270715"
+      "sha256": "38a27bd2ba14691c9b7632bfe275548eddc5f7bfb81cc40d6432525b28e792bd"
     },
     {
       "path": "docs/engineering/v1-change-roadmap.md",
@@ -419,7 +431,7 @@
     },
     {
       "path": "tests/e2e/article-conflict.spec.ts",
-      "sha256": "1eb3e479ea9d92263311fe67d731b4ba310c842c2cd5252a954cd30dd90dec3e"
+      "sha256": "31dd1b2d0fa2e227134f560d60e9358309e5232520b5725d88fbaca4351d9142"
     },
     {
       "path": "tests/e2e/article-corruption.spec.ts",
@@ -439,27 +451,27 @@
     },
     {
       "path": "tests/e2e/article-library.spec.ts",
-      "sha256": "826f3e7622f450f16cc84e1de31a6ed3570401117e2fa454729c56db08552771"
+      "sha256": "78931e48f4a9c19c975c4d0d15b87b60903989d377184cc8033f3c6629289f3a"
     },
     {
       "path": "tests/e2e/article-lifecycle.spec.ts",
-      "sha256": "3f1e37c5b355925ac453697b444ca657865753877cf1dc3a2745ea834e71dcb1"
+      "sha256": "47562b7a96f240e2b500c9c0ef494510e059f63a02eded60e601aca037af37d0"
     },
     {
       "path": "tests/e2e/article-navigation.spec.ts",
-      "sha256": "72ab19846b80bf50d8c20e6e685dc2e3fb07e625369cb2bd90c1e8ada069c7c1"
+      "sha256": "bc158f6518dafbb5b85a7069673549d18f57ff057408288d277141b486d5d47f"
     },
     {
       "path": "tests/e2e/article-organization.spec.ts",
-      "sha256": "045197b25ad40e5e8495d0ee3d0fcafb982df2d62bedbc6e0afa29e66028018c"
+      "sha256": "d3370f886aff0b392f44bf704ccc4ea15170670f50e8577baade4635fb20f62c"
     },
     {
       "path": "tests/e2e/article-position.spec.ts",
-      "sha256": "7125bde612aa5fc10f3c4350434a3c1cb9ba29b2c95c4af037cc7abec2c20d88"
+      "sha256": "0b8fb34ba1ae3559e160d29cd982d50f0469ab8cd554b080a9a42b4dc4d0b57b"
     },
     {
       "path": "tests/e2e/article-quota.spec.ts",
-      "sha256": "ac312a20a70e5c288d3b01803b1d7188b66e8e209defd3a6d22b059232c387b9"
+      "sha256": "d1210432acfcb5887e37a0c40afaecbce4ccf4f9c9840397a9a1447649f3415a"
     },
     {
       "path": "tests/e2e/article-recovery-failures.spec.ts",
@@ -471,7 +483,7 @@
     },
     {
       "path": "tests/e2e/article-restore.spec.ts",
-      "sha256": "c54989ca05b5020347e51c603ea3cd97ae32c8e437e4ecd68e13c557304fb725"
+      "sha256": "c94db1a5fc350a5257b76860f622eb364564486ba390165dd37f3f9dc988256d"
     },
     {
       "path": "tests/e2e/article-save-races.spec.ts",
@@ -479,7 +491,7 @@
     },
     {
       "path": "tests/e2e/article-save.spec.ts",
-      "sha256": "25961241c5f7e93a60845b719f6b5970287171cd1f41bc4d88344d7474ae79cd"
+      "sha256": "a21cce208d273ca5562227d431e1d89a3b68fd0a41279bef437e1bbfdf864273"
     },
     {
       "path": "tests/e2e/article-search.spec.ts",
@@ -491,7 +503,7 @@
     },
     {
       "path": "tests/e2e/article-versions.spec.ts",
-      "sha256": "5bd47c609d8bc78f8638195f3ad0834356aa092aa0908a63725d33b62001ea60"
+      "sha256": "9a9ace6703281ef374e2ef09e578471dc53d6475a159fff88d72b689bf6925ce"
     },
     {
       "path": "tests/e2e/build.ts",
@@ -499,11 +511,15 @@
     },
     {
       "path": "tests/e2e/desk-panels.spec.ts",
-      "sha256": "f8426669bc58babd55c871925a17c5cd4712e4831e70f0d45aebe01c1c63c2da"
+      "sha256": "f9f54281b1a5d3fdac50c66433fba6cb342caa532dd4043c6366e37f1ea080a3"
     },
     {
       "path": "tests/e2e/fixtures.ts",
       "sha256": "6e2b19947aeecb46dc1baeb9eb103d9078be5dbe59082486cd23de51eda48410"
+    },
+    {
+      "path": "tests/e2e/prototype-parity.spec.ts",
+      "sha256": "336cb7d6dcb8c46cdd630e9c0ed39f5192616bcc7e9b25f7821401f1bc7a2ed6"
     },
     {
       "path": "tests/e2e/revision-menu.ts",
@@ -511,7 +527,7 @@
     },
     {
       "path": "tests/e2e/workbench.spec.ts",
-      "sha256": "1ba4edba808796e12a65997b0ffb745d6a62467bf6fc802b935e0ecf8e83696e"
+      "sha256": "10e422c1362d52f2d0dddf7cb52cfaedda8c8a394714d34a047d9b59402d31e3"
     },
     {
       "path": "tests/e2e/workspace-access.spec.ts",
@@ -587,7 +603,7 @@
     },
     {
       "path": "tests/prototypes/writing-desk.test.mjs",
-      "sha256": "fa7e9f884f24cbb1e724ee2e5359869f16d7f5206aa6c24bd072ea317b0a5ec1"
+      "sha256": "b819463ab6d9e6f8a6bb052d2ddeccc218ed535c28245f768561d5bf7a5c539a"
     },
     {
       "path": "tests/unit/article-document.test.ts",
@@ -612,25 +628,25 @@
       "command": "corepack pnpm verify",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/rail-checks.log"
+      "log": "evidence/buttons-checks.log"
     },
     {
       "id": "local-e2e",
       "command": "node_modules/.bin/playwright test --workers=4",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/rail-checks.log"
+      "log": "evidence/buttons-checks.log"
     },
     {
       "id": "mac-performance",
       "command": "corepack pnpm test:storage-performance",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/rail-checks.log"
+      "log": "evidence/buttons-checks.log"
     },
     {
       "id": "linux-ci",
-      "command": "GitHub Checks for 5c664e6d45477073b716c50176c61bf518603ddc",
+      "command": "GitHub Checks for ad738a85bcdbb1f3894ff79fa1dfcb801fce45d9",
       "status": "not-run",
       "exitCode": null,
       "log": "evidence/desk-v3-ci-pending.log"
@@ -640,7 +656,7 @@
       "command": "node scripts/harness/docs-check.mjs && node scripts/harness/check.mjs manage-article-library --stage plan && OPENSPEC_TELEMETRY=0 openspec validate manage-article-library --strict --no-interactive && git diff --check",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/rail-checks.log"
+      "log": "evidence/buttons-checks.log"
     },
     {
       "id": "manual-ime",
@@ -654,7 +670,7 @@
       "command": "node --test tests/prototypes/writing-desk.test.mjs",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/rail-checks.log"
+      "log": "evidence/buttons-checks.log"
     }
   ],
   "scenarios": [
@@ -826,7 +842,8 @@
       "status": "passed",
       "checkIds": [
         "local-e2e",
-        "local-verify"
+        "local-verify",
+        "prototype-interactions"
       ]
     }
   ]

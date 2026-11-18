@@ -106,3 +106,5 @@ acceptance.md 保留 17 个唯一场景，已修正早期计划中尚未拆分�
 相同的七条交互路径分别跑在 V3 和正式应用，另有八条独立原型用例。全量 139 项 Chromium 回归、91 项应用测试和 10 项 Harness 测试通过。长稿选区工具曾导致正文偏移约 52px，保留工具栏的布局高度后，原有阅读位置断言全部通过。与当前稿的比较曾停留在点击时的快照，修正后继续输入也能看到新改动。预览 4317 返回的脚本和样式已与构建逐字节核对。当前提交仅在本机验收；C03 的 Linux CI 与逐项系统输入法记录仍待收口。
 
 [原型比较卡](evidence/buttons-comparison-prototype.png) · [正式比较卡](evidence/buttons-comparison.png) · [文章行菜单](evidence/buttons-article-menu.png) · [重命名窗口](evidence/buttons-rename.png) · [本机验证日志](evidence/buttons-checks.log)
+
+4.6 的被测实现提交为 `ad738a8`。G2 仍有 Linux CI 和分项实际候选窗记录待补，相关场景维持待验收。见[本次 G2 检查输出](evidence/buttons-g2.log)。
