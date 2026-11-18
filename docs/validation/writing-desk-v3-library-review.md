@@ -23,7 +23,7 @@
 | 归档或搁置 | 「暂时搁置」和「归档留存」都进入已归档。正在写 A，顺手归档 B，列表会跳到已归档，稿纸仍显示 A。 | 只保留「归档」。已有搁置原因仍可查阅。整理其他稿时留在原列表，行消失，反馈「已归档《B》 · 撤销」。归档**当前稿**时让稿纸明确变为只读，可直接「移回草稿」。发表状态继续作为标记和筛选条件，已发表的文章仍可编辑或归档。 |
 | 误删和恢复 | 确认框能说明文章、去向及正文历史会保留；回收站区分「恢复到草稿」「恢复到已归档」。确认后列表会跟着文章跳转。 | 保留确认、原位置恢复和明确的按钮文案。处理其他稿时原列表不跳转。删除当前稿后回文章列表；在回收站恢复时留在回收站，反馈提供「查看已恢复文章」。窄屏同样只在作者明确打开稿件时切到正文。 |
 
-这部分评审针对 [V3 HTML](../prototypes/inkling-writing-desk-v3.html)。标题与标签查找、重命名和原位置恢复已有 [C03 文章库契约](../../openspec/changes/manage-article-library/specs/article-library/spec.md)。建议原型对齐这些能力。iA Writer 的文件列表也采用单击打开、上下文菜单重命名的分工。[iA Writer 官方导航说明](https://ia.net/writer/support/library/navigation)
+这部分评审针对 [V3 HTML](../prototypes/inkling-writing-desk-v3.html)。标题与标签查找、重命名和原位置恢复已有 [C03 文章库契约](../../openspec/specs/article-library/spec.md)。建议原型对齐这些能力。iA Writer 的文件列表也采用单击打开、上下文菜单重命名的分工。[iA Writer 官方导航说明](https://ia.net/writer/support/library/navigation)
 
 ## 素材和大纲的三个交互边界
 

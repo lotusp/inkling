@@ -14,7 +14,7 @@
 - `fnm exec --using 22.22.2 corepack pnpm verify`：exit 0，90 个应用测试、10 个 Harness 测试；格式、lint、类型、依赖边界、构建、文档与 OpenSpec 校验通过。日志 `evidence/position-checks.log`。
 - `fnm exec --using 22.22.2 corepack pnpm test:e2e --workers=4`：exit 0，118 个真实 Chromium 用例通过；顺序执行，未与 verify 并行重建 dist。日志 `evidence/position-regression.log`。
 - 位置专项 7 项通过；初始 4 项有效 Red，后补失败/竞争边界。修复恢复帧早于布局提交造成的短文偏移，保留失败日志；不是扩大允许误差。日志 `position-red.log`、`position-layout-failure.log`、`position-green.log`。
-- `fnm exec --using 22.22.2 corepack pnpm test:storage-performance`：exit 0。普通稿/最大稿保存 p95 12.28/102.13 ms，普通稿事件循环 10.06 ms；千篇库 300 个匹配项完整分页，45 样本 p95 1.79 ms，列表不含正文。门槛于测量前确定，详见 [性能验证](../../../docs/validation/article-storage-performance.md)及 `evidence/library-performance.log`。类型、lint、格式复核通过。
+- `fnm exec --using 22.22.2 corepack pnpm test:storage-performance`：exit 0。普通稿/最大稿保存 p95 12.28/102.13 ms，普通稿事件循环 10.06 ms；千篇库 300 个匹配项完整分页，45 样本 p95 1.79 ms，列表不含正文。门槛于测量前确定，详见 [性能验证](../../../../docs/validation/article-storage-performance.md)及 `evidence/library-performance.log`。类型、lint、格式复核通过。
 - Linux CI：[Checks run 44209951096](https://github.com/lotusp/inkling/actions/runs/44209951096)，提交 `62a4cf44d504d0c667eb456090884d919ebdd09e`，真实 ubuntu-latest runner，Node 来自 .node-version；锁定依赖安装、Chromium 安装、verify 与 E2E 全成功。90 个应用、10 个 Harness、118 个浏览器测试通过，job 3m29s；`evidence/linux-ci.log` 保留完整 verify/E2E 输出。
 - 桌面及 375px 布局已在各切片复核；列表、整理、查找、生命周期及回收站截图保留于 evidence。所有写入使用隔离临时测试空间，没有改个人稿件或开放远端发布。
 
@@ -118,3 +118,7 @@
 `b68f6f6` 的 Linux 检查在原型测试夹具的两处 `localStorage` 引用报 ESLint `no-undef`。`74d23a4` 修正了这两处引用。本机工程检查与 139 项 Chromium 端到端测试重新通过，另有 8 项独立原型测试和 Mac 性能检查通过。[本机记录](evidence/lint-fix-local.log)
 
 GitHub Actions 在同一提交的 Ubuntu runner 上完成锁定依赖安装、Chromium 安装、工程检查和 139 项端到端测试，全部成功。[运行 44335395015](https://github.com/lotusp/inkling/actions/runs/44335395015) · [运行摘要](evidence/lint-fix-linux.log)
+
+## 规格归档
+
+G2 证据保存在提交 `e8be4f5`。OpenSpec 归档后逐条比较要求正文，文章库的 5 条要求、14 个场景及正文保存修订的 1 条要求、4 个场景均与 delta 一致；其余正文持久化要求逐字保留。归档结构、全部 6 份 Living Spec、3 份归档和 85 份文档的本地链接检查均通过，活动变更为零。归档索引更新了设计文档相对路径及 4 份知识文档的指纹，并新增两份正式规格的指纹。

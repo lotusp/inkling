@@ -47,7 +47,7 @@
     },
     {
       "path": "@change/design.md",
-      "sha256": "a68b63db8c7df92a7de103d803e01b5c8b5f9b4e1d38499b38c4af07a4e82d1e"
+      "sha256": "833dffc983f93c74e33cf7ca518ba102fa5915c957b1cccdba692d485ae63146"
     },
     {
       "path": "@change/proposal.md",
@@ -63,7 +63,7 @@
     },
     {
       "path": "AGENTS.md",
-      "sha256": "4f9152f7b43b311e352e6fb5dcf7fe7db53c2e600d62341213b21c9bb2b337eb"
+      "sha256": "783efdd4adc30e10aaecc727d22fb684895d4847310f6c5878a3280cc3a04a7d"
     },
     {
       "path": "README.md",
@@ -255,15 +255,15 @@
     },
     {
       "path": "docs/engineering/harness.md",
-      "sha256": "aa2accc24c07a7b3f8e4f696b050ff7b7d9995263af018adc8709ad3c9742b54"
+      "sha256": "b6fe5a1811223a02dbabed1bf2c84a3b10de353d0ecbe615f63e5f3ecb339ef3"
     },
     {
       "path": "docs/engineering/local-development.md",
-      "sha256": "38a27bd2ba14691c9b7632bfe275548eddc5f7bfb81cc40d6432525b28e792bd"
+      "sha256": "7422ade87e0ee5a4613d7121581c49f820900f5088d48d6e8771d8c3f38a774b"
     },
     {
       "path": "docs/engineering/v1-change-roadmap.md",
-      "sha256": "158236e722f178534c745217ae16f52d2d367c851c668a6e51ef4afcfd9942c9"
+      "sha256": "9f0e0b956a0e81925636dcfa42c56ecca081955a9379e597919e2b421e0cee2a"
     },
     {
       "path": "docs/prototypes/inkling-writing-desk-v3.html",
@@ -304,6 +304,14 @@
     {
       "path": "openspec/schemas/inkling-atdd/templates/verification.md",
       "sha256": "da8c29608d91264ca13fce8f274397ee189b36cf0dccc07146ea60ea7629ce0e"
+    },
+    {
+      "path": "openspec/specs/article-library/spec.md",
+      "sha256": "3796f0d1159ccb1c080f7067494c86ddeee93c18a06dcb7613aa6b0676a0b234"
+    },
+    {
+      "path": "openspec/specs/article-persistence/spec.md",
+      "sha256": "45f45df831ce14ac520c9d84d9f0f366a281c02eb30588d86595a516098dd857"
     },
     {
       "path": "package.json",

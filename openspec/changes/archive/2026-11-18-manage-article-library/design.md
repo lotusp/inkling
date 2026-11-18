@@ -2,7 +2,7 @@
 
 ## Context and boundaries
 
-C02 已交付，沿用 [DEC-0004](../../../docs/decisions/0004-article-storage-and-revisions.md)、SQLite 独占连接和 JSON 正文权威。core 用例与 ArticleRepository 增加文章库操作；adapters 实现 SQL，server 负责受保护 HTTP，web 只依赖 contracts。复用同一连接/事务，不增加 ORM、第二数据库或后台 Agent。
+C02 已交付，沿用 [DEC-0004](../../../../docs/decisions/0004-article-storage-and-revisions.md)、SQLite 独占连接和 JSON 正文权威。core 用例与 ArticleRepository 增加文章库操作；adapters 实现 SQL，server 负责受保护 HTTP，web 只依赖 contracts。复用同一连接/事务，不增加 ORM、第二数据库或后台 Agent。
 
 ## Decisions and contracts
 

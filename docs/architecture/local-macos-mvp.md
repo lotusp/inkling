@@ -2,6 +2,8 @@
 
 C02 实现更新（2026-11-17）：文章存储经 POC 选定 JSON 正文 + SQLite / better-sqlite3，初期不加 ORM。独占连接、恢复副本和保存协议以 [DEC-0004](../decisions/0004-article-storage-and-revisions.md)及 [文章持久化规格](../../openspec/specs/article-persistence/spec.md)、[修订规格](../../openspec/specs/article-revisions/spec.md)、[工作空间规格](../../openspec/specs/local-workspace-access/spec.md)为准；上述能力已通过产品验收，下文其他模块仍是架构提案。
 
+C03 在同一个 SQLite 工作空间中新增文章库元数据及索引。每篇文章保留自己的正文修订、浏览器恢复副本和编辑位置，切稿前先处理未确认输入。[文章库规格](../../openspec/specs/article-library/spec.md)
+
 设计日期：2026-11-16。状态：整体架构提案；本地工作台已交付，文章存储设计 POC 已完成，其余能力按 change 验证。作者已明确 MVP 在单台 Mac 本地运行，内容上云与多端协作放到后续阶段。本文作为当前 MVP 架构入口，细化[协作设计](../product/thinking-partner-product-design.md)的实现边界。
 
 范围与存储更新：当前功能以[V1 完整范围](../product/v1-scope.md)为准，首版已包含作者风格、跨文章记忆与一个真实博客的发布和更新。文件与 SQLite 对照后，C02 选定 JSON 正文与 SQLite；下文表结构和备份仍是 V1 整体提案，具体已实现范围以 DEC-0004 和 Living Spec 为准。

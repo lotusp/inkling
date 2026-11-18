@@ -28,4 +28,4 @@ corepack pnpm test:storage-performance
 
 新增文章库夹具通过真实认证 API 新建 1,000 篇文章，其中活动 900、归档 50、回收站 50。活动状态的中文标题片段 + 精确标签过滤匹配 300 篇；首屏读取 30 次和完整 15 页（每页 20 条）共 45 次样本，p95 **1.79 ms**、最大 3.24 ms，满足预先约定的 250 ms 门槛。最大响应 3,843 字节，原始响应不含正文，全部匹配 ID 无遗漏或重复。
 
-测试反映单机顺序操作，未覆盖多用户并发、冷缓存或所有历史规模，不作为跨设备性能承诺。脚本保留所有既有保存门槛，任一失败非零退出。实际命令与结果见 [C03 性能日志](../../openspec/changes/manage-article-library/evidence/library-performance.log)。
+测试反映单机顺序操作，未覆盖多用户并发、冷缓存或所有历史规模，不作为跨设备性能承诺。脚本保留所有既有保存门槛，任一失败非零退出。实际命令与结果见 [C03 性能日志](../../openspec/changes/archive/2026-11-18-manage-article-library/evidence/library-performance.log)。
