@@ -894,6 +894,7 @@
           rev: 1,
           style: '技术随笔',
           status: 'active',
+          topics: [],
           attached: [],
           versions: [],
           chats: [discussion()],
@@ -928,6 +929,7 @@
           title: '列车上的断网记录',
           text: '作者笔记 · 断网后界面持续显示「保存中」。当时只观察了提示，没有核对磁盘上的内容。',
         };
+        a.topics = ['本地优先', '写作工具'];
         a.attached = [source.id];
         a.chats = [
           discussion([
@@ -969,6 +971,7 @@
         findBlock = (key) => a().blocks.find((x) => x.id === key);
       let tab = '文章',
         folder = a().status,
+        topic = '',
         shelfResult = '',
         selected = null,
         toolTarget = null,
@@ -1030,6 +1033,10 @@
           '[data-do="open"][data-key="' + a().id + '"]',
         );
         if (entry) entry.textContent = a().title || '未命名文章';
+        const summary = $('libraryBody').querySelector(
+          '[data-summary="' + a().id + '"]',
+        );
+        if (summary) summary.textContent = articleSummary(a());
         $('genre').textContent = a().style;
         $('stylechip').textContent = a().style + ' ⌄';
         $('count').textContent = n + ' 字';
@@ -1056,12 +1063,17 @@
             title = esc(art.title || '未命名文章');
           $('shelfSheet').innerHTML =
             '<div class="crumb"><i></i>' +
-            (archived ? '已归档 · 只读' : '回收站') +
+            (archived
+              ? art.parked
+                ? '已搁置 · 只读'
+                : '已归档 · 只读'
+              : '回收站') +
             '</div><h1>' +
             title +
             '</h1>' +
             (archived
-              ? btn('archive', '移回草稿，继续编辑', art.id) +
+              ? (art.parked ? '<p>搁置原因：' + esc(art.parked) + '</p>' : '') +
+                btn('archive', '移回草稿，继续编辑', art.id) +
                 '<hr>' +
                 art.blocks
                   .map(
@@ -1475,6 +1487,22 @@
         )
           closePanel();
       });
+      function articleSummary(x) {
+        const publication = x.published
+          ? '已发表 v' +
+            x.published +
+            (x.rev !== x.published ? ' · 有本地修改' : '')
+          : '';
+        return [...(x.topics || []), publication, x.parked ? '已搁置' : '']
+          .filter(Boolean)
+          .join(' · ');
+      }
+      function inCollection(x, view) {
+        if (view === 'all') return x.status !== 'trash';
+        if (view === 'published')
+          return x.status !== 'trash' && x.published != null;
+        return x.status === view;
+      }
       function library(next = tab, highlight = '') {
         tab = next;
         const tabs =
@@ -1490,6 +1518,8 @@
           '</nav>';
         if (tab === '文章') {
           const shelves = {
+            all: '全部',
+            published: '已发表',
             active: '草稿',
             archived: '已归档',
             trash: '回收站',
@@ -1506,18 +1536,44 @@
                   '">' +
                   label +
                   ' ' +
-                  store.articles.filter((x) => x.status === value).length +
+                  store.articles.filter(
+                    (x) =>
+                      inCollection(x, value) &&
+                      (!topic || x.topics?.includes(topic)),
+                  ).length +
                   '</button>',
               )
               .join('') +
             '</nav>';
+          const topics = [
+            ...new Set(store.articles.flatMap((x) => x.topics || [])),
+          ].sort((x, y) => x.localeCompare(y, 'zh-CN'));
+          html +=
+            '<label for="topicFilter">主题分类</label><select id="topicFilter"><option value="">所有分类</option>' +
+            topics
+              .map(
+                (t) =>
+                  '<option value="' +
+                  esc(t) +
+                  '" ' +
+                  (t === topic ? 'selected' : '') +
+                  '>' +
+                  esc(t) +
+                  '</option>',
+              )
+              .join('') +
+            '</select>';
           if (shelfResult)
             html +=
               '<p class="shelf-result" role="status">' +
               esc(shelfResult) +
               '</p>';
-          if (folder === 'active') html += btn('create', '＋ 新文章');
-          const list = store.articles.filter((x) => x.status === folder);
+          if (folder === 'all' || folder === 'active')
+            html += btn('create', '＋ 新文章');
+          const list = store.articles.filter(
+            (x) =>
+              inCollection(x, folder) && (!topic || x.topics?.includes(topic)),
+          );
           for (const x of list) {
             html +=
               '<div class="item"><div class="row">' +
@@ -1538,16 +1594,26 @@
                 'text-btn',
               );
             } else {
-              if (folder === 'archived')
+              html +=
+                '<div><small data-summary="' +
+                x.id +
+                '">' +
+                esc(articleSummary(x)) +
+                '</small></div>';
+              if (x.status === 'archived')
                 html +=
                   '<small>只读 · ' + x.versions.length + ' 个版本</small>';
               html +=
                 '<details><summary>文章操作</summary><div class="actions">' +
                 btn(
                   'archive',
-                  folder === 'active' ? '归档留存' : '移回草稿',
+                  x.status === 'active' ? '归档留存' : '移回草稿',
                   x.id,
                 ) +
+                (x.status === 'active'
+                  ? btn('park', '暂时搁置', x.id) +
+                    btn('topics', '设置分类', x.id)
+                  : '') +
                 btn('trash', '移入回收站', x.id) +
                 '</div></details>';
             }
@@ -1556,11 +1622,15 @@
           if (!list.length)
             html +=
               '<p class="muted">' +
-              {
-                active: '还没有草稿。',
-                archived: '归档的文章会保留在这里，供以后查阅。',
-                trash: '回收站是空的。',
-              }[folder] +
+              (topic
+                ? '当前视图没有这个分类的文章。'
+                : {
+                    all: '还没有文章。',
+                    published: '还没有已发表的文章。',
+                    active: '还没有草稿。',
+                    archived: '归档的文章会保留在这里，供以后查阅。',
+                    trash: '回收站是空的。',
+                  }[folder]) +
               '</p>';
         } else if (tab === '灵感') {
           html +=
@@ -1657,6 +1727,7 @@
           x.beforeTrash = x.status;
           x.status = 'trash';
         } else x.status = x.status === 'archived' ? 'active' : 'archived';
+        if (x.status === 'active') delete x.parked;
         folder = x.status;
         shelfResult =
           '「' +
@@ -1823,6 +1894,12 @@
       }
       document.addEventListener('change', (e) => {
         const el = e.target;
+        if (el.id === 'topicFilter') {
+          topic = el.value;
+          shelfResult = '';
+          library('文章');
+          return;
+        }
         if (el.dataset.src) {
           const key = el.dataset.src;
           a().attached = el.checked
@@ -1882,6 +1959,7 @@
             break;
           case 'create': {
             folder = 'active';
+            topic = '';
             shelfResult = '';
             const x = article('未命名文章', [block()]);
             store.articles.unshift(x);
@@ -1892,6 +1970,49 @@
           case 'open':
             switchTo(store.articles.find((x) => x.id === key));
             break;
+          case 'topics': {
+            const x = store.articles.find((x) => x.id === key);
+            panel(
+              'topics',
+              '设置主题分类',
+              '<label for="topicsInput">每行一个分类</label><textarea id="topicsInput">' +
+                esc((x.topics || []).join('\n')) +
+                '</textarea>' +
+                btn('saveTopics', '保存分类', key, 'primary'),
+            );
+            break;
+          }
+          case 'saveTopics': {
+            const x = store.articles.find((x) => x.id === key);
+            x.topics = [
+              ...new Set(
+                $('topicsInput')
+                  .value.split('\n')
+                  .map((t) => t.trim().normalize('NFC'))
+                  .filter(Boolean),
+              ),
+            ];
+            if (topic && !x.topics.includes(topic)) topic = '';
+            persist();
+            library('文章');
+            break;
+          }
+          case 'park': {
+            panel(
+              'park',
+              '暂时搁置',
+              '<p>原稿会保留在「已归档」，以后可以移回草稿。</p><label for="parkReason">什么条件值得再写？（可选）</label><textarea id="parkReason" placeholder="例如：再有一次可复现的恢复实验"></textarea>' +
+                btn('confirmPark', '搁置并保留原稿', key, 'primary') +
+                btn('close', '取消'),
+            );
+            break;
+          }
+          case 'confirmPark': {
+            const x = store.articles.find((x) => x.id === key);
+            x.parked = $('parkReason').value.trim() || '暂缓写作';
+            articleAction(x, 'archive');
+            break;
+          }
           case 'archive':
           case 'recover':
             articleAction(
@@ -2148,6 +2269,7 @@
             if ($('confirm').checked && art.rev === Number(key)) {
               art.published = art.rev;
               persist();
+              if (libraryOpen && tab === '文章') library(tab);
               exportPanel();
             }
             break;
