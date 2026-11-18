@@ -66,3 +66,35 @@ test('纸面起笔，文章库整理、独立素材、本文大纲', async (t) =
     .click();
   await expect(p.getByLabel('讨论问题')).toHaveValue('这条观察够吗？');
 });
+
+test('选句改写只替换选区，保留修改前稿并可撤销、恢复', async (t) => {
+  const p = await fixture(t);
+  const block = p.locator('#blocks [data-block]').first();
+  const original = '保留开头。改写这句话。保留结尾。';
+  await block.fill(original);
+  await block.evaluate((el) => {
+    const r = document.createRange();
+    r.setStart(el.firstChild, 5);
+    r.setEnd(el.firstChild, 11);
+    const s = getSelection();
+    s.removeAllRanges();
+    s.addRange(r);
+  });
+  await button(p, '改写选区').click({ timeout: 1500 });
+  await expect(p.locator('#proposal del')).toHaveText('改写这句话。');
+  await p.getByLabel('编辑候选文字').fill('只改中间。');
+  await button(p, '采用修改').click();
+  await expect(block).toHaveText('保留开头。只改中间。保留结尾。');
+  await button(p, '撤销').click();
+  await expect(block).toHaveText(original);
+  await button(p, '文章菜单').click();
+  await button(p, '版本历史').click();
+  await p
+    .getByRole('searchbox', { name: '查找日期、名称或版本号' })
+    .fill('今天');
+  const row = p.locator('.version-row').filter({ hasText: '采用修改前' });
+  await row.getByText('⋯').click();
+  await row.getByRole('button', { name: '恢复…' }).click();
+  await button(p, '恢复为新版本').click();
+  await expect(block).toHaveText(original);
+});

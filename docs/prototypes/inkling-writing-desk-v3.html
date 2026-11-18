@@ -1118,11 +1118,9 @@
       </aside>
     </div>
     <nav id="tool" class="tool" hidden aria-label="段落操作">
-      <button data-do="strong">加粗</button
-      ><button data-do="heading">小标题</button
-      ><button data-do="list">列表</button
-      ><button data-do="discuss">讨论这段</button
-      ><button data-do="rewrite">改写这段</button>
+      <button data-do="discuss">讨论选区</button>
+      <button data-do="rewrite">改写选区</button>
+      <button data-do="format-block">段落格式…</button>
     </nav>
     <dialog id="panel">
       <header>
@@ -1278,6 +1276,8 @@
         undoAction = null,
         selected = null,
         toolTarget = null,
+        toolSpan = null,
+        selectedSpan = null,
         versionQuery = '',
         comparison = null,
         recoveryLimit = 0,
@@ -1584,7 +1584,14 @@
         $('count').textContent = n + ' 字';
         $('context').innerHTML =
           '<span class="pill">当前文章</span>' +
-          (selected ? btn('unselect', '选中段落 ×', '', 'pill') : '') +
+          (selected
+            ? btn(
+                'unselect',
+                selectedSpan ? '选中文字 ×' : '选中段落 ×',
+                '',
+                'pill',
+              )
+            : '') +
           btn(
             'sources',
             a().attached.length ? a().attached.length + ' 份资料' : '附加资料',
@@ -1662,7 +1669,8 @@
           .join('');
         meta();
       }
-      function mark(key) {
+      function mark(key, span = null) {
+        selectedSpan = span;
         selected = key;
         document
           .querySelectorAll('[data-block]')
@@ -1712,7 +1720,7 @@
         const stale =
           !findBlock(p.target) ||
           p.base !== a().rev ||
-          findBlock(p.target).text !== p.before;
+          findBlock(p.target).text !== (p.span?.whole ?? p.before);
         // Preserve edits and focus inside the candidate while the draft stays at its baseline.
         if (
           host.dataset.token === p.token &&
@@ -1723,7 +1731,9 @@
         host.dataset.token = p.token;
         host.dataset.stale = String(stale);
         host.innerHTML =
-          '<div class="card"><strong>段落修改建议</strong><del>' +
+          '<div class="card"><strong>' +
+          (p.span ? '修改选中文字' : '修改整个段落') +
+          '</strong><del>' +
           esc(p.before) +
           '</del><textarea aria-label="编辑候选文字" id="candidate">' +
           esc(p.after) +
@@ -1819,17 +1829,27 @@
         }, 38);
         renderChat();
       }
-      function propose(key) {
+      function propose(key, span = null) {
         stop();
         const b = findBlock(key);
         if (!b) return;
-        mark(key);
+        if (
+          span &&
+          (b.text !== span.whole ||
+            b.text.slice(span.start, span.end) !== span.text)
+        ) {
+          toast('原文已改动，请重新选中文字');
+          return;
+        }
+        mark(key, span);
         showTalk();
-        const first = b.text.split(/[。！？]/u)[0];
+        const before = span ? span.text : b.text;
+        const first = before.split(/[。！？]/u)[0];
         chat().proposal = {
           target: key,
           base: a().rev,
-          before: b.text,
+          span,
+          before,
           after: first
             ? first + '。就这次观察而言，我还需要一次重复实验来核对这个判断。'
             : '我想先记录这次观察，再说明它适用于什么条件。',
@@ -1869,6 +1889,22 @@
           $('tool').hidden = true;
           return;
         }
+        const range = s.getRangeAt(0),
+          prefix = range.cloneRange();
+        prefix.selectNodeContents(el);
+        prefix.setEnd(range.startContainer, range.startOffset);
+        const start = prefix.toString().length,
+          text = range.toString();
+        const whole = findBlock(el.dataset.block)?.text;
+        if (
+          !text ||
+          whole !== el.textContent ||
+          whole.slice(start, start + text.length) !== text
+        ) {
+          $('tool').hidden = true;
+          return;
+        }
+        toolSpan = { start, end: start + text.length, text, whole };
         toolTarget = el.dataset.block;
         const r = s.getRangeAt(0).getBoundingClientRect(),
           t = $('tool');
@@ -1900,7 +1936,7 @@
           value,
           b
             ? '你选中的这段写到「' +
-                b.text.slice(0, 24) +
+                (selectedSpan?.text || b.text).slice(0, 24) +
                 '」。其中哪些是你亲眼观察到的，哪些是事后推测的？把两者分别写一句试试。'
             : '读完「' +
                 (a().title || '未命名文章') +
@@ -2293,6 +2329,8 @@
         writingFeedback('');
         selected = null;
         toolTarget = null;
+        toolSpan = null;
+        selectedSpan = null;
         comparison = null;
         recoveryLimit = 0;
         $('prompt').value = chat().draft || '';
@@ -2365,6 +2403,42 @@
           v.wasPublished || v.rev === art.published ? ' · 已发表' : '';
         return v.label + suffix;
       }
+      function versionDate(v) {
+        if (!v.time) return '';
+        const d = new Date(v.time),
+          today = new Date(),
+          yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        const day =
+          d.toDateString() === today.toDateString()
+            ? '今天'
+            : d.toDateString() === yesterday.toDateString()
+              ? '昨天'
+              : d.toLocaleDateString('zh-CN');
+        return (
+          day +
+          ' ' +
+          d.toLocaleTimeString('zh-CN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          })
+        );
+      }
+      function versionSearch(art, v) {
+        const d = new Date(v.time),
+          absolute = v.time
+            ? d.getFullYear() +
+              '年' +
+              (d.getMonth() + 1) +
+              '月' +
+              d.getDate() +
+              '日'
+            : '';
+        return [versionName(art, v), versionDate(v), absolute, versionId(v)]
+          .join(' ')
+          .toLowerCase();
+      }
       function renderVersions() {
         const art = a(),
           readOnly = art.status === 'archived';
@@ -2384,10 +2458,12 @@
                 : '') +
               '</div></details>';
           return (
-            '<div class="item version-row"><div><strong>' +
-            esc(versionId(v)) +
-            '</strong><small>' +
+            '<div class="item version-row" data-search="' +
+            esc(versionSearch(art, v)) +
+            '"><div><strong>' +
             esc(versionName(art, v)) +
+            '</strong><small>' +
+            esc(versionDate(v) || versionId(v)) +
             '</small></div>' +
             btn('compare-version', '比较', v.rev, 'text-btn') +
             more +
@@ -2397,17 +2473,18 @@
         let html = !readOnly
           ? '<div class="version-tools">' +
             btn('manual-save', '保存版本', '', 'primary') +
-            btn('version-settings', '保存设置', '', 'text-btn') +
+            btn('status', '草稿保存状态', '', 'text-btn') +
             '</div>'
           : '';
         if (comparison)
           html += comparisonHTML(art, keys, recoveries.slice(0, recoveryLimit));
         html +=
-          '<h3>保留的版本</h3><input type="search" id="versionQuery" placeholder="查找版本号或名称" aria-label="查找版本号或名称" value="' +
+          '<h3>保留的版本</h3><input type="search" id="versionQuery" placeholder="查找日期、名称或版本号" aria-label="查找日期、名称或版本号" value="' +
           esc(versionQuery) +
           '">' +
           keys.map(row).join('');
         if (recoveries.length) {
+          html += '<small id="backupMatches" hidden></small>';
           html += btn(
             'toggle-recoveries',
             recoveryLimit
@@ -2433,12 +2510,25 @@
         const root = a().status === 'archived' ? $('inside') : $('rightDetail');
         const rows = [...root.querySelectorAll('.version-row')];
         const term = versionQuery.trim().toLowerCase();
-        for (const row of rows)
-          row.hidden = !row.firstElementChild.textContent
-            .toLowerCase()
-            .includes(term);
+        for (const row of rows) row.hidden = !row.dataset.search.includes(term);
+        const tip = root.querySelector('#backupMatches');
+        let hiddenMatches = 0;
+        if (tip) {
+          hiddenMatches = term
+            ? a()
+                .versions.slice()
+                .reverse()
+                .filter((v) => versionKind(a(), v) === 'recovery')
+                .slice(recoveryLimit)
+                .filter((v) => versionSearch(a(), v).includes(term)).length
+            : 0;
+          tip.hidden = !hiddenMatches;
+          tip.textContent = '自动备份另有 ' + hiddenMatches + ' 份匹配';
+        }
         const empty = root.querySelector('.history-empty');
-        if (empty) empty.hidden = !term || rows.some((row) => !row.hidden);
+        if (empty)
+          empty.hidden =
+            !term || hiddenMatches > 0 || rows.some((row) => !row.hidden);
       }
       document.addEventListener('input', (e) => {
         if (e.target.id === 'libraryQuery') {
@@ -2732,12 +2822,6 @@
           listRows();
           return;
         }
-        if (el.id === 'idleMinutes') {
-          store.idleMinutes = Number(el.value);
-          persist();
-          scheduleCheckpoints();
-          return;
-        }
         if (el.dataset.src) {
           const key = el.dataset.src;
           a().attached = el.checked
@@ -3014,23 +3098,33 @@
             mark(null);
             break;
           case 'discuss':
-            mark(toolTarget);
+            mark(toolTarget, toolSpan);
             showTalk();
             getSelection().removeAllRanges();
             $('prompt').focus();
             break;
           case 'rewrite-selected':
-            propose(selected);
+            propose(selected, selectedSpan);
             break;
           case 'rewrite':
-            propose(toolTarget);
+            propose(toolTarget, toolSpan);
             getSelection().removeAllRanges();
+            break;
+          case 'format-block':
+            panel(
+              'format',
+              '段落格式',
+              btn('strong', '整段加粗') +
+                btn('heading', '小标题') +
+                btn('list', '列表'),
+            );
             break;
           case 'heading':
           case 'list':
           case 'strong': {
             const b = findBlock(toolTarget);
             if (!b) return;
+            closePanel();
             if (op === 'strong') b.bold = !b.bold;
             else {
               const kind = op === 'heading' ? 'h2' : 'ul';
@@ -3097,12 +3191,16 @@
             break;
           }
           case 'regenerate':
-            propose(chat().proposal.target);
+            propose(chat().proposal.target, chat().proposal.span);
             break;
           case 'apply': {
             const p = chat().proposal,
               b = p && findBlock(p.target);
-            if (!b || p.base !== art.rev || b.text !== p.before) {
+            if (
+              !b ||
+              p.base !== art.rev ||
+              b.text !== (p.span?.whole ?? p.before)
+            ) {
               renderProposal();
               return;
             }
@@ -3110,11 +3208,33 @@
               toast('请先填写候选文字');
               return;
             }
-            b.text = p.after;
+            const previous = b.text;
+            keepSnapshot(art, '采用修改前', 'milestone');
+            b.text = p.span
+              ? previous.slice(0, p.span.start) +
+                p.after +
+                previous.slice(p.span.end)
+              : p.after;
+            selectedSpan = null;
             chat().proposal = null;
             changed();
             renderPaper();
-            message('已将你确认的文字写入选中的段落。');
+            message(p.span ? '已替换选中的文字。' : '已替换整个段落。');
+            const appliedRev = art.rev;
+            toast('已采用修改', () => {
+              if (
+                a() !== art ||
+                art.rev !== appliedRev ||
+                art.status !== 'active'
+              ) {
+                toast('稿件已变化，可从版本历史找回采用前的内容');
+                return;
+              }
+              b.text = previous;
+              changed();
+              renderPaper();
+              toast('已撤销修改');
+            });
             break;
           }
           case 'discard':
@@ -3159,27 +3279,6 @@
             break;
           case 'manual-save':
             manualSave();
-            break;
-          case 'version-settings':
-            panel(
-              'version-settings',
-              '保存设置',
-              '<label for="idleMinutes">停笔多久后保存</label><select id="idleMinutes">' +
-                [5, 10]
-                  .map(
-                    (n) =>
-                      '<option value="' +
-                      n +
-                      '" ' +
-                      (n === idleMinutes() ? 'selected' : '') +
-                      '>' +
-                      n +
-                      ' 分钟</option>',
-                  )
-                  .join('') +
-                '</select><p>标题或结构、格式变化，或正文累计增删 20 个非空白字符，停笔后会留一份备份。等待期间重新起笔，本轮改为手动存版。</p><p>每 30 分钟备份有改动的稿件。每篇保留最近 10 份自动副本，命名后可长期保留。</p>' +
-                btn('status', '查看草稿保存状态'),
-            );
             break;
           case 'renamever': {
             const rev = Number(key);
