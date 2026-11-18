@@ -24,7 +24,7 @@ test('REVISION-RESTORE-003 restores a reviewed version as a new head and retains
 }) => {
   const { editor, panel } = await prepare(page);
   await panel
-    .getByRole('button', { name: '确认恢复为新版本', exact: true })
+    .getByRole('button', { name: '恢复为新版本', exact: true })
     .click();
   await expect(editor).toHaveText('值得保留的第一版');
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
@@ -37,9 +37,15 @@ test('REVISION-CONFLICT-004 typing or composition invalidates a restore confirma
   page,
 }) => {
   const { editor, panel } = await prepare(page);
-  await editor.fill('确认后继续形成的新判断');
+  // Simulate an editor update queued before the modal took focus.
+  await page
+    .locator('.tiptap p')
+    .first()
+    .evaluate((el) => {
+      el.textContent = '确认后继续形成的新判断';
+    });
   await panel
-    .getByRole('button', { name: '确认恢复为新版本', exact: true })
+    .getByRole('button', { name: '恢复为新版本', exact: true })
     .click();
   await expect(panel.getByRole('alert')).toContainText('草稿已变化');
   await expect(editor).toHaveText('确认后继续形成的新判断');
@@ -49,9 +55,9 @@ test('REVISION-CONFLICT-004 typing or composition invalidates a restore confirma
     .getByRole('button', { name: '查看并恢复版本 #2', exact: true })
     .click();
   await expect(panel.getByRole('region', { name: '待恢复版本' })).toBeVisible();
-  await editor.dispatchEvent('compositionstart', { data: '' });
+  await page.locator('.tiptap').dispatchEvent('compositionstart', { data: '' });
   await panel
-    .getByRole('button', { name: '确认恢复为新版本', exact: true })
+    .getByRole('button', { name: '恢复为新版本', exact: true })
     .click();
   await expect(panel.getByRole('alert')).toContainText('草稿已变化');
   await editor.dispatchEvent('compositionend', { data: '' });
@@ -69,7 +75,7 @@ test('REVISION-CONFLICT-004 a remote save rejects restore and keeps local conten
     .fill('另一页先保存的判断');
   await expect(other.getByText('已保存', { exact: true })).toBeVisible();
   await panel
-    .getByRole('button', { name: '确认恢复为新版本', exact: true })
+    .getByRole('button', { name: '恢复为新版本', exact: true })
     .click();
   await expect(
     page.getByRole('button', { name: '查看冲突', exact: true }),
@@ -96,7 +102,7 @@ test('REVISION-CONFLICT-004 a late restore response preserves newer typing and r
     await route.fulfill({ response });
   });
   await panel
-    .getByRole('button', { name: '确认恢复为新版本', exact: true })
+    .getByRole('button', { name: '恢复为新版本', exact: true })
     .click();
   await waiting;
   await editor.fill('恢复请求发出后继续写的新内容');
@@ -118,7 +124,7 @@ test('REVISION-RESTORE-003 an unknown restore survives reload and reconciles onc
     await route.abort('failed');
   });
   await panel
-    .getByRole('button', { name: '确认恢复为新版本', exact: true })
+    .getByRole('button', { name: '恢复为新版本', exact: true })
     .click();
   await expect(
     page.getByRole('button', { name: '重试保存', exact: true }),
@@ -145,7 +151,7 @@ test('REVISION-RESTORE-003 an uncommitted restore replays its original request a
     else await route.continue();
   });
   await panel
-    .getByRole('button', { name: '确认恢复为新版本', exact: true })
+    .getByRole('button', { name: '恢复为新版本', exact: true })
     .click();
   await expect(
     page.getByRole('button', { name: '重试保存', exact: true }),
@@ -165,7 +171,7 @@ test('REVISION-CONFLICT-004 unsaved input blocks restore review; cancel leaves t
   page,
 }) => {
   const { editor, panel } = await prepare(page);
-  await panel.getByRole('button', { name: '取消恢复', exact: true }).click();
+  await panel.getByRole('button', { name: '返回', exact: true }).click();
   await expect(editor).toHaveText('后来的第二版');
   await page.route('**/api/articles/*/content', (route) =>
     route.abort('failed'),

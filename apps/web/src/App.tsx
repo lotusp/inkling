@@ -101,6 +101,12 @@ function Workbench({
     access.status === 'connected',
     initial,
   );
+  const focusNewArticle = useRef(initial?.focusBody);
+  useEffect(() => {
+    if (!focusNewArticle.current || !article.editable || !editor) return;
+    focusNewArticle.current = false;
+    editor.commands.focus('start');
+  }, [article.editable, editor]);
   const format = useEditorState({
     editor,
     selector: ({ editor }) => ({

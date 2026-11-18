@@ -5,16 +5,19 @@ import {
   type ArticleListItem,
   type SaveArticleCommand,
 } from '@inkling/contracts';
-import { ArticleOrganizer } from './ArticleOrganizer';
+import { DeskDialog } from './DeskDialog';
+import { ArticleOrganizer, type OrganizerMode } from './ArticleOrganizer';
 import { api, ApiError } from './api';
 
 export function LibraryArticleOrganizer({
   articleId,
+  mode,
   close,
   onConfirmed,
 }: {
   articleId: string;
-  close: () => void;
+  mode: OrganizerMode;
+  close: (notice?: string) => void;
   onConfirmed: (metadata: ArticleListItem) => void;
 }) {
   const [snapshot, setSnapshot] = useState<ArticleSnapshot | null>(null);
@@ -23,6 +26,7 @@ export function LibraryArticleOrganizer({
   const [pending, setPending] = useState<SaveArticleCommand | null>(null);
   const path = '/api/articles/' + articleId;
   useEffect(() => {
+    if (mode === 'tags') return;
     let active = true;
     setLoadError('');
     void api(path)
@@ -37,16 +41,15 @@ export function LibraryArticleOrganizer({
     return () => {
       active = false;
     };
-  }, [path, articleId, attempt]);
-  if (!snapshot)
+  }, [path, articleId, attempt, mode]);
+  if (!snapshot && mode === 'rename')
     return (
-      <section className="article-organizer" aria-label="整理文章">
+      <DeskDialog title="重命名文章" close={close}>
         <p role="status">{loadError || '正在读取文章…'}</p>
         {loadError && (
           <button onClick={() => setAttempt(attempt + 1)}>重试读取</button>
         )}
-        <button onClick={close}>关闭整理</button>
-      </section>
+      </DeskDialog>
     );
   // Reuse the content CAS with this article's own body and revision. Retrying an
   // unknown outcome must use the original command, even after the draft moves on.
@@ -83,7 +86,7 @@ export function LibraryArticleOrganizer({
           setPending(null);
           if (error.status === 409)
             throw new Error(
-              '文章已变化。请关闭整理，重新打开后核对最新标题。',
+              '文章已变化。请关闭窗口，重新打开后核对最新标题。',
               { cause: error },
             );
         }
@@ -106,8 +109,9 @@ export function LibraryArticleOrganizer({
   }
   return (
     <ArticleOrganizer
+      mode={mode}
       articleId={articleId}
-      initialTitle={snapshot.document.title}
+      initialTitle={snapshot?.document.title ?? ''}
       renameTitle={rename}
       pendingTitle={!!pending}
       onConfirmed={onConfirmed}

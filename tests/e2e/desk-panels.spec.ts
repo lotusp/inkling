@@ -42,7 +42,7 @@ for (const width of [1280, 375]) {
       .getByRole('button', { name: '保存版本', exact: true })
       .click();
     await expect(history.getByText('手动保存', { exact: true })).toBeVisible();
-    await expect(history.getByLabel('版本名称', { exact: true })).toBeHidden();
+    await expect(history.getByLabel('稿次名称', { exact: true })).toBeHidden();
     const search = history.getByRole('searchbox', {
       name: '查找日期、名称或版本号',
     });

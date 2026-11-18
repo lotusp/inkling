@@ -13,7 +13,7 @@ test('REVISION-HISTORY-001 saves and names the clicked draft; REVISION-COMPARE-0
   await expect(panel.getByText('手动保存', { exact: true })).toBeVisible();
   await openRevisionMenu(panel, 2);
   await panel.getByRole('button', { name: '命名版本 #2', exact: true }).click();
-  await panel.getByLabel('版本名称', { exact: true }).fill('观点形成');
+  await panel.getByLabel('稿次名称', { exact: true }).fill('观点形成');
   await panel.getByRole('button', { name: '保存名称', exact: true }).click();
   await expect(panel.getByRole('status')).toContainText('已命名版本 #2');
   await expect(
@@ -30,10 +30,12 @@ test('REVISION-HISTORY-001 saves and names the clicked draft; REVISION-COMPARE-0
     .filter({ hasText: '观点形成' })
     .getByRole('button', { name: '比较', exact: true })
     .click();
-  await panel
-    .getByLabel('比较左侧版本')
-    .selectOption({ label: '#2 · 观点形成' });
-  await panel.getByLabel('比较右侧版本').selectOption({ label: '#3' });
+  const target = panel.getByLabel('比较目标版本');
+  await target.selectOption(
+    (await target
+      .locator('option[data-seq="3"]')
+      .getAttribute('value')) as string,
+  );
   await expect(panel.getByText(/格式或结构变化/)).toBeVisible();
   await expect(editor.locator('strong')).toHaveText('独立思考的第一稿');
   await editor.fill('比较期间继续写作的新判断');
@@ -123,10 +125,12 @@ test('REVISION-HISTORY-001 naming flush pins the saved revision while the author
   await expect(panel.getByRole('region', { name: '待恢复版本' })).toContainText(
     '点击命名时的原稿',
   );
-  await expect(
-    panel.getByRole('region', { name: '待恢复版本' }),
-  ).not.toContainText('保存等待期间继续写的新稿');
-  await expect(editor).toHaveText('保存等待期间继续写的新稿');
+  await expect(panel.locator('.diff-line.removed')).toContainText(
+    '保存等待期间继续写的新稿',
+  );
+  await expect(panel.locator('.diff-line.added')).toContainText(
+    '点击命名时的原稿',
+  );
   await panel
     .getByRole('region', { name: '待恢复版本' })
     .screenshot({ path: 'test-results/restore-preview-desktop.png' });
@@ -143,6 +147,8 @@ test('REVISION-COMPARE-002 restore preview contains long code lines within a nar
   await editor.fill('const message = "' + 'long_code_'.repeat(60) + '";');
   await page.getByRole('button', { name: '代码块', exact: true }).click();
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
+  await editor.fill('替代代码行');
+  await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '文章菜单' }).click();
   await page.getByRole('button', { name: '版本历史', exact: true }).click();
   const panel = page.getByRole('region', { name: '版本历史' });
@@ -151,7 +157,9 @@ test('REVISION-COMPARE-002 restore preview contains long code lines within a nar
     .getByRole('button', { name: '查看并恢复版本 #2', exact: true })
     .click();
   await expect(
-    panel.getByRole('region', { name: '待恢复版本' }).locator('pre'),
+    panel
+      .getByRole('region', { name: '待恢复版本' })
+      .locator('.diff-line.added'),
   ).toContainText('long_code_');
   await page.setViewportSize({ width: 375, height: 900 });
   await panel

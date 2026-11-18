@@ -28,10 +28,12 @@ import {
   type RecoveryChoice,
 } from './draft-store';
 export interface ArticleSession {
+  focusBody?: boolean;
   workspaceId: string;
   article: ArticleSnapshot | null;
 }
 export interface RestoreReview {
+  before: ArticleDocument;
   source: RevisionDetail;
   baseRevisionId: string;
   seq: number;
@@ -517,7 +519,7 @@ export function useArticle(
         ticket.baseRevisionId !== head.current?.headRevisionId
       )
         throw new Error('草稿已变化，请重新查看并确认恢复。');
-      return { ...ticket, source };
+      return { ...ticket, source, before: head.current.document };
     },
     [editor, accessState],
   );

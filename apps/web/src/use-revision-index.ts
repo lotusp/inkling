@@ -32,6 +32,20 @@ export function versionName(r: RevisionInfo) {
         : '自动备份')
   );
 }
+export function versionId(r: RevisionInfo) {
+  const d = new Date(r.createdAt);
+  const stamp = [
+    d.getFullYear(),
+    d.getMonth() + 1,
+    d.getDate(),
+    d.getHours(),
+    d.getMinutes(),
+    d.getSeconds(),
+  ]
+    .map((n) => String(n).padStart(2, '0'))
+    .join('');
+  return 'V' + stamp + '-' + r.seq;
+}
 export function matchingVersions(items: RevisionInfo[], query: string) {
   const term = query.trim().toLowerCase();
   if (!term) return items;
@@ -39,6 +53,7 @@ export function matchingVersions(items: RevisionInfo[], query: string) {
     const d = new Date(r.createdAt);
     return [
       versionName(r),
+      versionId(r),
       '#' + r.seq,
       versionDate(r.createdAt),
       d.toLocaleDateString('zh-CN'),

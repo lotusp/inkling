@@ -11,7 +11,7 @@ const body = (page: Page) =>
 const title = (page: Page) =>
   page.getByRole('textbox', { name: '文章标题', exact: true });
 const tags = (page: Page) =>
-  page.getByRole('textbox', { name: '文章标签（一行一个）', exact: true });
+  page.getByRole('textbox', { name: '每行一个标签', exact: true });
 async function info(page: Page, origin: string) {
   const workspace = WorkspaceInfo.parse(
     await (await page.request.get('/api/workspace')).json(),
@@ -26,25 +26,35 @@ async function info(page: Page, origin: string) {
     },
   };
 }
-async function organize(page: Page, name = '未命名文章') {
-  await page.getByRole('button', { name: '文章库', exact: true }).click();
-  await page.getByRole('button', { name: name + '的更多操作' }).click();
+async function organize(
+  page: Page,
+  mode: '编辑标签' | '重命名' = '编辑标签',
+  name = '未命名文章',
+) {
+  const library = page.getByRole('button', { name: '文章库', exact: true });
+  if ((await library.getAttribute('aria-expanded')) !== 'true')
+    await library.click();
   await page
-    .getByRole('button', { name: '整理：' + name, exact: true })
+    .getByRole('button', { name: name + '的更多操作', exact: true })
     .click();
-  await expect(tags(page)).toBeEnabled();
+  await page.getByRole('button', { name: mode, exact: true }).click();
+  await expect(
+    page.getByLabel(mode === '重命名' ? '标题' : '每行一个标签', {
+      exact: true,
+    }),
+  ).toBeEnabled();
 }
 test('LIBRARY-RENAME-006 rename preserves unsaved body in the same article and survives reload', async ({
   page,
   workspace,
 }) => {
   const { id } = await info(page, workspace.origin);
-  await organize(page);
   await body(page).fill('还未自动保存的个人判断');
+  await organize(page, '重命名');
   await page
-    .getByRole('textbox', { name: '新标题', exact: true })
+    .getByRole('textbox', { name: '标题', exact: true })
     .fill('架构取舍复盘');
-  await page.getByRole('button', { name: '保存标题', exact: true }).click();
+  await page.getByRole('button', { name: '保存', exact: true }).click();
   await expect(title(page)).toHaveValue('架构取舍复盘');
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   const saved = ArticleSnapshot.parse(
@@ -63,7 +73,8 @@ test('LIBRARY-RENAME-006 stale rename keeps the local proposal and never overwri
   workspace,
 }) => {
   const { id, headers } = await info(page, workspace.origin);
-  await organize(page);
+  await body(page).fill('本页观点');
+  await organize(page, '重命名');
   const original = ArticleSnapshot.parse(
     await (await page.request.get('/api/articles/' + id)).json(),
   );
@@ -75,11 +86,11 @@ test('LIBRARY-RENAME-006 stale rename keeps the local proposal and never overwri
       document: { ...original.document, title: '远端新标题' },
     },
   });
-  await body(page).fill('本页观点');
   await page
-    .getByRole('textbox', { name: '新标题', exact: true })
+    .getByRole('textbox', { name: '标题', exact: true })
     .fill('本页拟议标题');
-  await page.getByRole('button', { name: '保存标题', exact: true }).click();
+  await page.getByRole('button', { name: '保存', exact: true }).click();
+  await page.getByRole('button', { name: '关闭面板', exact: true }).click();
   await expect(
     page.getByRole('button', { name: '查看冲突', exact: true }),
   ).toBeVisible();
@@ -94,7 +105,7 @@ test('LIBRARY-RENAME-006 stale rename keeps the local proposal and never overwri
 test('LIBRARY-RENAME-006 late rename acknowledgement preserves newer title and body', async ({
   page,
 }) => {
-  await organize(page);
+  await organize(page, '重命名');
   let release = () => {};
   const gate = new Promise<void>((r) => (release = r));
   let arrived = () => {};
@@ -110,12 +121,24 @@ test('LIBRARY-RENAME-006 late rename acknowledgement preserves newer title and b
     await route.fulfill({ response });
   });
   await page
-    .getByRole('textbox', { name: '新标题', exact: true })
+    .getByRole('textbox', { name: '标题', exact: true })
     .fill('提交中的标题');
-  await page.getByRole('button', { name: '保存标题', exact: true }).click();
+  await page.getByRole('button', { name: '保存', exact: true }).click();
   await waiting;
-  await title(page).fill('等待期间的新标题');
-  await body(page).fill('等待期间的新段落');
+  // Deliver queued editor input programmatically while the modal owns keyboard focus.
+  await page.locator('.article-title').evaluate((el) => {
+    Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      'value',
+    )!.set!.call(el, '等待期间的新标题');
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await page
+    .locator('.tiptap p')
+    .first()
+    .evaluate((el) => {
+      el.textContent = '等待期间的新段落';
+    });
   release();
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await expect(title(page)).toHaveValue('等待期间的新标题');
@@ -133,6 +156,7 @@ test('LIBRARY-TAGS-007 normalize tags without creating content revisions and ren
   await tags(page).fill(' 技术 \né\ne\u0301\n技术\nAPI');
   await page.getByRole('button', { name: '保存标签', exact: true }).click();
   await expect(page.getByText('标签已保存。', { exact: true })).toBeVisible();
+  await organize(page);
   await expect(tags(page)).toHaveValue('API\né\n技术');
   expect(
     ArticleSnapshot.parse(
@@ -227,7 +251,11 @@ test('LIBRARY-TAGS-007 conflicting tags require explicit reload and keep navigat
   ).toBeVisible();
   await expect(tags(page)).toHaveValue('我的标签');
   await expect(
-    page.getByRole('button', { name: '文章库', exact: true }),
+    page.getByRole('button', {
+      name: '文章库',
+      exact: true,
+      includeHidden: true,
+    }),
   ).toBeDisabled();
   await page
     .getByRole('button', { name: '放弃输入并载入最新标签', exact: true })
@@ -236,7 +264,6 @@ test('LIBRARY-TAGS-007 conflicting tags require explicit reload and keep navigat
   await tags(page).fill('他页标签\n我的标签');
   await page.getByRole('button', { name: '保存标签', exact: true }).click();
   await expect(page.getByText('标签已保存。', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '关闭整理', exact: true }).click();
   await expect(
     page.getByRole('button', { name: '文章库', exact: true }),
   ).toBeEnabled();
@@ -259,14 +286,13 @@ test('LIBRARY-RENAME-006 organizing another article preserves the open draft and
   await page.getByRole('searchbox', { name: '搜标题或标签' }).fill('第二篇');
   await page.getByRole('searchbox', { name: '搜标题或标签' }).press('Enter');
   await page.getByRole('button', { name: '第二篇的更多操作' }).click();
-  await page.getByRole('button', { name: '整理：第二篇', exact: true }).click();
-  await expect(tags(page)).toBeEnabled();
-  await page.getByLabel('新标题', { exact: true }).fill('第二篇修订');
-  await page.getByRole('button', { name: '保存标题', exact: true }).click();
+  await page.getByRole('button', { name: '重命名', exact: true }).click();
+  await page.getByLabel('标题', { exact: true }).fill('第二篇修订');
+  await page.getByRole('button', { name: '保存', exact: true }).click();
+  await organize(page, '编辑标签', '第二篇修订');
   await tags(page).fill('复盘');
   await page.getByRole('button', { name: '保存标签', exact: true }).click();
   await expect(page.getByText('标签已保存。', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '关闭整理', exact: true }).click();
   await expect(
     page.getByRole('button', { name: '打开：第二篇修订', exact: true }),
   ).toContainText('复盘');
@@ -304,26 +330,25 @@ test('LIBRARY-RENAME-006 library rename reconciles a lost reply and protects a n
     ).json(),
   );
   const path = '/api/articles/' + other.articleId;
-  await organize(page, '旁稿');
+  await organize(page, '重命名', '旁稿');
   let writes = 0;
   await page.route('**' + path + '/content', async (route) => {
     writes++;
     await route.fetch();
     await route.abort();
   });
-  const input = page.getByLabel('新标题', { exact: true });
+  const input = page.getByLabel('标题', { exact: true });
   await input.fill('改过的旁稿');
-  await page.getByRole('button', { name: '保存标题', exact: true }).click();
+  await page.getByRole('button', { name: '保存', exact: true }).click();
   await expect(
     page.getByRole('button', { name: '核对并重试标题' }),
   ).toBeEnabled();
-  await expect(
-    page.getByRole('button', { name: '放弃未提交输入并关闭' }),
-  ).toBeDisabled();
+  await expect(page.getByRole('button', { name: '关闭面板' })).toBeDisabled();
   await page.getByRole('button', { name: '核对并重试标题' }).click();
   await expect(page.getByText('标题已保存。', { exact: true })).toBeVisible();
   expect(writes).toBe(1);
   await page.unroute('**' + path + '/content');
+  await organize(page, '重命名', '改过的旁稿');
   const latest = ArticleSnapshot.parse(
     await (await page.request.get(path)).json(),
   );
@@ -352,44 +377,41 @@ test('LIBRARY-RENAME-006 library rename reconciles a lost reply and protects a n
     ).ok(),
   ).toBe(true);
   await input.fill('另一份标题提议');
-  await page.getByRole('button', { name: '保存标题', exact: true }).click();
+  await page.getByRole('button', { name: '保存', exact: true }).click();
   await expect(
-    page.getByText('文章已变化。请关闭整理，重新打开后核对最新标题。'),
+    page.getByText('文章已变化。请关闭窗口，重新打开后核对最新标题。'),
   ).toBeVisible();
   await expect(input).toHaveValue('另一份标题提议');
   expect(
     ArticleSnapshot.parse(await (await page.request.get(path)).json()).document,
   ).toEqual(remote);
+  await page.getByRole('button', { name: '关闭面板' }).click();
   await expect(title(page)).toHaveValue('');
 });
-for (const field of ['新标题', '文章标签（一行一个）'])
+for (const field of ['标题', '每行一个标签'])
   test(`LIBRARY-TAGS-007 ${field} composition blocks submit and closing the organizer`, async ({
     page,
   }) => {
-    await organize(page);
+    await organize(page, field === '标题' ? '重命名' : '编辑标签');
     const input = page.getByRole('textbox', { name: field, exact: true });
     await input.dispatchEvent('compositionstart');
     await page
       .getByRole('button', {
-        name: field === '新标题' ? '保存标题' : '保存标签',
+        name: field === '标题' ? '保存' : '保存标签',
         exact: true,
       })
       .click();
     await expect(
       page.getByText(
-        field === '新标题' ? '请先完成标题选词。' : '请先完成标签选词。',
+        field === '标题' ? '请先完成标题选词。' : '请先完成标签选词。',
         { exact: true },
       ),
     ).toBeVisible();
-    await page.getByRole('button', { name: '关闭整理', exact: true }).click();
-    await expect(
-      page.getByRole('region', { name: '整理文章', exact: true }),
-    ).toBeVisible();
+    await page.getByRole('button', { name: '关闭面板', exact: true }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
     await input.dispatchEvent('compositionend');
-    await page.getByRole('button', { name: '关闭整理', exact: true }).click();
-    await expect(
-      page.getByRole('region', { name: '整理文章', exact: true }),
-    ).toBeHidden();
+    await page.getByRole('button', { name: '关闭面板', exact: true }).click();
+    await expect(page.getByRole('dialog')).toBeHidden();
   });
 test('LIBRARY-TAGS-007 definitive write rejection unlocks explicit abandonment of tag input', async ({
   page,
@@ -411,12 +433,8 @@ test('LIBRARY-TAGS-007 definitive write rejection unlocks explicit abandonment o
   await expect(
     page.getByText('文章当前不可编辑，请刷新文章库。', { exact: true }),
   ).toBeVisible();
-  await page
-    .getByRole('button', { name: '放弃未提交输入并关闭', exact: true })
-    .click();
-  await expect(
-    page.getByRole('region', { name: '整理文章', exact: true }),
-  ).toBeHidden();
+  await page.getByRole('button', { name: '关闭面板', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
 });
 test('LIBRARY-TAGS-007 failed mutation lookup does not resend and a later lookup reconciles', async ({
   page,
@@ -444,7 +462,7 @@ test('LIBRARY-TAGS-007 failed mutation lookup does not resend and a later lookup
   ).toBeEnabled();
   expect(writes).toBe(1);
   await expect(
-    page.getByRole('button', { name: '放弃未提交输入并关闭', exact: true }),
+    page.getByRole('button', { name: '关闭面板', exact: true }),
   ).toBeDisabled();
   await page.unroute('**/api/mutations/*');
   await page
@@ -572,7 +590,7 @@ test('LIBRARY-TAGS-007 a rejected retry cannot erase the earlier unknown tag ope
     page.getByRole('button', { name: '核对并重试标签', exact: true }),
   ).toBeEnabled();
   await expect(
-    page.getByRole('button', { name: '放弃未提交输入并关闭', exact: true }),
+    page.getByRole('button', { name: '关闭面板', exact: true }),
   ).toBeDisabled();
   await page.unroute('**/api/articles/*/metadata');
   await page

@@ -108,7 +108,7 @@ export function documentChanges(
         ? `新增第 ${j + 1} 段`
         : !right
           ? `删除第 ${i + 1} 段`
-          : `第 ${i + 1} → ${j + 1} 段`,
+          : `修改第 ${j + 1} 段`,
       changes: textChanges(
         left ? nodeText(left) : '',
         right ? nodeText(right) : '',

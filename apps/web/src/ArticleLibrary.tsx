@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   ArticleListPage,
-  ArticleTitle,
   type ArticleSnapshot,
   type ArticleListItem,
   type ArticleSearchFilters,
@@ -10,6 +9,7 @@ import {
 import { Ellipsis, Plus, X } from 'lucide-react';
 import { api } from './api';
 import { DeskMenu } from './DeskMenu';
+import type { OrganizerMode } from './ArticleOrganizer';
 import type { LifecycleTarget } from './ArticleLifecycle';
 import { ArticleSearchForm } from './ArticleSearchForm';
 export function ArticleLibrary({
@@ -35,10 +35,10 @@ export function ArticleLibrary({
   stateChanged: (state: ArticleShelf) => void;
   restoreArticle: (id: string) => void;
   confirmedMetadata: ArticleListItem | null;
-  organizeArticle: (id: string) => void;
+  organizeArticle: (id: string, mode: OrganizerMode) => void;
   disabled: boolean;
   openArticle: (id: string) => void;
-  createArticle: (title: string) => void;
+  createArticle: () => void;
   close: () => void;
 }) {
   const [page, setPage] = useState<ArticleListPage>({
@@ -62,10 +62,6 @@ export function ArticleLibrary({
   const [loading, setLoading] = useState(true),
     [loaded, setLoaded] = useState(false),
     [error, setError] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [title, setTitle] = useState(''),
-    [titleError, setTitleError] = useState('');
-  const composing = useRef(false);
   useEffect(() => {
     if (previousRefresh.current !== refreshGeneration) {
       previousRefresh.current = refreshGeneration;
@@ -193,8 +189,8 @@ export function ArticleLibrary({
           <button
             disabled={disabled}
             className="library-new"
-            aria-expanded={creating}
-            onClick={() => setCreating(!creating)}
+            aria-label="新建文章"
+            onClick={createArticle}
           >
             <Plus size={15} />
             新建
@@ -205,52 +201,6 @@ export function ArticleLibrary({
         </div>
       </div>
 
-      <form
-        className="library-create"
-        hidden={!creating}
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (disabled) return;
-          if (composing.current) {
-            setTitleError('请先完成新标题的选词。');
-            return;
-          }
-          const parsed = ArticleTitle.safeParse(title);
-          if (!parsed.success) {
-            setTitleError('标题不能超过 200 个字符。');
-            return;
-          }
-          setTitleError('');
-          createArticle(parsed.data);
-        }}
-      >
-        <label htmlFor="new-article-title">新文章标题（可选）</label>
-        <div>
-          <input
-            id="new-article-title"
-            placeholder="文章标题（可选）"
-            value={title}
-            maxLength={400}
-            disabled={disabled}
-            onChange={(event) => setTitle(event.target.value)}
-            onCompositionStart={() => {
-              composing.current = true;
-            }}
-            onCompositionEnd={() => {
-              composing.current = false;
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' && event.nativeEvent.isComposing)
-                event.preventDefault();
-            }}
-          />
-          <button type="submit" disabled={disabled}>
-            <Plus size={16} aria-hidden="true" />
-            新建文章
-          </button>
-        </div>
-        {titleError && <p role="alert">{titleError}</p>}
-      </form>
       <ArticleSearchForm
         apply={applyFilters}
         disabled={disabled}
@@ -352,12 +302,22 @@ export function ArticleLibrary({
                     disabled={disabled}
                   >
                     {item.state === 'active' && (
-                      <button
-                        aria-label={'整理：' + name}
-                        onClick={() => organizeArticle(item.articleId)}
-                      >
-                        标题与标签
-                      </button>
+                      <>
+                        <button
+                          onClick={() =>
+                            organizeArticle(item.articleId, 'rename')
+                          }
+                        >
+                          重命名
+                        </button>
+                        <button
+                          onClick={() =>
+                            organizeArticle(item.articleId, 'tags')
+                          }
+                        >
+                          编辑标签
+                        </button>
+                      </>
                     )}
                     <button
                       onClick={() =>
@@ -368,7 +328,7 @@ export function ArticleLibrary({
                         })
                       }
                     >
-                      {item.state === 'archived' ? '取消归档' : '归档'}
+                      {item.state === 'archived' ? '移回草稿' : '归档'}
                     </button>
                     <button
                       onClick={() =>
@@ -378,7 +338,7 @@ export function ArticleLibrary({
                         })
                       }
                     >
-                      移入回收站
+                      移入回收站…
                     </button>
                   </DeskMenu>
                 )}

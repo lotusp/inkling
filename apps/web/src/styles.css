@@ -1042,3 +1042,100 @@ svg {
   box-shadow: none;
   border-radius: 5px;
 }
+
+.desk-dialog {
+  box-sizing: border-box;
+  width: min(460px, calc(100% - 32px));
+  max-height: 84dvh;
+  padding: 0;
+  color: var(--ink);
+  background: #fffefa;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 18px 58px #273c3426;
+}
+.desk-dialog::backdrop {
+  background: #26302338;
+}
+.desk-dialog header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 16px;
+}
+.desk-dialog header button {
+  border: 0;
+  background: transparent;
+}
+.desk-dialog h2 {
+  font-size: 18px;
+  margin: 0;
+}
+.desk-dialog-body {
+  padding: 18px;
+}
+.desk-dialog-body label,
+.version-compare label {
+  display: block;
+}
+.desk-dialog-body input,
+.desk-dialog-body textarea,
+.version-compare select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: white;
+  font: inherit;
+  color: inherit;
+}
+.desk-dialog-body input,
+.desk-dialog-body textarea {
+  display: block;
+  margin: 5px 0 14px;
+}
+.desk-dialog-body button[type='submit'],
+.desk-dialog-body .primary {
+  background: #345d49;
+  color: white;
+}
+.version-panel .version-compare {
+  background: #fffefa;
+  border: 1px solid #cdd9c8;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 14px;
+}
+.version-compare label {
+  margin: 12px 0;
+}
+.revision-change {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.revision-change small {
+  display: block;
+  color: var(--muted);
+}
+.diff-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 7px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.diff-line.added {
+  background: #eaf3e8;
+  color: #21553a;
+}
+.diff-line.removed {
+  background: #faeee9;
+  color: #7a3528;
+}
+.library-notice {
+  color: var(--green);
+  font-size: 13px;
+}

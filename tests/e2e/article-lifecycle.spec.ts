@@ -81,7 +81,12 @@ test('LIBRARY-ARCHIVE-009 archived reopening is read-only with readable history 
     .filter({ hasText: '初稿' })
     .getByRole('button', { name: '比较', exact: true })
     .click();
-  await page.getByLabel('比较右侧版本').selectOption({ label: '#2' });
+  const target = page.getByLabel('比较目标版本');
+  await target.selectOption(
+    (await target
+      .locator('option[data-seq="2"]')
+      .getAttribute('value')) as string,
+  );
   await expect(
     page.getByRole('region', { name: '版本差异', exact: true }),
   ).toBeVisible();
@@ -219,7 +224,17 @@ async function currentAction(page: Page, action: string) {
     .filter({ has: page.locator('[aria-current="page"]') })
     .getByRole('button', { name: /的更多操作$/ })
     .click();
-  await page.getByRole('button', { name: action, exact: true }).click();
+  await page
+    .getByRole('button', {
+      name:
+        action === '移入回收站'
+          ? '移入回收站…'
+          : action === '取消归档'
+            ? '移回草稿'
+            : action,
+      exact: true,
+    })
+    .click();
 }
 test('LIBRARY-ARCHIVE-009/TRASH-010/RESTORE-011 author archives, unarchives, cancels trash, trashes last draft and restores without losing history', async ({
   page,

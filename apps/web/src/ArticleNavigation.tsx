@@ -8,14 +8,13 @@ import {
 import { api, ApiError } from './api';
 import { ArticleLibrary } from './ArticleLibrary';
 import { LibraryArticleOrganizer } from './LibraryArticleOrganizer';
-import { ArticleOrganizer } from './ArticleOrganizer';
+import { ArticleOrganizer, type OrganizerMode } from './ArticleOrganizer';
 import { ArticleLifecycle, type LifecycleTarget } from './ArticleLifecycle';
 import { ownDraftClient } from './draft-store';
 import type { ArticleSession, useArticle } from './use-article';
 type Intent = {
   mutationId: string;
   articleId?: string;
-  title?: string;
 };
 export function ArticleNavigation({
   article,
@@ -30,7 +29,10 @@ export function ArticleNavigation({
   busyChanged: (busy: boolean) => void;
   navigate: (session: ArticleSession) => void;
 }) {
-  const [organizing, setOrganizing] = useState<string | null>(null);
+  const [organizing, setOrganizing] = useState<{
+    id: string;
+    mode: OrganizerMode;
+  } | null>(null);
   const [confirmedMetadata, setConfirmedMetadata] =
     useState<ArticleListItem | null>(null);
   const [lifecycle, setLifecycle] = useState<LifecycleTarget | null>(null);
@@ -66,7 +68,7 @@ export function ArticleNavigation({
           'POST',
           target.articleId
             ? { mutationId: target.mutationId }
-            : { mutationId: target.mutationId, title: target.title ?? '' },
+            : { mutationId: target.mutationId, title: '' },
         ),
       );
       writeReturned = true;
@@ -84,6 +86,7 @@ export function ArticleNavigation({
       navigate({
         workspaceId: workspace.workspaceId,
         article: snapshot,
+        focusBody: !target.articleId,
       });
     } catch (error) {
       release?.();
@@ -119,7 +122,8 @@ export function ArticleNavigation({
       setMessage(error instanceof Error ? error.message : '暂时无法切换。');
     }
   }
-  function finishOrganizing() {
+  function finishOrganizing(notice = '') {
+    setMessage(notice);
     setOrganizing(null);
     setLibraryGeneration((n) => n + 1);
   }
@@ -164,7 +168,7 @@ export function ArticleNavigation({
         />
       )}
       {open && (
-        <div hidden={!!organizing || !!lifecycle}>
+        <div hidden={!!lifecycle}>
           <ArticleLibrary
             refreshGeneration={libraryGeneration}
             refreshArticleState={article.refreshState}
@@ -176,22 +180,29 @@ export function ArticleNavigation({
             }
             current={article.snapshot}
             confirmedMetadata={confirmedMetadata}
-            organizeArticle={setOrganizing}
+            organizeArticle={(id, mode) => {
+              setMessage('');
+              setOrganizing({ id, mode });
+            }}
             disabled={busy}
             openArticle={(articleId) =>
               request({ mutationId: crypto.randomUUID(), articleId })
             }
-            createArticle={(title) =>
-              request({ mutationId: crypto.randomUUID(), title })
-            }
+            createArticle={() => request({ mutationId: crypto.randomUUID() })}
             close={close}
           />
         </div>
       )}
+      {!intent && !organizing && message && (
+        <p role="status" className="library-notice">
+          {message}
+        </p>
+      )}
       {organizing &&
-        (organizing === article.snapshot?.articleId ? (
+        (organizing.id === article.snapshot?.articleId ? (
           <ArticleOrganizer
-            articleId={organizing}
+            articleId={organizing.id}
+            mode={organizing.mode}
             initialTitle={article.document?.title ?? ''}
             renameTitle={article.renameTitle}
             locked={article.navigationLocked}
@@ -200,8 +211,9 @@ export function ArticleNavigation({
           />
         ) : (
           <LibraryArticleOrganizer
-            key={organizing}
-            articleId={organizing}
+            key={organizing.id}
+            articleId={organizing.id}
+            mode={organizing.mode}
             onConfirmed={setConfirmedMetadata}
             close={finishOrganizing}
           />

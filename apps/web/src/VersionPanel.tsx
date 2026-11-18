@@ -13,11 +13,12 @@ import {
   versionName,
   versionDate,
   matchingVersions,
+  versionId,
 } from './use-revision-index';
 import { DeskMenu } from './DeskMenu';
 import { Ellipsis } from 'lucide-react';
-import { RevisionComparison, type ComparedDraft } from './RevisionComparison';
-import { DocumentPart } from './DocumentComparison';
+import { DeskDialog } from './DeskDialog';
+import { RevisionComparison } from './RevisionComparison';
 import type { RestoreReview } from './use-article';
 export function VersionPanel({
   article,
@@ -46,13 +47,25 @@ export function VersionPanel({
     [busy, setBusy] = useState(false);
   const [left, setLeft] = useState(''),
     [right, setRight] = useState(''),
-    [pair, setPair] = useState<[ComparedDraft, ComparedDraft] | null>(null);
+    [pair, setPair] = useState<[RevisionDetail, ArticleDocument] | null>(null);
   const [pending, setPending] = useState<{
     revisionId: string;
     seq: number;
     command: NameRevisionCommand;
   } | null>(null);
   const [review, setReview] = useState<RestoreReview | null>(null);
+  const [wasVisible, setWasVisible] = useState(visible);
+  if (visible !== wasVisible) {
+    setWasVisible(visible);
+    if (!visible) {
+      setQuery('');
+      setPair(null);
+      setReview(null);
+      if (!pending) setRename(null);
+      setShowBackups(false);
+      setLimit(20);
+    }
+  }
   const action = useRef(false);
   const detailPane = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -126,7 +139,7 @@ export function VersionPanel({
     );
     await load();
   };
-  const label = (r: RevisionInfo) => `#${r.seq}${r.name ? ' · ' + r.name : ''}`;
+  const label = (r: RevisionInfo) => versionId(r) + ' · ' + versionName(r);
   const matches = matchingVersions(items, query);
   const retained = (r: RevisionInfo) => !!r.name || r.kind !== 'save';
   const backups = matches.filter((r) => !retained(r));
@@ -139,7 +152,7 @@ export function VersionPanel({
     const [a, b] = await Promise.all([detail(from), target ?? detail(to)]);
     setLeft(from);
     setRight(to);
-    setPair([a, b]);
+    setPair([a, b.document]);
     setReview(null);
     setRename(null);
   }
@@ -176,19 +189,21 @@ export function VersionPanel({
                 >
                   命名
                 </button>
-                <button
-                  aria-label={'查看并恢复版本 #' + r.seq}
-                  onClick={() =>
-                    void run(async () => {
-                      setRename(null);
-                      setPair(null);
-                      setReview(null);
-                      setReview(await reviewRestore(r.revisionId));
-                    })
-                  }
-                >
-                  恢复…
-                </button>
+                {!r.current && (
+                  <button
+                    aria-label={'查看并恢复版本 #' + r.seq}
+                    onClick={() =>
+                      void run(async () => {
+                        setRename(null);
+                        setPair(null);
+                        setReview(null);
+                        setReview(await reviewRestore(r.revisionId));
+                      })
+                    }
+                  >
+                    恢复…
+                  </button>
+                )}
               </DeskMenu>
             )}
           </li>
@@ -227,10 +242,10 @@ export function VersionPanel({
           {notice}
         </p>
       )}
-      {error && <p role="alert">{error}</p>}
+      {error && !rename && <p role="alert">{error}</p>}
       {listError && <p role="alert">{listError}</p>}
       {listError && <button onClick={() => void load()}>刷新历史</button>}
-      {pending && !busy && (
+      {pending && !rename && !busy && (
         <button
           disabled={readOnly}
           onClick={() => void run(() => submit(pending))}
@@ -239,122 +254,129 @@ export function VersionPanel({
         </button>
       )}
       {rename && (
-        <form
-          className="version-rename"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (
-              !busy &&
-              !pending &&
-              !readOnly &&
-              name.trim() &&
-              [...name].length <= 80
-            )
-              void run(() =>
-                submit({
-                  ...rename,
-                  command: {
-                    name: name.trim(),
-                    mutationId: crypto.randomUUID(),
-                  },
-                }),
-              );
-          }}
+        <DeskDialog
+          title="命名稿次"
+          close={() => setRename(null)}
+          blocked={busy || !!pending}
         >
-          <label>
-            版本名称
-            <input
-              autoFocus
-              value={name}
-              maxLength={160}
-              disabled={!!pending}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </label>
-          <button
-            disabled={
-              readOnly ||
-              busy ||
-              !!pending ||
-              !name.trim() ||
-              [...name].length > 80
-            }
+          <form
+            className="version-rename"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (
+                !busy &&
+                !pending &&
+                !readOnly &&
+                name.trim() &&
+                [...name].length <= 80
+              )
+                void run(() =>
+                  submit({
+                    ...rename,
+                    command: {
+                      name: name.trim(),
+                      mutationId: crypto.randomUUID(),
+                    },
+                  }),
+                );
+            }}
           >
-            保存名称
-          </button>
-          <button
-            type="button"
-            disabled={busy || !!pending}
-            onClick={() => setRename(null)}
-          >
-            取消
-          </button>
-        </form>
+            <label>
+              稿次名称
+              <input
+                value={name}
+                maxLength={160}
+                disabled={!!pending}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </label>
+            <button
+              disabled={
+                readOnly ||
+                busy ||
+                !!pending ||
+                !name.trim() ||
+                [...name].length > 80
+              }
+            >
+              保存名称
+            </button>
+            <button
+              type="button"
+              hidden={!pending}
+              disabled={busy || readOnly}
+              onClick={() => pending && void run(() => submit(pending))}
+            >
+              重试命名
+            </button>
+            {error && <p role="alert">{error}</p>}
+          </form>
+        </DeskDialog>
       )}
       {pair && (
         <section ref={detailPane} className="version-compare">
-          <div className="version-selectors">
-            {(['比较左侧版本', '比较右侧版本'] as const).map((labelText, i) => (
-              <label key={labelText}>
-                {labelText}
-                <select
-                  aria-label={labelText}
-                  disabled={busy}
-                  value={i ? right : left}
-                  onChange={(e) =>
-                    void run(() =>
-                      compare(
-                        i ? left : e.target.value,
-                        i ? e.target.value : right,
-                      ),
-                    )
-                  }
-                >
-                  {i === 1 && <option value="draft">当前稿</option>}
-                  {items.map((r) => (
-                    <option key={r.revisionId} value={r.revisionId}>
-                      {label(r)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ))}
-          </div>
-          <RevisionComparison left={pair[0]} right={pair[1]} />
-          <button onClick={() => setPair(null)}>关闭比较</button>
+          <strong>比较改动</strong>
+          <label>
+            从 {label(pair[0])} 到
+            <select
+              aria-label="比较目标版本"
+              disabled={busy}
+              value={right}
+              onChange={(event) =>
+                void run(() => compare(left, event.target.value))
+              }
+            >
+              <option value="draft">当前稿</option>
+              {items
+                .filter((r) => r.revisionId !== left)
+                .map((r) => (
+                  <option
+                    key={r.revisionId}
+                    data-seq={r.seq}
+                    value={r.revisionId}
+                  >
+                    {label(r)}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <RevisionComparison before={pair[0].document} after={pair[1]} />
+          <button className="text-action" onClick={() => setPair(null)}>
+            结束比较
+          </button>
         </section>
       )}
       {review && (
-        <section
-          ref={detailPane}
-          aria-label="待恢复版本"
-          className="restore-preview"
+        <DeskDialog
+          title={'恢复「' + versionId(review.source) + '」？'}
+          close={() => setReview(null)}
         >
-          <h3>恢复版本 #{review.source.seq}</h3>
-          <p>
-            将在已查看基线之上新增版本，保留历史。继续输入或选词后需重新确认。
-          </p>
-          <h4>{review.source.document.title || '未命名文章'}</h4>
-          <DocumentPart node={review.source.document.doc} />
-          <button
-            disabled={readOnly || busy}
-            onClick={() =>
-              void run(async () => {
-                await confirmRestore(review);
-                setReview(null);
-                setNotice(
-                  '恢复已提交；如等待期间继续输入，请先核对正文中的提示。',
-                );
-                await load();
-              })
-            }
-          >
-            确认恢复为新版本
-          </button>
-          <button disabled={busy} onClick={() => setReview(null)}>
-            取消恢复
-          </button>
-        </section>
+          <section aria-label="待恢复版本" className="restore-preview">
+            <p>当前稿会保留为恢复前稿。以下是恢复将带来的改动。</p>
+            <RevisionComparison
+              before={review.before}
+              after={review.source.document}
+            />
+            <button
+              disabled={readOnly || busy}
+              onClick={() =>
+                void run(async () => {
+                  setReview(null);
+                  await confirmRestore(review);
+                  setNotice(
+                    '恢复已提交；如等待期间继续输入，请先核对正文中的提示。',
+                  );
+                  await load();
+                })
+              }
+            >
+              恢复为新版本
+            </button>
+            <button disabled={busy} onClick={() => setReview(null)}>
+              返回
+            </button>
+          </section>
+        </DeskDialog>
       )}
       <h3>保留的版本</h3>
       <input

@@ -20,7 +20,7 @@ test('ARTICLE-QUOTA-013 warns before the limit and retains refused input and nam
   const panel = page.getByRole('region', { name: '版本历史' });
   await openRevisionMenu(panel, 2);
   await panel.getByRole('button', { name: '命名版本 #2', exact: true }).click();
-  await panel.getByLabel('版本名称', { exact: true }).fill('保留的命名版');
+  await panel.getByLabel('稿次名称', { exact: true }).fill('保留的命名版');
   await panel.getByRole('button', { name: '保存名称', exact: true }).click();
   await expect(panel.getByRole('status')).toContainText('已命名版本 #2');
   await editor.fill('新的判断'.repeat(200));

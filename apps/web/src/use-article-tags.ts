@@ -13,7 +13,7 @@ interface PendingTags {
   epoch: number;
 }
 export function useArticleTags(
-  articleId: string,
+  articleId: string | null,
   onConfirmed: (metadata: ArticleListItem) => void,
 ) {
   const [base, setBase] = useState<ArticleListItem | null>(null),
@@ -30,6 +30,7 @@ export function useArticleTags(
     composing = useRef(false);
   const endpoint = '/api/articles/' + articleId + '/metadata';
   useEffect(() => {
+    if (!articleId) return;
     let active = true;
     void api(endpoint)
       .then((value) => {
@@ -48,7 +49,7 @@ export function useArticleTags(
     return () => {
       active = false;
     };
-  }, [endpoint, attempt]);
+  }, [endpoint, attempt, articleId]);
   function change(value: string) {
     sequence.current++;
     setText(value);
@@ -102,10 +103,13 @@ export function useArticleTags(
     let operation = pending;
     if (!operation) {
       const parsed = ArticleTags.safeParse(
-        text.trim() === '' ? [] : text.split('\n'),
+        text
+          .split('\n')
+          .map((tag) => tag.trim())
+          .filter(Boolean),
       );
       if (!parsed.success) {
-        setMessage('最多 10 个标签，每个 1–30 个字符；请去掉空行。');
+        setMessage('最多 10 个标签，每个 1–30 个字符。');
         return;
       }
       operation = {
@@ -184,7 +188,7 @@ export function useArticleTags(
         !composing.current
       ) {
         setText(current.tags.join('\n'));
-        setMessage('标签已保存。');
+        return true;
       } else setMessage('已确认提交，较新的标签输入仍未保存。');
     } catch (error) {
       // A rejected retry cannot settle an earlier request whose outcome is unknown.

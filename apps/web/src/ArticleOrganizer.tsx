@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArticleTitle, type ArticleListItem } from '@inkling/contracts';
 import { useArticleTags } from './use-article-tags';
+import { DeskDialog } from './DeskDialog';
+export type OrganizerMode = 'rename' | 'tags';
 export function ArticleOrganizer({
+  mode,
   articleId,
   initialTitle: initial,
   renameTitle,
@@ -10,13 +13,14 @@ export function ArticleOrganizer({
   onConfirmed,
   close,
 }: {
+  mode: OrganizerMode;
   articleId: string;
   initialTitle: string;
   renameTitle: (title: string) => Promise<unknown>;
   locked?: boolean;
   pendingTitle?: boolean;
   onConfirmed: (metadata: ArticleListItem) => void;
-  close: () => void;
+  close: (notice?: string) => void;
 }) {
   const [title, setTitle] = useState(initial),
     [committedTitle, setCommittedTitle] = useState(initial),
@@ -24,7 +28,7 @@ export function ArticleOrganizer({
     [titleMessage, setTitleMessage] = useState('');
   const composing = useRef(false),
     renamingRef = useRef(false);
-  const tags = useArticleTags(articleId, onConfirmed);
+  const tags = useArticleTags(mode === 'tags' ? articleId : null, onConfirmed);
   const dirty = title !== committedTitle || tags.dirty;
   useEffect(() => {
     if (!dirty && !renaming) return;
@@ -52,7 +56,7 @@ export function ArticleOrganizer({
     try {
       await renameTitle(parsed.data);
       setCommittedTitle(parsed.data);
-      setTitleMessage('标题已保存。');
+      close('标题已保存。');
     } catch (error) {
       setTitleMessage(
         error instanceof Error
@@ -64,38 +68,33 @@ export function ArticleOrganizer({
       setRenaming(false);
     }
   }
+  const blocked = renaming || pendingTitle || tags.busy || tags.pending;
+  function dismiss() {
+    if (blocked || renamingRef.current) return;
+    if (composing.current) {
+      setTitleMessage('请先完成标题选词。');
+      return;
+    }
+    if (tags.canClose()) close();
+  }
   return (
-    <section className="article-organizer" aria-label="整理文章">
-      <div className="organizer-heading">
-        <div>
-          <h2>整理文章</h2>
-          <p>标题跟随正文保存，标签帮助你整理想法。</p>
-        </div>
-        <button
-          disabled={renaming || pendingTitle || tags.busy || tags.pending}
-          onClick={() => {
-            if (composing.current) {
-              setTitleMessage('请先完成标题选词。');
-              return;
-            }
-            if (!renamingRef.current && tags.canClose()) close();
-          }}
-        >
-          {dirty ? '放弃未提交输入并关闭' : '关闭整理'}
-        </button>
-      </div>
-      <div className="organizer-fields">
+    <DeskDialog
+      title={mode === 'rename' ? '重命名文章' : '编辑标签'}
+      close={dismiss}
+      blocked={blocked}
+    >
+      {mode === 'rename' ? (
         <form
           onSubmit={(event) => {
             event.preventDefault();
             void rename();
           }}
         >
-          <label htmlFor="organizer-title">新标题</label>
+          <label htmlFor="organizer-title">标题</label>
           <input
             id="organizer-title"
             value={title}
-            disabled={pendingTitle}
+            disabled={pendingTitle || renaming}
             maxLength={400}
             onChange={(event) => setTitle(event.target.value)}
             onCompositionStart={() => {
@@ -109,19 +108,21 @@ export function ArticleOrganizer({
                 event.preventDefault();
             }}
           />
-          <p>改名会生成一个文章版本。</p>
           <button disabled={renaming || locked} type="submit">
-            {pendingTitle ? '核对并重试标题' : '保存标题'}
+            {pendingTitle ? '核对并重试标题' : '保存'}
           </button>
           {titleMessage && <p role="status">{titleMessage}</p>}
         </form>
+      ) : (
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            void tags.save();
+            void tags.save().then((saved) => {
+              if (saved) close('标签已保存。');
+            });
           }}
         >
-          <label htmlFor="organizer-tags">文章标签（一行一个）</label>
+          <label htmlFor="organizer-tags">每行一个标签</label>
           <textarea
             id="organizer-tags"
             rows={4}
@@ -131,7 +132,6 @@ export function ArticleOrganizer({
             onCompositionStart={tags.compositionStart}
             onCompositionEnd={tags.compositionEnd}
           />
-          <p>最多 10 个，每个 1–30 个字符。留空可清除标签。</p>
           {!tags.base ? (
             <button type="button" onClick={tags.retryLoad}>
               重试读取标签
@@ -161,7 +161,7 @@ export function ArticleOrganizer({
           )}
           {tags.pending && <p>标签结果尚未确认，请先核对；当前输入会保留。</p>}
         </form>
-      </div>
-    </section>
+      )}
+    </DeskDialog>
   );
 }
