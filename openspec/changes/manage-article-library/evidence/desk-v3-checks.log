@@ -407,3 +407,12 @@ Exit code: 0
   "reopenAndHashScanMs": 2208.7,
   "passed": true
 }
+
+Document and delta checks (exit code 0)
+git diff --check
+node scripts/harness/docs-check.mjs
+Checked 84 Markdown files; 0 local path / directory errors. Anchor contents and external URLs are not checked.
+node scripts/harness/check.mjs manage-article-library --stage plan
+Artifact structure checks passed.
+OPENSPEC_TELEMETRY=0 openspec validate manage-article-library --strict --no-interactive
+Change 'manage-article-library' is valid

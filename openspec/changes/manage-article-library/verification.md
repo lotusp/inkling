@@ -73,3 +73,5 @@ acceptance.md 保留 17 个唯一场景，已修正早期计划中尚未拆分�
 [本机运行日志](evidence/desk-v3-checks.log) · [桌面稿纸](evidence/desk-v3-desktop.png) · [窄屏稿纸](evidence/desk-v3-mobile.png) · [窄屏文章库](evidence/desk-v3-library-mobile.png)
 
 作者已反馈“中文输入没问题”。该反馈早于新版界面，尚无新入口逐项使用系统候选窗的记录。Linux 通过记录对应旧提交 `62a4cf4`。本轮只在本机验证，C03 的 G2/G3 仍待收口。
+
+4.4 的实现提交为 `e938057`。当前 evidence.json 已更新至该提交；本机检查通过，关联 Linux 或手工结果的整体验收行仍待完成。[G2 实际执行记录](evidence/desk-v3-g2.log)

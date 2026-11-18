@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "changeId": "manage-article-library",
   "result": "blocked",
-  "testedCommit": "62a4cf44d504d0c667eb456090884d919ebdd09e",
-  "ciRun": "https://github.com/lotusp/inkling/actions/runs/44209951096",
+  "testedCommit": "e938057ea10f783632642ccc438d6bd9b1f2e8a8",
+  "ciRun": null,
   "subject": [
     {
       "path": ".agents/skills/inkling-atdd-apply/SKILL.md",
@@ -43,19 +43,19 @@
     },
     {
       "path": "@change/acceptance.md",
-      "sha256": "8e9885b706faa7204ce0486c098c9efa4507b3480bbb1783547a730264a804fd"
+      "sha256": "4b918d6958f3e158cf31bd811869110b8af0231be39d42ceeb8fc95b403e54dd"
     },
     {
       "path": "@change/design.md",
-      "sha256": "958b730a35b52863c11aaa473dabb79a8e3d40a85c5f04260aa4aa6db53f43d1"
+      "sha256": "b103bde3ac2b5f9fef23260fd72370080c887e5947a996eddd52486f07278ede"
     },
     {
       "path": "@change/proposal.md",
-      "sha256": "ff7b443910aee5a7f6ea724af2b026ab2af9bf01bdcf9bfb6676846f58172fed"
+      "sha256": "e743c7f8905b305fb4f1d822c6fbb3b7295acfea53b9883c176fd5d8a7816fa3"
     },
     {
       "path": "@change/specs/article-library/spec.md",
-      "sha256": "b15ab7b8f7c260e0b04e9ade62d296b0c920b0c3e223ff814ac4727359d98727"
+      "sha256": "4650f7ee8403979318f416ca7d492dd58cb16e7959b9f359d4d39084662aa2f2"
     },
     {
       "path": "@change/specs/article-persistence/spec.md",
@@ -63,7 +63,11 @@
     },
     {
       "path": "AGENTS.md",
-      "sha256": "11dd3397f4c0be19ef08e330cf0ea9907a9a70bc28e75e3f51a0bc43ef19b57e"
+      "sha256": "4f9152f7b43b311e352e6fb5dcf7fe7db53c2e600d62341213b21c9bb2b337eb"
+    },
+    {
+      "path": "README.md",
+      "sha256": "04c57338bc2156bca468f580b2edfa4f49f9283f3c7c7d3d523a31c718e9bdba"
     },
     {
       "path": "apps/server/package.json",
@@ -103,27 +107,31 @@
     },
     {
       "path": "apps/web/src/App.tsx",
-      "sha256": "e78864948f6ee293987a7b6e4f889cd5d4d232243f1c893ce29428c35f082a26"
+      "sha256": "dcea3b4d7de55481793be63b9f6ebf0142b246edaa97b8e71ae58154665c49ba"
     },
     {
       "path": "apps/web/src/ArticleLibrary.tsx",
-      "sha256": "2cc3a9c29c27b94a6047b9db6f9bec906d08378d085d1da5ee78ebddea54a92a"
+      "sha256": "0bcf5a6bff9c191a6a35bfdff57e16974112275ed50f4e9aa629b32895e72253"
     },
     {
       "path": "apps/web/src/ArticleLifecycle.tsx",
-      "sha256": "4824e2a2942ef876f7e7de4f5f26d660174d1aa5e1ab35443598ae08454ae40c"
+      "sha256": "704e158bc6042a4449e9121e40350857499ceaa02ce73c032cb196253c1cb8f6"
     },
     {
       "path": "apps/web/src/ArticleNavigation.tsx",
-      "sha256": "10b71371a44ae291d17f7747733d4e0dd64a7a17c41f32e1d43a74a8f685b64e"
+      "sha256": "625692113ef95e7a22d95c94a5eb44fdea19781c010e084a76163a0f7a68fe4f"
     },
     {
       "path": "apps/web/src/ArticleOrganizer.tsx",
-      "sha256": "54b9091d5f86edea6d6c50175eea0b49befd03a52747f00a6972d9b39dad9708"
+      "sha256": "0e31d79dd1ca53cdc0cd30c7b7afdcc5074ddcb7fb6e57b85390b3b4ea1ea6ef"
+    },
+    {
+      "path": "apps/web/src/ArticleSaveFeedback.tsx",
+      "sha256": "a0802b63d2c82e075435ddc6c868d000c952a8fd0e74ef6854c0f7d211f11aa3"
     },
     {
       "path": "apps/web/src/ArticleSearchForm.tsx",
-      "sha256": "7c0eaa0b5abd3f88e6d44961afac6ab84f9abbf8fda6dd933c72252da6d60585"
+      "sha256": "7c0e139648b7a9323413131290ccaa8f7bb45f941780f096c3346501915f096a"
     },
     {
       "path": "apps/web/src/ConflictPanel.tsx",
@@ -134,12 +142,20 @@
       "sha256": "2e793c6fcec4fef7282063dc4a6b4b4f05a933b1c80e8fdeac6f07ccc8b75182"
     },
     {
+      "path": "apps/web/src/DeskMenu.tsx",
+      "sha256": "3caba6d6cfafa2c5dacc4f1e79a6304de55e6376201bb2809005709d78e5fa13"
+    },
+    {
       "path": "apps/web/src/DocumentComparison.tsx",
       "sha256": "22a7ed284cc205a2a070f34621bda26f03957ab1a9df5df959774a47972b95e9"
     },
     {
       "path": "apps/web/src/HistoryCapacity.tsx",
       "sha256": "6853ece06f99107c078fcb05c0e39f2d2428abd3a08270663f03ff04548cfa30"
+    },
+    {
+      "path": "apps/web/src/LibraryArticleOrganizer.tsx",
+      "sha256": "2553c1bfe6f4756e920bcc7c523355883226e3e7688fa71a85ce1b41bf43772c"
     },
     {
       "path": "apps/web/src/RecoveryPanel.tsx",
@@ -151,7 +167,7 @@
     },
     {
       "path": "apps/web/src/VersionPanel.tsx",
-      "sha256": "0e950389858e011c93bbfbbfb7bde6d1d0d27330da256d130f31dcf2c99608a6"
+      "sha256": "68f8f833a92f695f885437194f6bc6b1a95ac31561438877793a92dc1aeb19a8"
     },
     {
       "path": "apps/web/src/access.ts",
@@ -183,11 +199,11 @@
     },
     {
       "path": "apps/web/src/styles.css",
-      "sha256": "ceebb8e6a0d12f6d80c8523f0715527a2b5691e0b0eb96186114b657d5836d05"
+      "sha256": "d3ab061c97ff1f943876163013de04e7e6f5a9012e950b76922817a3418ada68"
     },
     {
       "path": "apps/web/src/use-article-position.ts",
-      "sha256": "1d4711bf3f113ecf82ed4d3a0f8d173c31a86499b61ab28978d0b4c34f074fd0"
+      "sha256": "5702eaa1e044f64c4131df59080d583a1c100e7db851c79cb11c673f1174c3b1"
     },
     {
       "path": "apps/web/src/use-article-state.ts",
@@ -199,7 +215,7 @@
     },
     {
       "path": "apps/web/src/use-article.ts",
-      "sha256": "d5997b8d31b568d7c9746ecb76bd2f6eb43cb2c207e5bc6b85d2b761dd35f5cf"
+      "sha256": "aca64b49ae746fac7073c3ce6663bbb080190831a9ae815a3c60c679c2d2239d"
     },
     {
       "path": "apps/web/src/use-health.ts",
@@ -227,11 +243,15 @@
     },
     {
       "path": "docs/engineering/local-development.md",
-      "sha256": "ad6b4fae61d16f1af683ea310b16b9e276373a505fcf0d1e87397e3194ad8bf5"
+      "sha256": "5e5122a14b8e46eef9b2a9a267c0eec267ec0b02755f191b6f652abbde73e5f6"
     },
     {
       "path": "docs/engineering/v1-change-roadmap.md",
-      "sha256": "51d872f48edd1a0b9b62be66a7ff4300157bf362d73f7c7b18da951961f6f249"
+      "sha256": "158236e722f178534c745217ae16f52d2d367c851c668a6e51ef4afcfd9942c9"
+    },
+    {
+      "path": "docs/prototypes/inkling-writing-desk-v3.html",
+      "sha256": "41b678c9c4f9a123b97fee7b5e111a7b68fd9c37693f1ec47d3fa0bc424a3132"
     },
     {
       "path": "eslint.config.mjs",
@@ -415,31 +435,31 @@
     },
     {
       "path": "tests/e2e/article-library.spec.ts",
-      "sha256": "b70a9f04d188bb8edcda2574580b8faab302d0d6a3d26aa97f7e579f6a6be027"
+      "sha256": "005b5487f8e34664453ef60ac126ba78114524ecf22ff4f8ad254c2b406b23d4"
     },
     {
       "path": "tests/e2e/article-lifecycle.spec.ts",
-      "sha256": "3cb922d6fffdfdf630c2fc07d5f459335534066e208f5ac69108eb4623f8e422"
+      "sha256": "d7ffd6023f14373d4ba0e253eecaf37c24669fe630b6a6fae539d5ab2670e9db"
     },
     {
       "path": "tests/e2e/article-navigation.spec.ts",
-      "sha256": "f3d15f67f736764f2b9b0c6034cf0e712820ef5c5c20e9c14535ae9d77a4b49b"
+      "sha256": "72ab19846b80bf50d8c20e6e685dc2e3fb07e625369cb2bd90c1e8ada069c7c1"
     },
     {
       "path": "tests/e2e/article-organization.spec.ts",
-      "sha256": "a251027d063d5457421ac8db64dfe7a755c9b5ef906057fc9f06d44d7511cece"
+      "sha256": "df5f919df97fd080aa85d1d3411b2b60946ec9eec69d55267ee71be22384f566"
     },
     {
       "path": "tests/e2e/article-position.spec.ts",
-      "sha256": "e0531c41138460fd540d6c0653547de49d72e8ad9a50352a59bc856bc7ba20b1"
+      "sha256": "7125bde612aa5fc10f3c4350434a3c1cb9ba29b2c95c4af037cc7abec2c20d88"
     },
     {
       "path": "tests/e2e/article-quota.spec.ts",
-      "sha256": "3b47d8ea53c984e8abc112ea52e4b462e78e9e81dd51289ec8f07421b493efe4"
+      "sha256": "2aea0b66997f6e7fcaed9e6b9b0d3319baa0da6f71a566078bd60a0634e1a031"
     },
     {
       "path": "tests/e2e/article-recovery-failures.spec.ts",
-      "sha256": "af12e309c345330d5762be39d4a448e1b94fd9a3f6a50d637ccd19e221cdb573"
+      "sha256": "27e70cdba03c30ff54fd3fae229827a798961de37dde61a9c8fa86599f55f8e7"
     },
     {
       "path": "tests/e2e/article-recovery.spec.ts",
@@ -447,7 +467,7 @@
     },
     {
       "path": "tests/e2e/article-restore.spec.ts",
-      "sha256": "54a8aca17cf2c33a128d7d78ad9ac819552251492abf3ae233ca55fab65364c7"
+      "sha256": "f329ec5b39bb001379b57e97f953d797c4f294f94696cd9fdfd30436a307c8f0"
     },
     {
       "path": "tests/e2e/article-save-races.spec.ts",
@@ -459,15 +479,15 @@
     },
     {
       "path": "tests/e2e/article-search.spec.ts",
-      "sha256": "bd5c67ef119496a8c1c57d468de1fc5e1edd7023dfa10421047663f8294f0018"
+      "sha256": "595b43b9fb66d1405bec3f75db81cb2d11bc3cea9385cb6a33e816865b4c0fa8"
     },
     {
       "path": "tests/e2e/article-storage-faults.spec.ts",
-      "sha256": "e6cfbec9248ce182ed76be0023a3c50e66dab39e51e9b3295ca214fcc03a7997"
+      "sha256": "be6de13e3a6c127058a3a4a52ffd7f8142cbb5cb9266fc3a87293bb51144918b"
     },
     {
       "path": "tests/e2e/article-versions.spec.ts",
-      "sha256": "a63233a4e5198b2ac5010f52601114aa3bdf3988b8224c1f24ef5e4b31d043d1"
+      "sha256": "e4d53b0571ffe49b443654dd327a5b949ce7aa06881239567a2e23fc4233a46d"
     },
     {
       "path": "tests/e2e/build.ts",
@@ -479,7 +499,7 @@
     },
     {
       "path": "tests/e2e/workbench.spec.ts",
-      "sha256": "1cb1b0398c1dcfccb923cd544753f4d0e4def3ef634e6257f53f9eb2b7bb22c9"
+      "sha256": "1ba4edba808796e12a65997b0ffb745d6a62467bf6fc802b935e0ecf8e83696e"
     },
     {
       "path": "tests/e2e/workspace-access.spec.ts",
@@ -554,6 +574,10 @@
       "sha256": "014d5a48b8ee1ecb4072af91985868ac6c3572c52e7c3bcc092a390b1541184a"
     },
     {
+      "path": "tests/prototypes/writing-desk.test.mjs",
+      "sha256": "fa7e9f884f24cbb1e724ee2e5359869f16d7f5206aa6c24bd072ea317b0a5ec1"
+    },
+    {
       "path": "tests/unit/article-document.test.ts",
       "sha256": "0162846cce3b550d163c9f30a90546e71da887504fb0cb38abd1ce2f4f3a2986"
     },
@@ -573,38 +597,38 @@
   "checks": [
     {
       "id": "local-verify",
-      "command": "fnm exec --using 22.22.2 corepack pnpm verify",
+      "command": "corepack pnpm verify",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/position-checks.log"
+      "log": "evidence/desk-v3-checks.log"
     },
     {
       "id": "local-e2e",
-      "command": "fnm exec --using 22.22.2 corepack pnpm test:e2e --workers=4",
+      "command": "node_modules/.bin/playwright test --workers=4",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/position-regression.log"
+      "log": "evidence/desk-v3-checks.log"
     },
     {
       "id": "mac-performance",
-      "command": "fnm exec --using 22.22.2 corepack pnpm test:storage-performance",
+      "command": "corepack pnpm test:storage-performance",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/library-performance.log"
+      "log": "evidence/desk-v3-checks.log"
     },
     {
       "id": "linux-ci",
-      "command": "GitHub Checks: pnpm install --frozen-lockfile; pnpm exec playwright install --with-deps chromium; pnpm verify; pnpm test:e2e (run 44209951096, 62a4cf44d504d0c667eb456090884d919ebdd09e)",
-      "status": "passed",
-      "exitCode": 0,
-      "log": "evidence/linux-ci.log"
+      "command": "GitHub Checks for e938057ea10f783632642ccc438d6bd9b1f2e8a8",
+      "status": "not-run",
+      "exitCode": null,
+      "log": "evidence/desk-v3-ci-pending.log"
     },
     {
       "id": "closeout-docs",
-      "command": "node scripts/harness/docs-check.mjs; node scripts/harness/check.mjs manage-article-library --stage plan; fnm exec --using 22.22.2 corepack pnpm exec openspec validate manage-article-library --strict --no-interactive; git diff --check",
+      "command": "node scripts/harness/docs-check.mjs && node scripts/harness/check.mjs manage-article-library --stage plan && OPENSPEC_TELEMETRY=0 openspec validate manage-article-library --strict --no-interactive && git diff --check",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/closeout-checks.log"
+      "log": "evidence/desk-v3-checks.log"
     },
     {
       "id": "manual-ime",
@@ -612,12 +636,19 @@
       "status": "not-run",
       "exitCode": null,
       "log": "evidence/manual-ime-pending.log"
+    },
+    {
+      "id": "prototype-interactions",
+      "command": "node --test tests/prototypes/writing-desk.test.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "log": "evidence/desk-v3-checks.log"
     }
   ],
   "scenarios": [
     {
       "id": "LIBRARY-MIGRATE-001",
-      "status": "passed",
+      "status": "blocked",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -636,7 +667,7 @@
     },
     {
       "id": "LIBRARY-LIST-003",
-      "status": "passed",
+      "status": "blocked",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -646,7 +677,7 @@
     },
     {
       "id": "LIBRARY-OPEN-004",
-      "status": "passed",
+      "status": "blocked",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -716,7 +747,7 @@
     },
     {
       "id": "LIBRARY-RESTORE-011",
-      "status": "passed",
+      "status": "blocked",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -725,7 +756,7 @@
     },
     {
       "id": "LIBRARY-POSITION-012",
-      "status": "passed",
+      "status": "blocked",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -734,7 +765,7 @@
     },
     {
       "id": "LIBRARY-FAILURE-013",
-      "status": "passed",
+      "status": "blocked",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -743,7 +774,7 @@
     },
     {
       "id": "ARTICLE-CREATE-001",
-      "status": "passed",
+      "status": "blocked",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -752,7 +783,7 @@
     },
     {
       "id": "ARTICLE-SAVE-002",
-      "status": "passed",
+      "status": "blocked",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -762,7 +793,7 @@
     },
     {
       "id": "ARTICLE-RETRY-003",
-      "status": "passed",
+      "status": "blocked",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -771,11 +802,19 @@
     },
     {
       "id": "ARTICLE-KEY-004",
-      "status": "passed",
+      "status": "blocked",
       "checkIds": [
         "local-verify",
         "local-e2e",
         "linux-ci"
+      ]
+    },
+    {
+      "id": "LIBRARY-DESK-014",
+      "status": "passed",
+      "checkIds": [
+        "local-e2e",
+        "local-verify"
       ]
     }
   ]
