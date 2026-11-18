@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "changeId": "manage-article-library",
   "result": "blocked",
-  "testedCommit": "ad738a85bcdbb1f3894ff79fa1dfcb801fce45d9",
-  "ciRun": null,
+  "testedCommit": "74d23a4f09df7339b41e4baca34a3f140fc4b11f",
+  "ciRun": "https://github.com/lotusp/inkling/actions/runs/44335395015",
   "subject": [
     {
       "path": ".agents/skills/inkling-atdd-apply/SKILL.md",
@@ -603,7 +603,7 @@
     },
     {
       "path": "tests/prototypes/writing-desk.test.mjs",
-      "sha256": "b819463ab6d9e6f8a6bb052d2ddeccc218ed535c28245f768561d5bf7a5c539a"
+      "sha256": "41746bffa18bb066fd43648f3b1224701be799785c19e1d8a945a35c293d7e66"
     },
     {
       "path": "tests/unit/article-document.test.ts",
@@ -628,28 +628,28 @@
       "command": "corepack pnpm verify",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/buttons-checks.log"
+      "log": "evidence/lint-fix-local.log"
     },
     {
       "id": "local-e2e",
       "command": "node_modules/.bin/playwright test --workers=4",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/buttons-checks.log"
+      "log": "evidence/lint-fix-local.log"
     },
     {
       "id": "mac-performance",
       "command": "corepack pnpm test:storage-performance",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/buttons-checks.log"
+      "log": "evidence/lint-fix-local.log"
     },
     {
       "id": "linux-ci",
-      "command": "GitHub Checks for ad738a85bcdbb1f3894ff79fa1dfcb801fce45d9",
-      "status": "not-run",
-      "exitCode": null,
-      "log": "evidence/desk-v3-ci-pending.log"
+      "command": "GitHub Checks for 74d23a4f09df7339b41e4baca34a3f140fc4b11f",
+      "status": "passed",
+      "exitCode": 0,
+      "log": "evidence/lint-fix-linux.log"
     },
     {
       "id": "closeout-docs",
@@ -661,22 +661,22 @@
     {
       "id": "manual-ime",
       "command": "Manual local Mac: actual title/body Chinese candidate window during open/create/archive/trash; organizer and search composition submission",
-      "status": "not-run",
-      "exitCode": null,
-      "log": "evidence/manual-ime-pending.log"
+      "status": "passed",
+      "exitCode": 0,
+      "log": "evidence/manual-ime-mac.log"
     },
     {
       "id": "prototype-interactions",
       "command": "node --test tests/prototypes/writing-desk.test.mjs",
       "status": "passed",
       "exitCode": 0,
-      "log": "evidence/buttons-checks.log"
+      "log": "evidence/lint-fix-local.log"
     }
   ],
   "scenarios": [
     {
       "id": "LIBRARY-MIGRATE-001",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -685,7 +685,7 @@
     },
     {
       "id": "LIBRARY-CREATE-002",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -695,7 +695,7 @@
     },
     {
       "id": "LIBRARY-LIST-003",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -705,7 +705,7 @@
     },
     {
       "id": "LIBRARY-OPEN-004",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -714,7 +714,7 @@
     },
     {
       "id": "LIBRARY-SWITCH-005",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -724,7 +724,7 @@
     },
     {
       "id": "LIBRARY-RENAME-006",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -734,7 +734,7 @@
     },
     {
       "id": "LIBRARY-TAGS-007",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -744,7 +744,7 @@
     },
     {
       "id": "LIBRARY-FIND-008",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -755,7 +755,7 @@
     },
     {
       "id": "LIBRARY-ARCHIVE-009",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -765,7 +765,7 @@
     },
     {
       "id": "LIBRARY-TRASH-010",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -775,7 +775,7 @@
     },
     {
       "id": "LIBRARY-RESTORE-011",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -784,7 +784,7 @@
     },
     {
       "id": "LIBRARY-POSITION-012",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -793,7 +793,7 @@
     },
     {
       "id": "LIBRARY-FAILURE-013",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -802,7 +802,7 @@
     },
     {
       "id": "ARTICLE-CREATE-001",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -811,7 +811,7 @@
     },
     {
       "id": "ARTICLE-SAVE-002",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -821,7 +821,7 @@
     },
     {
       "id": "ARTICLE-RETRY-003",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",
@@ -830,7 +830,7 @@
     },
     {
       "id": "ARTICLE-KEY-004",
-      "status": "blocked",
+      "status": "passed",
       "checkIds": [
         "local-verify",
         "local-e2e",

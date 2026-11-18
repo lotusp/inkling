@@ -1,6 +1,6 @@
 # C03 验证报告
 
-日期：2026-11-18。C03 尚在验收。4.4 已将已有功能接到 V3 写作台。作者此前确认中文输入正常。新版界面的自动验收见文末 4.4 记录，Linux CI 与逐项真实候选窗记录分别标注。
+2026-11-18，V3 工作台的本机和 Linux 自动验收已通过。当前被测提交为 `74d23a4`；作者已在 Mac 上确认两组真实中文候选窗操作通过。[手工验收记录](evidence/manual-ime-mac.log)
 
 ## 4.3 时的实现与验证基线
 
@@ -16,20 +16,20 @@
 
 ## 场景覆盖与证据边界
 
-acceptance.md 保留 17 个唯一场景，已修正早期计划中尚未拆分测试文件的入口。最终完整回归覆盖全部自动用例；下列 IME 相关场景的完整验收仍 blocked，自动化 composition 事件不能替代真实候选窗。
+下表列出 4.3 时的 17 个场景。4.4 新增的 LIBRARY-DESK-014 见下文工作台交互核对。七项涉及候选窗的场景有浏览器回归和作者在 Mac 上的手工验收记录。
 
 | ID | 实际入口与主要断言 | 结论 |
 | --- | --- | --- |
 | LIBRARY-MIGRATE-001 | integration/article-library：固定 schema 2、迁移/重开、DDL 和完整性故障回滚 | 自动通过 |
-| LIBRARY-CREATE-002 | api/article-library、e2e/article-library：独立新建、重放、输入/失败/空态 | 自动通过；新建 IME 待检查 |
+| LIBRARY-CREATE-002 | api/article-library、e2e/article-library：独立新建、重放、输入/失败/空态 | 自动及 Mac 手工通过 |
 | LIBRARY-LIST-003 | api/article-library、e2e/article-library：同时间稳定分页、无正文、加载失败与空态；千篇性能 | 通过 |
 | LIBRARY-OPEN-004 | api/article-library、e2e/article-navigation：打开事务、最近指针、标签页独立、失败保留 | 通过 |
-| LIBRARY-SWITCH-005 | e2e/article-navigation：未决保存、冲突、副本写失败、离线/迟到、选词 | 自动通过；真实 IME 待检查 |
-| LIBRARY-RENAME-006 | api/article-library、e2e/article-organization：唯一标题 CAS、最新正文、新输入保护 | 自动通过；整理 IME 待检查 |
-| LIBRARY-TAGS-007 | api/article-library、e2e/article-organization：规范化、独立 CAS、未知提交核对、拒绝/新输入 | 自动通过；整理 IME 待检查 |
-| LIBRARY-FIND-008 | api/article-library、e2e/article-search：字面过滤、精确标签、分页/旧响应隔离、非法输入 | 自动通过；查找 IME 待检查 |
-| LIBRARY-ARCHIVE-009 | api/article-library、e2e/article-lifecycle：只读与禁止新写、原稿保护、核对与恢复编辑 | 自动通过；归档 IME 待检查 |
-| LIBRARY-TRASH-010 | api/article-library、e2e/article-lifecycle：确认/取消、状态 CAS、副本失败、原请求与交接重试 | 自动通过；回收站操作 IME 待检查 |
+| LIBRARY-SWITCH-005 | e2e/article-navigation：未决保存、冲突、副本写失败、离线/迟到、选词 | 自动及 Mac 手工通过 |
+| LIBRARY-RENAME-006 | api/article-library、e2e/article-organization：唯一标题 CAS、最新正文、新输入保护 | 自动及 Mac 手工通过 |
+| LIBRARY-TAGS-007 | api/article-library、e2e/article-organization：规范化、独立 CAS、未知提交核对、拒绝/新输入 | 自动及 Mac 手工通过 |
+| LIBRARY-FIND-008 | api/article-library、e2e/article-search：字面过滤、精确标签、分页/旧响应隔离、非法输入 | 自动及 Mac 手工通过 |
+| LIBRARY-ARCHIVE-009 | api/article-library、e2e/article-lifecycle：只读与禁止新写、原稿保护、核对与恢复编辑 | 自动及 Mac 手工通过 |
+| LIBRARY-TRASH-010 | api/article-library、e2e/article-lifecycle：确认/取消、状态 CAS、副本失败、原请求与交接重试 | 自动及 Mac 手工通过 |
 | LIBRARY-RESTORE-011 | api/article-library、e2e/article-lifecycle：保留身份/历史/标签、回到原状态、重复不复制 | 通过 |
 | LIBRARY-POSITION-012 | e2e/article-position：修订绑定、反向选择/滚动、非法/旧位置、存储失败、延迟帧取消 | 通过 |
 | LIBRARY-FAILURE-013 | api/article-library、e2e/article-library/lifecycle：认证/同源/参数、SQL 故障回滚、可重试 | 通过 |
@@ -49,7 +49,7 @@ acceptance.md 保留 17 个唯一场景，已修正早期计划中尚未拆分�
 5. 位置存储绑定 workspace/article/revision，仅保存文本选择和滚动坐标；不含正文，不制造修订。非法/旧位置降级、存储异常提示，用户先输入会取消恢复帧。
 6. 依赖仍为原 workspace 边界，无新增库；web 通过 contracts/API，领域状态转换无 UI/数据库依赖。实际 check:architecture 与边界负例通过。
 
-发现并修正的文档问题：验收表仍引用拆分前的 organization/search/position 测试路径；知识索引仍称导航/整理未接入。已更新。此前的格式、布局时序与测试等待错误及修正保留在 progress 与失败日志，不删证据。当前未发现新的产品代码阻断问题；真实 IME 是剩余验收阻断，不是已证实的产品缺陷。
+发现并修正的文档问题：验收表仍引用拆分前的 organization/search/position 测试路径；知识索引仍称导航/整理未接入。已更新。此前的格式、布局时序与测试等待错误及修正保留在 progress 与失败日志，不删证据。本次自检未发现产品代码阻断问题。当时待补的真实候选窗操作在 5.1b 已完成。
 
 ## 4.3 时的手工验收与收口记录
 
@@ -108,3 +108,9 @@ acceptance.md 保留 17 个唯一场景，已修正早期计划中尚未拆分�
 [原型比较卡](evidence/buttons-comparison-prototype.png) · [正式比较卡](evidence/buttons-comparison.png) · [文章行菜单](evidence/buttons-article-menu.png) · [重命名窗口](evidence/buttons-rename.png) · [本机验证日志](evidence/buttons-checks.log)
 
 4.6 的被测实现提交为 `ad738a8`。G2 仍有 Linux CI 和分项实际候选窗记录待补，相关场景维持待验收。见[本次 G2 检查输出](evidence/buttons-g2.log)。
+
+## 最新 Linux 与本机验证
+
+`b68f6f6` 的 Linux 检查在原型测试夹具的两处 `localStorage` 引用报 ESLint `no-undef`。`74d23a4` 修正了这两处引用。本机工程检查与 139 项 Chromium 端到端测试重新通过，另有 8 项独立原型测试和 Mac 性能检查通过。[本机记录](evidence/lint-fix-local.log)
+
+GitHub Actions 在同一提交的 Ubuntu runner 上完成锁定依赖安装、Chromium 安装、工程检查和 139 项端到端测试，全部成功。[运行 44335395015](https://github.com/lotusp/inkling/actions/runs/44335395015) · [运行摘要](evidence/lint-fix-linux.log)

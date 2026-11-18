@@ -1,0 +1,6 @@
+macOS · 2026-11-18 · 74d23a4f09df7339b41e4baca34a3f140fc4b11f
+node_modules/.bin/eslint tests/prototypes/writing-desk.test.mjs --max-warnings 0 → exit 0
+corepack pnpm verify → exit 0 (91 application tests, 10 Harness tests; format, lint, types, architecture, build, docs and OpenSpec checks passed)
+node --test tests/prototypes/writing-desk.test.mjs → exit 0 (8 passed, 0 failed)
+node_modules/.bin/playwright test --workers=4 → exit 0 (139 passed)
+corepack pnpm test:storage-performance → exit 0 (normal/maximum save p95 10.66/128.28 ms, 1,000-article library p95 2.85 ms)
