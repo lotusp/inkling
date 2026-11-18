@@ -21,7 +21,7 @@
 | 原则 | [设计哲学](product/design-philosophy.md) | 基于作者目标的当前设计约束 |
 | 价值 | [核心价值](product/core-value.md) | 目标已明确，优势与指标仍是待验证假设 |
 | V1 范围与实施顺序 | [V1 范围设计](product/v1-scope.md) | 完整首版提案，逐项设计和验收 |
-| 交互原型 | [正文与 Chat 工作台 V2](prototypes/README.md) | 可交互演示；AI、研究与发布为模拟 |
+| 交互原型 | [写作台 V3 与历版原型](prototypes/README.md) | 可交互演示；AI、研究与发布为模拟 |
 | 旅程与协作 | [协作设计](product/thinking-partner-product-design.md) | 用户过程与交互方法，按 V1 范围推进 |
 | 产品定位决策 | [DEC-0001](decisions/0001-thinking-partner-positioning.md) | 记录作者明确提出的方向与范围 |
 | 本地部署决策 | [DEC-0002](decisions/0002-local-macos-mvp.md) | 单台 Mac 目标已明确，实现选择仍为提案 |
