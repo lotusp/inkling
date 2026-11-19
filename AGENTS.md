@@ -1,6 +1,6 @@
 # Inkling development entry
 
-本项目是个人中文技术写作协作助手。C01 本地工作台、C02 正文持久化与版本历史、C03 多文章管理均已通过验收并归档。V3 稿纸已接入文章查找、安全切换、归档、回收站和编辑位置恢复。闻一与发布的交互演示使用模拟数据。下一项候选是 C04 技术编辑器。[文章库规格](openspec/specs/article-library/spec.md)
+本项目是个人中文技术写作协作助手。C01 本地工作台、C02 正文持久化与版本历史、C03 多文章管理均已通过验收并归档。V3 稿纸已接入文章查找、安全切换、归档、回收站和编辑位置恢复。闻一与发布的交互演示使用模拟数据。当前变更为 [C04 技术编辑器](openspec/changes/complete-technical-editor/tasks.md)。[文章库规格](openspec/specs/article-library/spec.md)
 
 先读取 [开发 Harness](docs/engineering/harness.md)，再按任务读取：
 

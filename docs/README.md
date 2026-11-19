@@ -31,7 +31,7 @@
 | 框架选择 | [框架复评](research/framework-evaluation.md) | 需同任务 POC 验证；不是依赖清单 |
 | 本地工程 | [运行与检查](engineering/local-development.md) | 本机服务、持久编辑、草稿恢复、真实工程检查；AI 待接入 |
 | 开发方法 | [Harness](engineering/harness.md)、[DEC-0003](decisions/0003-openspec-atdd-harness.md) | OpenSpec、ATDD 与首批应用检查已建立 |
-| V1 Change 路线图 | [Change 拆分与依赖](engineering/v1-change-roadmap.md) | 建议 17 条，C01–C03 完成，下一项是技术编辑器 |
+| V1 Change 路线图 | [Change 拆分与依赖](engineering/v1-change-roadmap.md) | 建议 17 条，C01–C03 完成，C04 技术编辑器进行中 |
 | 代码规范 | [架构边界](engineering/code-architecture.md)、[日常规范](engineering/development-rules.md) | 新代码应遵循；模块随实现建立 |
 | 验收与证据 | [ATDD 约定](engineering/atdd-and-evidence.md)、[Harness 验证](validation/harness-bootstrap.md) | 已验证流程工具，不代表应用通过验收 |
 | 未决事项 | [开放问题](product/open-questions.md) | 进入对应阶段时验证，不要求一次回答所有问题 |
