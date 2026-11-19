@@ -99,6 +99,7 @@ svg {
   font-size: 13px;
 }
 .app-header button[aria-expanded='true'],
+.paragraph-options button[aria-pressed='true'],
 .format-actions button[aria-pressed='true'] {
   background: #eef2ea;
   color: var(--green);

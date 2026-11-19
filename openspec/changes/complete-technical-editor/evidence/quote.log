@@ -1,0 +1,6 @@
+2026-11-19 · EDITOR-QUOTE-001 · 本机 Chromium，隔离的服务和 SQLite 工作空间
+命令：node_modules/.bin/playwright test --grep EDITOR-QUOTE-001 --workers=2
+Red（退出 1）：1280px 和 375px 均成功输入、保存两段中文，已打开「段落格式」，查找「引用」按钮时失败。
+Green（退出 0）：同一组 2 个用例通过。已验证引用开关、撤销、重做、SQLite 快照的节点及文本、刷新后显示结果。
+corepack pnpm verify → exit 0，91 项应用测试、10 项 Harness 测试，格式、lint、类型、依赖边界、构建、文档和规格通过。
+node_modules/.bin/playwright test --workers=4 → exit 0，141 项 Chromium 用例通过。

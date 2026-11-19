@@ -46,7 +46,7 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
       window.removeEventListener('resize', hide);
     };
   }, [editor]);
-  function apply(kind: 'bold' | 'heading' | 'list' | 'code') {
+  function apply(kind: 'bold' | 'heading' | 'list' | 'quote' | 'code') {
     if (!editor.isEditable || editor.view.composing) return;
     const chain = editor.chain();
     const { $from, $to, from, to } = editor.state.selection;
@@ -58,6 +58,7 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
     } else if (kind === 'bold') chain.toggleBold();
     else if (kind === 'heading') chain.toggleHeading({ level: 2 });
     else if (kind === 'list') chain.toggleBulletList();
+    else if (kind === 'quote') chain.toggleBlockquote();
     else chain.toggleCodeBlock();
     setOpen(false);
     setPosition(null);
@@ -93,6 +94,12 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
             <button onClick={() => apply('bold')}>整段加粗</button>
             <button onClick={() => apply('heading')}>小标题</button>
             <button onClick={() => apply('list')}>列表</button>
+            <button
+              aria-pressed={editor.isActive('blockquote')}
+              onClick={() => apply('quote')}
+            >
+              引用
+            </button>
             <button onClick={() => apply('code')}>代码块</button>
           </div>
         </DeskDialog>
