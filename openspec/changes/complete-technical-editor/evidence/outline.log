@@ -1,0 +1,8 @@
+2026-11-19 · EDITOR-OUTLINE-009 · macOS，本机 Chromium，临时 SQLite 工作空间
+node_modules/.bin/playwright test --grep 'EDITOR-OUTLINE-009|LIBRARY-DESK-014 大纲添加章节' --workers=2 → exit 0，4 项通过。
+基线：C03 原型和正式工作台均通过原有添加章节/跳转测试。
+新增：经真实 API 保存含同名 h2/h3 的长稿。依次定位两节，返回编辑器仍有原反向选区，服务端 headRevisionId 相同。
+新增：375px 章节输入中派发浏览器组合事件，在结束组合前按 Enter 会保留表单，结束后按 Enter 添加一个标题，继续输入的段落重开后仍存在。
+corepack pnpm verify → exit 0，92 项应用测试与 10 项 Harness，工程及规格校验全部通过。
+node_modules/.bin/playwright test --workers=4 → exit 0，145 项通过。
+系统中文候选窗与系统剪贴板属于任务 5.2，本次仅运行浏览器自动验收。
