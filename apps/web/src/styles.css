@@ -296,6 +296,34 @@ svg {
 .tiptap ol {
   padding-left: 24px;
 }
+.tableWrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+.tableWrapper table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.tableWrapper th,
+.tableWrapper td {
+  position: relative;
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  text-align: start;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.tableWrapper th {
+  background: #eef2ea;
+}
+.tableWrapper .selectedCell {
+  background: #dce8db;
+}
+.tableWrapper :is(th, td) > p {
+  margin: 0;
+}
 .tiptap blockquote {
   margin-left: 0;
   border-left: 3px solid #b8c6ad;
@@ -1075,6 +1103,7 @@ svg {
 
 .format-slot {
   display: flex;
+  gap: 4px;
   align-items: center;
   height: 44px;
 }

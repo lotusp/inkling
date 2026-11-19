@@ -1,0 +1,21 @@
+2026-11-19 · EDITOR-TABLE-003 / EDITOR-ROUNDTRIP-010 · macOS，本机 Chromium、认证 HTTP 接口与临时 SQLite 工作空间
+
+Red 与旧版基线
+node_modules/.bin/vitest run tests/api/article-persistence.test.ts -t EDITOR-TABLE-003
+合法的 2×2 表格写入预期 200，旧契约返回 422。
+node_modules/.bin/playwright test tests/e2e/technical-table.spec.ts
+窄屏编辑和离线写表两项在段落格式中找不到「插入表格」。旧草稿夹具最初未创建 IndexedDB 对象仓库；补全 C03 的实际键和索引后，单独在功能实现前运行通过，旧稿已有读取能力。
+
+专项验收
+node_modules/.bin/vitest run tests/api/article-persistence.test.ts tests/unit/article-document.test.ts tests/integration/article-revisions.test.ts → 12 项通过。
+服务端拒绝版本 1 表格、非法父子结构、行宽不一致、无内容单元格与已升级稿件的降级写入，已保存修订仍是当前版本。合法跨格可读，冲突跨度和超过展开上限的表格被拒绝。
+以包含中文、链接、引用、列表和多行代码的版本 1 修订升级并恢复。直接读取 SQLite 的 document_json 字节与 content_hash，核对前后完全一致。恢复结果单独存为带来源引用的版本 2 修订。
+375px 稿纸插入 2×2 表格时保留已选原文，编辑表头与单元格，增删行列并撤销删列，刷新后核对格内文字、表头和行数。删除整表后保存仍为版本 2。
+两代 IndexedDB outbox 记录均可显式恢复旧富文本草稿并以版本 1 保存。表格在断开写入时能下载救援 JSON，刷新后显式恢复，保存正文与救援稿相同；实际重启服务并重新连接后，单元格与内容校验值一致。
+node_modules/.bin/playwright test tests/e2e/technical-table.spec.ts --workers=3 → 5 项通过。双标签场景另验证旧草稿恢复后可对照另一标签已提交的表头，查看时服务端修订不变，明确确认合并后仅新增一个版本 2 修订。
+
+工程检查
+corepack pnpm verify → 95 项应用测试、10 项 Harness 测试通过，格式、lint、类型、架构边界、构建、文档与规格检查通过。
+node_modules/.bin/playwright test --workers=4 → 150 项 Chromium 回归通过，含本切片的 5 项稿纸与恢复场景。
+浏览器主 JS 包 gzip 由基线 251.67 kB 增至 267.41 kB，增加 15.74 kB。构建继续提示主包超过 500 kB。
+corepack pnpm test:storage-performance → 通过。Apple M1 Pro，Node 22.22.2。60 KiB、2 MiB 的标准富文本夹具各保存 30 次，p95 分别为 11.54 ms 和 162.27 ms；1,000 篇文章的查询 p95 为 2.28 ms。

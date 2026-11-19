@@ -1,11 +1,12 @@
 import { z } from 'zod';
+import { tableGridSize } from './table';
 export interface DocumentMark {
   type: string;
   attrs?: Record<string, string | null>;
 }
 export interface DocumentNode {
   type: string;
-  attrs?: Record<string, string | number | null>;
+  attrs?: Record<string, string | number | number[] | null>;
   content?: DocumentNode[];
   text?: string;
   marks?: DocumentMark[];
@@ -42,16 +43,23 @@ export function validArticleHref(href: unknown): href is string {
     )
   );
 }
-export function validDocumentNode(value: unknown): value is DocumentNode {
+export type DocumentVersion = 1 | 2;
+const maxNodes = 50_000;
+const cellTypes = new Set(['tableHeader', 'tableCell']);
+export function validDocumentNode(
+  value: unknown,
+  version: DocumentVersion = 1,
+): value is DocumentNode {
   const stack: { node: unknown; depth: number; parent: string | undefined }[] =
     [{ node: value, depth: 0, parent: undefined }];
   let count = 0;
+  let remainingTableSlots = maxNodes;
   while (stack.length) {
     const item = stack.pop();
     if (!item) return false;
     const { node, depth, parent } = item;
     if (
-      ++count > 50_000 ||
+      ++count > maxNodes ||
       depth > 32 ||
       !record(node) ||
       typeof node.type !== 'string'
@@ -65,18 +73,23 @@ export function validDocumentNode(value: unknown): value is DocumentNode {
     )
       return false;
     if (parent === undefined && type !== 'doc') return false;
-    if (parent === 'doc' || parent === 'blockquote') {
-      if (!blocks.has(type)) return false;
-    }
-    if (parent === 'bulletList' || parent === 'orderedList') {
+    const isBlock = blocks.has(type) || (version === 2 && type === 'table');
+    if (
+      parent === 'doc' ||
+      parent === 'blockquote' ||
+      parent === 'listItem' ||
+      cellTypes.has(parent ?? '')
+    ) {
+      if (!isBlock) return false;
+    } else if (parent === 'table') {
+      if (type !== 'tableRow') return false;
+    } else if (parent === 'tableRow') {
+      if (!cellTypes.has(type)) return false;
+    } else if (parent === 'bulletList' || parent === 'orderedList') {
       if (type !== 'listItem') return false;
-    }
-    if (parent === 'listItem' && !blocks.has(type)) return false;
-    if (parent === 'paragraph' || parent === 'heading') {
+    } else if (parent === 'paragraph' || parent === 'heading') {
       if (!inline.has(type)) return false;
-    }
-    if (parent === 'codeBlock' && type !== 'text') return false;
-    if (!['doc', 'listItem', ...blocks, ...inline].includes(type)) return false;
+    } else if (parent === 'codeBlock' && type !== 'text') return false;
     if (
       node.text !== undefined &&
       (type !== 'text' || typeof node.text !== 'string' || !node.text.length)
@@ -93,8 +106,32 @@ export function validDocumentNode(value: unknown): value is DocumentNode {
           ? ['language']
           : type === 'orderedList'
             ? ['start', 'type']
-            : [];
+            : cellTypes.has(type)
+              ? ['colspan', 'rowspan', 'colwidth', 'align']
+              : [];
     if (Object.keys(attrs).some((k) => !allowed.includes(k))) return false;
+    if (cellTypes.has(type)) {
+      const { colwidth, align } = attrs;
+      if (
+        colwidth != null &&
+        (!Array.isArray(colwidth) ||
+          colwidth.length !== (attrs.colspan ?? 1) ||
+          !colwidth.every(
+            (width: unknown) =>
+              typeof width === 'number' &&
+              Number.isSafeInteger(width) &&
+              width >= 0,
+          ))
+      )
+        return false;
+      if (
+        align != null &&
+        align !== 'left' &&
+        align !== 'right' &&
+        align !== 'center'
+      )
+        return false;
+    }
     if (type === 'heading' && attrs.level !== 2 && attrs.level !== 3)
       return false;
     if (
@@ -167,6 +204,12 @@ export function validDocumentNode(value: unknown): value is DocumentNode {
       return false;
     const children = node.content ?? [];
     if (!Array.isArray(children)) return false;
+    if (type === 'table') {
+      const slots = tableGridSize(children, remainingTableSlots);
+      if (!slots) return false;
+      remainingTableSlots -= slots;
+    }
+    if (cellTypes.has(type) && !children.length) return false;
     if (inline.has(type) || type === 'horizontalRule') {
       if (children.length) return false;
     }
@@ -190,13 +233,19 @@ export function validDocumentNode(value: unknown): value is DocumentNode {
 export const ArticleTitle = z
   .string()
   .refine((x) => [...x].length <= 200, '标题不能超过 200 字符');
+const documentSchema = <V extends DocumentVersion>(version: V) =>
+  z
+    .object({
+      schemaVersion: z.literal(version),
+      title: ArticleTitle,
+      doc: z.custom<DocumentNode>(
+        (doc) => validDocumentNode(doc, version),
+        '不支持的正文结构',
+      ),
+    })
+    .strict();
 export const ArticleDocument = z
-  .object({
-    schemaVersion: z.literal(1),
-    title: ArticleTitle,
-    doc: z.custom<DocumentNode>(validDocumentNode, '不支持的正文结构'),
-  })
-  .strict()
+  .discriminatedUnion('schemaVersion', [documentSchema(1), documentSchema(2)])
   .refine(
     (value) =>
       new TextEncoder().encode(JSON.stringify(value)).length <= 2 * 1024 * 1024,

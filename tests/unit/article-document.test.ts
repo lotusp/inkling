@@ -115,3 +115,50 @@ it('EDITOR-LINK-002 preserves allowed article links and rejects invalid targets'
   ])
     expect(accepts(href)).toBe(false);
 });
+
+it('EDITOR-TABLE-003 validates spans, column widths and the combined grid size for pasted tables', () => {
+  const cell = (attrs = {}) => ({
+    type: 'tableCell',
+    attrs,
+    content: [{ type: 'paragraph' }],
+  });
+  const row = (...cells: unknown[]) => ({ type: 'tableRow', content: cells });
+  const table = (...rows: unknown[]) => ({ type: 'table', content: rows });
+  const accepts = (...tables: unknown[]) =>
+    ArticleDocument.safeParse({
+      schemaVersion: 2,
+      title: '',
+      doc: { type: 'doc', content: tables },
+    }).success;
+  expect(accepts(table(row(cell({ rowspan: 2 }), cell()), row(cell())))).toBe(
+    true,
+  );
+  expect(accepts(table(row(cell({ rowspan: 2 })), { type: 'tableRow' }))).toBe(
+    true,
+  );
+  expect(
+    accepts(
+      table(
+        row(cell({ colspan: 2, colwidth: [100, 0], align: 'center' })),
+        row(cell(), cell()),
+      ),
+    ),
+  ).toBe(true);
+  for (const attrs of [
+    { rowspan: 2 },
+    { colspan: null },
+    { colspan: 0 },
+    { colspan: 1.5 },
+    { colwidth: [80, 10] },
+    { colwidth: [-1] },
+    { align: 'unknown' },
+  ])
+    expect(accepts(table(row(cell(attrs))))).toBe(false);
+  expect(
+    accepts(
+      table(row(cell(), cell({ rowspan: 2 })), row(cell({ colspan: 2 }))),
+    ),
+  ).toBe(false);
+  const wide = table(row(cell({ colspan: 25_001 })));
+  expect(accepts(wide, wide)).toBe(false);
+});

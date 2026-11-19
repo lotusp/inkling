@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { TableKit } from '@tiptap/extension-table';
 import {
   Library,
   Ellipsis,
@@ -95,6 +96,7 @@ function Workbench({
   const editor = useEditor({
     editable: false,
     extensions: [
+      TableKit.configure({ table: { renderWrapper: true } }),
       StarterKit.configure({
         heading: { levels: [2, 3] },
         link: { openOnClick: false },

@@ -81,9 +81,9 @@ function parseRecord(value: unknown): DraftRecord {
     doc = object(draft.document);
   if (
     (r.version !== 1 && r.version !== 2) ||
-    doc.schemaVersion !== 1 ||
+    (doc.schemaVersion !== 1 && doc.schemaVersion !== 2) ||
     typeof doc.title !== 'string' ||
-    !validDocumentNode(doc.doc)
+    !validDocumentNode(doc.doc, doc.schemaVersion)
   )
     throw new Error('恢复副本格式不受支持，原数据已保留。');
   const ack = ArticleSnapshot.parse(r.ack);
@@ -116,7 +116,11 @@ function parseRecord(value: unknown): DraftRecord {
     clientId: Id.parse(r.clientId),
     ack,
     draft: {
-      document: { schemaVersion: 1, title: doc.title, doc: doc.doc },
+      document: {
+        schemaVersion: doc.schemaVersion,
+        title: doc.title,
+        doc: doc.doc,
+      },
       seq,
     },
     pending,

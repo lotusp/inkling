@@ -687,9 +687,21 @@ export class SqliteArticles implements ArticleRepository {
               contentHash: current.contentHash,
             },
           );
-        const document = restoring
+        let document = restoring
           ? this.revision(articleId, command.sourceRevisionId).document
           : command.document;
+        if (document.schemaVersion < current.document.schemaVersion) {
+          if (!restoring)
+            throw new ArticleError(
+              'DOCUMENT_VERSION',
+              422,
+              '请使用当前正文格式保存稿件。',
+            );
+          document = {
+            ...document,
+            schemaVersion: current.document.schemaVersion,
+          };
+        }
         const contentHash = hash(document),
           changed = restoring || contentHash !== current.contentHash,
           time = this.now();

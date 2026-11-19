@@ -70,6 +70,28 @@ function renderNode(node: DocumentNode): ReactNode {
       );
     case 'listItem':
       return <li>{content}</li>;
+    case 'table':
+      return (
+        <div className="tableWrapper">
+          <table>
+            <tbody>{content}</tbody>
+          </table>
+        </div>
+      );
+    case 'tableRow':
+      return <tr>{content}</tr>;
+    case 'tableCell':
+    case 'tableHeader': {
+      const Cell = node.type === 'tableHeader' ? 'th' : 'td';
+      return (
+        <Cell
+          colSpan={Number(node.attrs?.colspan ?? 1)}
+          rowSpan={Number(node.attrs?.rowspan ?? 1)}
+        >
+          {content}
+        </Cell>
+      );
+    }
     case 'codeBlock':
       return (
         <pre>

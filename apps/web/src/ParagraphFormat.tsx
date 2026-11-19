@@ -1,10 +1,24 @@
 import { useEffect, useState } from 'react';
-import { getMarkRange, type Editor } from '@tiptap/react';
+import { getMarkRange, useEditorState, type Editor } from '@tiptap/react';
 import { DeskDialog } from './DeskDialog';
 import { FormatFieldDialog, type FormatField } from './FormatFieldDialog';
 
+const tableActions = [
+  ['addRowAfter', '在下方插入行'],
+  ['addColumnAfter', '在右侧插入列'],
+  ['deleteRow', '删除当前行'],
+  ['deleteColumn', '删除当前列'],
+  ['deleteTable', '删除表格'],
+] as const;
+type TableOperation = 'insert' | (typeof tableActions)[number][0];
+
 export function ParagraphFormat({ editor }: { editor: Editor }) {
   const [open, setOpen] = useState(false);
+  const [tableMenu, setTableMenu] = useState(false);
+  const inTable = useEditorState({
+    editor,
+    selector: ({ editor }) => editor.isActive('table'),
+  });
   const [field, setField] = useState<FormatField | null>(null);
   const [position, setPosition] = useState<{
     left: number;
@@ -101,7 +115,19 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
     setOpen(false);
     setPosition(null);
   }
-  const floating = !!position && !open && !field;
+  function runTable(operation: TableOperation) {
+    if (!editor.isEditable || editor.view.composing) return;
+    const chain = editor.chain().focus();
+    if (operation === 'insert') {
+      if (!selection.empty) chain.setTextSelection(selection.to);
+      chain.insertTable({ rows: 2, cols: 2, withHeaderRow: true });
+    } else chain[operation]();
+    chain.run();
+    setOpen(false);
+    setTableMenu(false);
+    setPosition(null);
+  }
+  const floating = !!position && !open && !field && !tableMenu;
   return (
     <div className="format-slot">
       <div
@@ -131,6 +157,34 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
           段落格式…
         </button>
       </div>
+      {inTable && (
+        <div className="format-actions">
+          <button
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              if (editor.isEditable && !editor.view.composing)
+                setTableMenu(true);
+            }}
+          >
+            表格操作…
+          </button>
+        </div>
+      )}
+      {tableMenu && (
+        <DeskDialog title="表格操作" close={() => setTableMenu(false)}>
+          <div className="paragraph-options">
+            {tableActions.map(([operation, label]) => (
+              <button
+                key={operation}
+                disabled={!editor.can()[operation]()}
+                onClick={() => runTable(operation)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </DeskDialog>
+      )}
       {open && (
         <DeskDialog title="段落格式" close={() => setOpen(false)}>
           <div className="paragraph-options">
@@ -144,6 +198,9 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
               引用
             </button>
             <button onClick={() => apply('code')}>代码块</button>
+            {!inTable && !codeBlock && (
+              <button onClick={() => runTable('insert')}>插入表格</button>
+            )}
             {codeBlock && (
               <button onClick={() => editField('language')}>代码语言…</button>
             )}

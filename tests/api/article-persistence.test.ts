@@ -171,7 +171,7 @@ it('WORKSPACE-CSRF-004 protects actual article writes and reads', async () => {
 it('ARTICLE-SCHEMA-011 refuses unsupported data and WORKSPACE-PATH-005 invalid identifiers', async () => {
   const { app, headers, article } = await setup();
   for (const document of [
-    { ...article.document, schemaVersion: 2 },
+    { ...article.document, schemaVersion: 3 },
     { ...article.document, unexpected: true },
     {
       ...article.document,
@@ -202,4 +202,74 @@ it('ARTICLE-SCHEMA-011 refuses unsupported data and WORKSPACE-PATH-005 invalid i
     ).json(),
   );
   expect(read.headSeq).toBe(1);
+});
+
+it('EDITOR-TABLE-003 / EDITOR-ROUNDTRIP-010 validates table structure and preserves V1 revision bytes across V2 saves and restores', async () => {
+  const { app, headers, article } = await setup();
+  const path = '/api/articles/' + article.articleId;
+  const revision = async (id: string) =>
+    (await app.inject({ url: path + '/revisions/' + id, headers })).json();
+  const old = await revision(article.headRevisionId);
+  const cell = (type: string, text: string) => ({
+    type,
+    attrs: { colspan: 1, rowspan: 1, colwidth: null },
+    content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+  });
+  const header = cell('tableHeader', '表头');
+  const body = cell('tableCell', '数据');
+  const row = (...content: unknown[]) => ({ type: 'tableRow', content });
+  const table = (...content: unknown[]) => ({ type: 'table', content });
+  const document = (schemaVersion: number, node: unknown) => ({
+    ...article.document,
+    schemaVersion,
+    doc: { type: 'doc', content: [node] },
+  });
+  const write = (value: unknown, baseRevisionId = article.headRevisionId) =>
+    app.inject({
+      method: 'PUT',
+      url: path + '/content',
+      headers,
+      payload: { mutationId: randomUUID(), baseRevisionId, document: value },
+    });
+  const validTable = table(row(header, header), row(body, body));
+  for (const invalid of [
+    document(1, validTable),
+    document(2, table()),
+    document(2, table(row())),
+    document(2, table(row(header, header), row(body))),
+    document(2, table(header)),
+    document(2, row(body)),
+    document(2, table(row({ ...body, content: [] }))),
+    document(2, table(row({ ...body, attrs: { unexpected: true } }))),
+  ])
+    expect((await write(invalid)).statusCode).toBe(422);
+  expect((await revision(article.headRevisionId)).current).toBe(true);
+  const v2 = document(2, validTable);
+  const saved = await write(v2);
+  expect(saved.statusCode).toBe(200);
+  const tableId = SaveResult.parse(saved.json()).appliedRevisionId;
+  expect((await revision(tableId)).document).toEqual(v2);
+  expect((await write(article.document, tableId)).statusCode).toBe(422);
+  expect((await revision(tableId)).current).toBe(true);
+  const restore = await app.inject({
+    method: 'POST',
+    url: path + '/restore',
+    headers,
+    payload: {
+      mutationId: randomUUID(),
+      baseRevisionId: tableId,
+      sourceRevisionId: article.headRevisionId,
+    },
+  });
+  expect(restore.statusCode).toBe(200);
+  const restored = await revision(
+    SaveResult.parse(restore.json()).appliedRevisionId,
+  );
+  expect(restored.document).toEqual({ ...old.document, schemaVersion: 2 });
+  expect(restored.restoredFromRevisionId).toBe(article.headRevisionId);
+  expect(await revision(article.headRevisionId)).toEqual({
+    ...old,
+    current: false,
+  });
+  expect((await revision(tableId)).document).toEqual(v2);
 });

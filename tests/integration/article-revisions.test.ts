@@ -1,3 +1,5 @@
+import { storageFixture } from '../fixtures/storage';
+import { formattedArticle } from '../fixtures/article-document';
 import { afterEach, expect, it, vi } from 'vitest';
 import { SqliteWorkspace } from '@inkling/adapters';
 import { ArticleService } from '@inkling/core';
@@ -66,4 +68,62 @@ it('REVISION-HISTORY-001 marks initial, first change, five-minute change and res
   expect(service.revisions(id, {}).items.map((r) => r.seq)).toEqual([
     5, 4, 3, 2, 1,
   ]);
+});
+
+it('EDITOR-ROUNDTRIP-010 keeps the stored bytes and hash of a formatted V1 revision through upgrade and restore', () => {
+  const f = storageFixture();
+  try {
+    const { service, article, db } = f;
+    const id = article.articleId;
+    const legacy = service.save(id, {
+      mutationId: randomUUID(),
+      baseRevisionId: article.headRevisionId,
+      document: formattedArticle,
+    });
+    const readBytes = db.prepare(
+      'SELECT CAST(document_json AS BLOB) AS bytes, content_hash FROM article_revisions WHERE id=?',
+    );
+    const original = readBytes.get(legacy.appliedRevisionId);
+    expect(original).toMatchObject({
+      bytes: expect.any(Uint8Array),
+      content_hash: legacy.contentHash,
+    });
+    const upgraded = service.save(id, {
+      mutationId: randomUUID(),
+      baseRevisionId: legacy.appliedRevisionId,
+      document: {
+        ...formattedArticle,
+        schemaVersion: 2,
+        doc: {
+          type: 'doc',
+          content: [
+            ...(formattedArticle.doc.content ?? []),
+            {
+              type: 'table',
+              content: [
+                {
+                  type: 'tableRow',
+                  content: [
+                    { type: 'tableCell', content: [{ type: 'paragraph' }] },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+    service.restore(id, {
+      mutationId: randomUUID(),
+      baseRevisionId: upgraded.appliedRevisionId,
+      sourceRevisionId: legacy.appliedRevisionId,
+    });
+    expect(service.read(id).document).toEqual({
+      ...formattedArticle,
+      schemaVersion: 2,
+    });
+    expect(readBytes.get(legacy.appliedRevisionId)).toEqual(original);
+  } finally {
+    f.close();
+  }
 });

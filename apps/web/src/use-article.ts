@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import {
   ArticleDocument,
+  type DocumentNode,
   ArticleTitle,
   RevisionDetail,
   ArticleSnapshot,
@@ -29,6 +30,21 @@ import {
   type PendingSave,
   type RecoveryChoice,
 } from './draft-store';
+function containsTable(node: DocumentNode): boolean {
+  return node.type === 'table' || !!node.content?.some(containsTable);
+}
+function editorDocument(
+  editor: Editor,
+  title: string,
+  previous: ArticleDocument | null,
+): ArticleDocument {
+  const doc = editor.getJSON();
+  return {
+    schemaVersion: previous?.schemaVersion === 2 || containsTable(doc) ? 2 : 1,
+    title,
+    doc,
+  };
+}
 export interface LibraryView {
   shelf: ArticleShelf;
   filters: ArticleSearchFilters & { term?: string };
@@ -559,7 +575,10 @@ export function useArticle(
       const command: SaveArticleCommand = {
         mutationId: crypto.randomUUID(),
         baseRevisionId: ticket.baseRevisionId,
-        document: ticket.source.document,
+        document:
+          ticket.before.schemaVersion === 2
+            ? { ...ticket.source.document, schemaVersion: 2 }
+            : ticket.source.document,
       };
       const digest = await requestHash(
         ticket.source.articleId,
@@ -661,11 +680,7 @@ export function useArticle(
       !valid.current
     )
       return;
-    const document = {
-      schemaVersion: 1,
-      title: titleRef.current,
-      doc: editor.getJSON(),
-    };
+    const document = editorDocument(editor, titleRef.current, latest.current);
     if (
       ticket.seq !== editSeq.current ||
       ticket.revisionId !== comparison.headRevisionId ||
@@ -677,6 +692,10 @@ export function useArticle(
     }
     // This explicit decision authorizes a new CAS save against the viewed head.
     head.current = comparison;
+    latest.current =
+      comparison.document.schemaVersion === 2
+        ? { ...document, schemaVersion: 2 }
+        : document;
     savedSeq.current = -1;
     conflicted.current = false;
     setComparison(null);
@@ -897,11 +916,7 @@ export function useArticle(
       clientId: identity.current?.clientId ?? null,
       ack: head.current,
       draft: {
-        document: {
-          schemaVersion: 1,
-          title: titleRef.current,
-          doc: editor.getJSON(),
-        },
+        document: editorDocument(editor, titleRef.current, latest.current),
         seq: editSeq.current,
       },
       pending: inFlight.current,
@@ -909,11 +924,7 @@ export function useArticle(
   }, [editor]);
   const changed = useCallback(() => {
     if (!editor || !head.current || choosing.current) return;
-    const document: ArticleDocument = {
-      schemaVersion: 1,
-      title: titleRef.current,
-      doc: editor.getJSON(),
-    };
+    const document = editorDocument(editor, titleRef.current, latest.current);
     const parsed = ArticleDocument.safeParse(document);
     if (!parsed.success) {
       if (resetConfirmation())
