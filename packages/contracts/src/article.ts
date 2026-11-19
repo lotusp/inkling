@@ -31,6 +31,17 @@ const marks = new Set([
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
+export function validArticleHref(href: unknown): href is string {
+  return (
+    typeof href === 'string' &&
+    href.length <= 4096 &&
+    /^(https?:\/\/|mailto:|#)/i.test(href) &&
+    ![...href].some(
+      (character) =>
+        character.charCodeAt(0) <= 32 || character.charCodeAt(0) === 127,
+    )
+  );
+}
 export function validDocumentNode(value: unknown): value is DocumentNode {
   const stack: { node: unknown; depth: number; parent: string | undefined }[] =
     [{ node: value, depth: 0, parent: undefined }];
@@ -135,16 +146,7 @@ export function validDocumentNode(value: unknown): value is DocumentNode {
           )
         )
           return false;
-        if (
-          typeof a.href !== 'string' ||
-          a.href.length > 4096 ||
-          !/^(https?:\/\/|mailto:|#)/i.test(a.href) ||
-          [...a.href].some(
-            (character) =>
-              character.charCodeAt(0) <= 32 || character.charCodeAt(0) === 127,
-          )
-        )
-          return false;
+        if (!validArticleHref(a.href)) return false;
         if (
           a.target !== undefined &&
           a.target !== null &&

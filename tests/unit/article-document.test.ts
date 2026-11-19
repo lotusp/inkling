@@ -78,3 +78,40 @@ it('ARTICLE-SCHEMA-011 enforces byte, node-count and depth limits', () => {
     nested = { type: 'blockquote', content: [nested] };
   expect(withDoc({ type: 'doc', content: [nested] })).toBe(false);
 });
+
+it('EDITOR-LINK-002 preserves allowed article links and rejects invalid targets', () => {
+  const accepts = (href: string) =>
+    ArticleDocument.safeParse({
+      ...formattedArticle,
+      doc: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: '原文',
+                marks: [{ type: 'link', attrs: { href } }],
+              },
+            ],
+          },
+        ],
+      },
+    }).success;
+  for (const href of [
+    'http://example.org',
+    'HTTPS://example.org/文章',
+    'mailto:author@example.org',
+    '#参考',
+  ])
+    expect(accepts(href)).toBe(true);
+  for (const href of [
+    '',
+    'ftp://example.org',
+    '没有协议',
+    'https://example.org/a b',
+    '#' + 'a'.repeat(4096),
+  ])
+    expect(accepts(href)).toBe(false);
+});

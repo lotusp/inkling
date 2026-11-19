@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import type { Editor } from '@tiptap/react';
+import { getMarkRange, type Editor } from '@tiptap/react';
 import { DeskDialog } from './DeskDialog';
+import { FormatFieldDialog, type FormatField } from './FormatFieldDialog';
 
 export function ParagraphFormat({ editor }: { editor: Editor }) {
   const [open, setOpen] = useState(false);
+  const [field, setField] = useState<FormatField | null>(null);
   const [position, setPosition] = useState<{
     left: number;
     top: number;
@@ -64,7 +66,42 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
     setPosition(null);
     chain.focus().run();
   }
-  const floating = !!position && !open;
+  const { doc, selection } = editor.state;
+  const { $from, $to, from, to, empty } = selection;
+  const caretLink =
+    open && empty && editor.schema.marks.link
+      ? getMarkRange($from, editor.schema.marks.link)
+      : undefined;
+  const codeBlock =
+    $from.sameParent($to) && $from.parent.type.name === 'codeBlock';
+  const canLink =
+    caretLink ||
+    (open &&
+      !empty &&
+      $from.sameParent($to) &&
+      !codeBlock &&
+      !(
+        editor.schema.marks.code &&
+        doc.rangeHasMark(from, to, editor.schema.marks.code)
+      ));
+  function editField(kind: FormatField['kind']) {
+    const range = kind === 'link' && caretLink ? caretLink : { from, to };
+    const href = caretLink
+      ? doc
+          .nodeAt(caretLink.from)
+          ?.marks.find((mark) => mark.type.name === 'link')?.attrs.href
+      : editor.getAttributes('link').href;
+    const value = kind === 'link' ? href : $from.parent.attrs.language;
+    setField({
+      kind,
+      doc,
+      ...range,
+      value: typeof value === 'string' ? value : '',
+    });
+    setOpen(false);
+    setPosition(null);
+  }
+  const floating = !!position && !open && !field;
   return (
     <div className="format-slot">
       <div
@@ -86,7 +123,13 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
             </button>
           </>
         )}
-        <button onClick={() => setOpen(true)}>段落格式…</button>
+        <button
+          onClick={() => {
+            if (editor.isEditable && !editor.view.composing) setOpen(true);
+          }}
+        >
+          段落格式…
+        </button>
       </div>
       {open && (
         <DeskDialog title="段落格式" close={() => setOpen(false)}>
@@ -101,8 +144,24 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
               引用
             </button>
             <button onClick={() => apply('code')}>代码块</button>
+            {codeBlock && (
+              <button onClick={() => editField('language')}>代码语言…</button>
+            )}
+            {canLink && (
+              <button onClick={() => editField('link')}>链接…</button>
+            )}
           </div>
         </DeskDialog>
+      )}
+      {field && (
+        <FormatFieldDialog
+          editor={editor}
+          field={field}
+          close={() => {
+            setField(null);
+            editor.commands.focus();
+          }}
+        />
       )}
     </div>
   );

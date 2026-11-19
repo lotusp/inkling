@@ -1,0 +1,7 @@
+2026-11-19 · EDITOR-LINK-002 · macOS，本机 Chromium，临时 SQLite 工作空间
+node_modules/.bin/playwright test --grep EDITOR-LINK-002 --workers=2
+Red (exit 1): 两个用例分别在已展开的段落格式中找不到「链接…」与「代码语言…」。
+Green (exit 0): 两项通过。验证链接创建、无效地址纠错、选词、移除和撤销，代码语言设置、取消与清除，重开保留空行和缩进。
+补充光标回归：从已有链接内修改目标后选区应收拢，首次断言收到 false。修复后在全量回归中通过。
+corepack pnpm verify → exit 0。92 项应用测试、10 项 Harness 测试，含共享链接契约；格式、lint、类型、依赖边界、构建、文档与规格通过。
+node_modules/.bin/playwright test --workers=4 → exit 0。143 项通过。
