@@ -15,9 +15,12 @@ type TableOperation = 'insert' | (typeof tableActions)[number][0];
 export function ParagraphFormat({ editor }: { editor: Editor }) {
   const [open, setOpen] = useState(false);
   const [tableMenu, setTableMenu] = useState(false);
-  const inTable = useEditorState({
+  const { inTable, inFormula } = useEditorState({
     editor,
-    selector: ({ editor }) => editor.isActive('table'),
+    selector: ({ editor }) => ({
+      inTable: editor.isActive('table'),
+      inFormula: editor.isActive('formulaBlock'),
+    }),
   });
   const [field, setField] = useState<FormatField | null>(null);
   const [position, setPosition] = useState<{
@@ -128,6 +131,7 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
     setPosition(null);
   }
   const floating = !!position && !open && !field && !tableMenu;
+  if (inFormula) return <div className="format-slot" />;
   return (
     <div className="format-slot">
       <div
@@ -200,6 +204,23 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
             <button onClick={() => apply('code')}>代码块</button>
             {!inTable && !codeBlock && (
               <button onClick={() => runTable('insert')}>插入表格</button>
+            )}
+            {!codeBlock && (
+              <button
+                onClick={() => {
+                  if (!editor.isEditable || editor.view.composing) return;
+                  editor
+                    .chain()
+                    .focus()
+                    .setTextSelection(selection.to)
+                    .insertContent({ type: 'formulaBlock' })
+                    .run();
+                  setOpen(false);
+                  setPosition(null);
+                }}
+              >
+                插入公式
+              </button>
             )}
             {codeBlock && (
               <button onClick={() => editField('language')}>代码语言…</button>

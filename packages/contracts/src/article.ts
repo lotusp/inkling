@@ -44,6 +44,9 @@ export function validArticleHref(href: unknown): href is string {
   );
 }
 export type DocumentVersion = 1 | 2;
+export function requiresDocumentV2(type: string) {
+  return type === 'table' || type === 'formulaBlock';
+}
 const maxNodes = 50_000;
 const cellTypes = new Set(['tableHeader', 'tableCell']);
 export function validDocumentNode(
@@ -73,7 +76,9 @@ export function validDocumentNode(
     )
       return false;
     if (parent === undefined && type !== 'doc') return false;
-    const isBlock = blocks.has(type) || (version === 2 && type === 'table');
+    const isBlock =
+      blocks.has(type) || (version === 2 && requiresDocumentV2(type));
+    const plainText = parent === 'codeBlock' || parent === 'formulaBlock';
     if (
       parent === 'doc' ||
       parent === 'blockquote' ||
@@ -89,7 +94,7 @@ export function validDocumentNode(
       if (type !== 'listItem') return false;
     } else if (parent === 'paragraph' || parent === 'heading') {
       if (!inline.has(type)) return false;
-    } else if (parent === 'codeBlock' && type !== 'text') return false;
+    } else if (plainText && type !== 'text') return false;
     if (
       node.text !== undefined &&
       (type !== 'text' || typeof node.text !== 'string' || !node.text.length)
@@ -152,11 +157,7 @@ export function validDocumentNode(
     )
       return false;
     if (node.marks !== undefined) {
-      if (
-        !inline.has(type) ||
-        parent === 'codeBlock' ||
-        !Array.isArray(node.marks)
-      )
+      if (!inline.has(type) || plainText || !Array.isArray(node.marks))
         return false;
       const seen = new Set<string>();
       for (const mark of node.marks) {

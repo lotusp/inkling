@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import {
   ArticleDocument,
+  requiresDocumentV2,
   type DocumentNode,
   ArticleTitle,
   RevisionDetail,
@@ -30,8 +31,8 @@ import {
   type PendingSave,
   type RecoveryChoice,
 } from './draft-store';
-function containsTable(node: DocumentNode): boolean {
-  return node.type === 'table' || !!node.content?.some(containsTable);
+function hasV2Node(node: DocumentNode): boolean {
+  return requiresDocumentV2(node.type) || !!node.content?.some(hasV2Node);
 }
 function editorDocument(
   editor: Editor,
@@ -40,7 +41,7 @@ function editorDocument(
 ): ArticleDocument {
   const doc = editor.getJSON();
   return {
-    schemaVersion: previous?.schemaVersion === 2 || containsTable(doc) ? 2 : 1,
+    schemaVersion: previous?.schemaVersion === 2 || hasV2Node(doc) ? 2 : 1,
     title,
     doc,
   };

@@ -66,7 +66,12 @@ export function textChanges(before: string, after: string): TextChange[] {
 export function nodeText(node: DocumentNode): string {
   if (node.type === 'hardBreak') return '\n';
   if (node.text !== undefined) return node.text;
-  const separator = ['paragraph', 'heading', 'codeBlock'].includes(node.type)
+  const separator = [
+    'paragraph',
+    'heading',
+    'codeBlock',
+    'formulaBlock',
+  ].includes(node.type)
     ? ''
     : '\n';
   return node.content?.map(nodeText).join(separator) ?? '';

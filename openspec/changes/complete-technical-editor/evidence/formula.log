@@ -1,0 +1,17 @@
+2026-11-19 · C04 2.2 · EDITOR-PREVIEW-004（公式部分）· macOS arm64，Node 22.22.2，Chromium，隔离的本机服务与 SQLite
+
+Red
+node_modules/.bin/vitest run tests/unit/article-document.test.ts -t EDITOR-PREVIEW-004 → 1 项失败。版本 2 的公式源码节点未被旧契约接受。
+node_modules/.bin/playwright test tests/e2e/technical-formula.spec.ts --workers=2 → 2 项失败。稿纸的「段落格式…」已打开，找不到「插入公式」。
+
+Green
+node_modules/.bin/playwright test tests/e2e/technical-formula.spec.ts --workers=3 --repeat-each=2 → 3 个公式场景各执行两次，6/6 通过。
+375px 稿纸选中文字后插入公式，原段落保留，插入后可直接键入。带未闭合花括号的 LaTeX 在对应块出现错误提示，保存刷新后仍可编辑。修正为带分式、上标、换行与缩进的公式后出现原生 MathML，在保存接口和刷新后的编辑器中核对原始源码。折叠、展开和手动保存同一份内容后，修订 ID 相同。该用例拦截所有非本机请求，观测到 0 次。
+渲染器在首次预览时从本机加载，测试确认外部图片命令被拒绝。加载后将 Playwright 浏览器设为完全断网，替换源码后分式仍然可见。自动保存失败后产生 IndexedDB 副本，重连并刷新，显式恢复后在保存接口核对源码，再次刷新核对预览与修订 ID。
+通过编辑器的 copy/paste 事件与隔离的 DataTransfer 核对纯文本及富文本剪贴板。富文本保留公式块标记与源码，粘贴会产生第二个可渲染的公式，撤销后保留原公式。
+
+回归与构建
+corepack pnpm verify → 通过。96 项应用测试、10 项 Harness 测试，以及格式、lint、类型、架构、构建、文档与规格检查。
+node_modules/.bin/playwright test --workers=4 → 153 项通过。
+corepack pnpm test:storage-performance → 通过。60 KiB / 2 MiB 正文保存 p95 分别为 11.27 ms / 181.01 ms，千篇文章库查询 p95 为 3.71 ms。
+KaTeX 0.19.1 的本机按需模块 gzip 为 77.78 kB。主 JS 包 gzip 由 267.41 kB 增至 269.18 kB，沿用既有的主包体积提示。

@@ -92,6 +92,8 @@ function renderNode(node: DocumentNode): ReactNode {
         </Cell>
       );
     }
+    case 'formulaBlock':
+      return <pre aria-label="公式源码">{content}</pre>;
     case 'codeBlock':
       return (
         <pre>

@@ -2,6 +2,34 @@ import { expect, it } from 'vitest';
 import { ArticleDocument, type DocumentNode } from '@inkling/contracts';
 import { formattedArticle } from '../fixtures/article-document';
 
+it('EDITOR-PREVIEW-004 stores only unmarked formula source in V2, including unfinished LaTeX', () => {
+  const formula = {
+    type: 'formulaBlock',
+    content: [{ type: 'text', text: '\\frac{' }],
+  };
+  const parse = (schemaVersion: number, block: unknown) =>
+    ArticleDocument.safeParse({
+      schemaVersion,
+      title: '',
+      doc: { type: 'doc', content: [block] },
+    }).success;
+  expect(parse(2, formula)).toBe(true);
+  expect(parse(2, { type: 'formulaBlock' })).toBe(true);
+  expect(parse(1, formula)).toBe(false);
+  expect(parse(2, { ...formula, attrs: { rendered: 'derived markup' } })).toBe(
+    false,
+  );
+  expect(parse(2, { ...formula, content: [{ type: 'paragraph' }] })).toBe(
+    false,
+  );
+  expect(
+    parse(2, {
+      ...formula,
+      content: [{ ...formula.content[0], marks: [{ type: 'bold' }] }],
+    }),
+  ).toBe(false);
+});
+
 it('ARTICLE-SCHEMA-011 supports the current node/mark combinations and Unicode titles', () => {
   expect(ArticleDocument.safeParse(formattedArticle).success).toBe(true);
   for (const title of [
