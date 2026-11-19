@@ -15,11 +15,12 @@ type TableOperation = 'insert' | (typeof tableActions)[number][0];
 export function ParagraphFormat({ editor }: { editor: Editor }) {
   const [open, setOpen] = useState(false);
   const [tableMenu, setTableMenu] = useState(false);
-  const { inTable, inFormula } = useEditorState({
+  const { inTable, inSourceBlock } = useEditorState({
     editor,
     selector: ({ editor }) => ({
       inTable: editor.isActive('table'),
-      inFormula: editor.isActive('formulaBlock'),
+      inSourceBlock:
+        editor.isActive('formulaBlock') || editor.isActive('mermaidBlock'),
     }),
   });
   const [field, setField] = useState<FormatField | null>(null);
@@ -130,8 +131,19 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
     setTableMenu(false);
     setPosition(null);
   }
+  function insertSourceBlock(type: 'formulaBlock' | 'mermaidBlock') {
+    if (!editor.isEditable || editor.view.composing) return;
+    editor
+      .chain()
+      .focus()
+      .setTextSelection(selection.to)
+      .insertContent({ type })
+      .run();
+    setOpen(false);
+    setPosition(null);
+  }
   const floating = !!position && !open && !field && !tableMenu;
-  if (inFormula) return <div className="format-slot" />;
+  if (inSourceBlock) return <div className="format-slot" />;
   return (
     <div className="format-slot">
       <div
@@ -206,21 +218,14 @@ export function ParagraphFormat({ editor }: { editor: Editor }) {
               <button onClick={() => runTable('insert')}>插入表格</button>
             )}
             {!codeBlock && (
-              <button
-                onClick={() => {
-                  if (!editor.isEditable || editor.view.composing) return;
-                  editor
-                    .chain()
-                    .focus()
-                    .setTextSelection(selection.to)
-                    .insertContent({ type: 'formulaBlock' })
-                    .run();
-                  setOpen(false);
-                  setPosition(null);
-                }}
-              >
-                插入公式
-              </button>
+              <>
+                <button onClick={() => insertSourceBlock('formulaBlock')}>
+                  插入公式
+                </button>
+                <button onClick={() => insertSourceBlock('mermaidBlock')}>
+                  插入流程图
+                </button>
+              </>
             )}
             {codeBlock && (
               <button onClick={() => editField('language')}>代码语言…</button>

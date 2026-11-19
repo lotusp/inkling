@@ -324,33 +324,51 @@ svg {
 .tableWrapper :is(th, td) > p {
   margin: 0;
 }
-.formula-block {
+.source-block {
   margin: 1em 0;
   padding: 0.55em 0.85em;
   border-left: 2px solid var(--line);
   min-width: 0;
 }
-.formula-preview {
+.source-preview {
   overflow-x: auto;
   padding: 3px 0;
 }
-.formula-preview:empty {
+.mermaid-measure {
+  position: fixed;
+  top: 0;
+  left: -100000px;
+  visibility: hidden;
+  pointer-events: none;
+}
+.source-preview img {
+  display: block;
+  height: auto;
+}
+.source-preview:empty {
   display: none;
 }
-.formula-block summary,
-.formula-block [role='status'] {
+.source-block summary,
+.source-block [role='status'] {
   color: var(--muted);
   font-size: 13px;
 }
-.formula-block summary {
+.source-block summary {
   cursor: pointer;
   width: fit-content;
 }
-.tiptap .formula-block pre {
+.tiptap .source-block pre {
   min-height: 1.8em;
   margin: 0.4em 0 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+.source-block pre[aria-placeholder][data-empty]::before {
+  content: attr(aria-placeholder);
+  color: var(--muted);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }
 .tiptap blockquote {
   margin-left: 0;

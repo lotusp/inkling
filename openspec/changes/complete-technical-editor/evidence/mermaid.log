@@ -1,0 +1,21 @@
+2026-11-19 · C04 2.3 · EDITOR-PREVIEW-004（Mermaid）· macOS arm64，Node 22.22.2，Chromium，隔离本机工作空间和 SQLite
+
+Red
+node_modules/.bin/vitest run tests/unit/article-document.test.ts -t EDITOR-PREVIEW-004 → 公式基线通过，版本 2 的 mermaidBlock 源码被旧契约拒绝，1 项失败。
+node_modules/.bin/playwright test tests/e2e/technical-mermaid.spec.ts → 两个场景均打开了稿纸的「段落格式…」，因缺少「插入流程图」失败。
+
+Green
+从正式稿纸写入有错误的两行源码，第 2 行提示缺少节点。自动保存后重开，错误提示和原始文本都在原块。修正为三个中文节点、两条带标签的分支及一个回路后，核对 SVG 已解码、节点文字、实际连线方向和边标签。离开稿纸、重启本机服务并重新接入后，再核对同一张图、缩进和换行。稿件 API 返回版本 2 的原始文本节点。折叠源码后修订号相同。
+浏览器监听及拦截本机工作空间以外的 HTTP(S) 请求。初次渲染、错误修复和重开期间均为 0 次。给出外部图片地址和点击链接指令时，原位指出第 3 行，旧预览清除。加载渲染器后让浏览器完全断网，再次编辑生成了新的 SVG，确认浏览器副本写入，重连后显式恢复草稿并从 API 核对源码。
+通过编辑器的 copy/paste 事件核对流程图和公式的纯文本、HTML 节点类型、粘贴后的预览和源码。复制内容不含预览图，撤销粘贴后原块保留。系统剪贴板实测归 5.2。
+node_modules/.bin/playwright test tests/e2e/technical-mermaid.spec.ts tests/e2e/technical-source-clipboard.spec.ts --workers=3 --repeat-each=2 → 8/8 通过。最终布局在 375px 稿纸另行实测，三个节点的示例图宽 279px，中文标签和两条分支完整可见。
+node_modules/.bin/playwright test -g 'stale rename keeps|EDITOR-PREVIEW-004' --workers=3 --repeat-each=2 → 14/14 通过，含服务重启后核对实际连线方向、边标签和原始源码。
+Vite 开发入口另以临时工作空间、新建文章和 Chromium 走「段落格式… → 插入流程图」，本地 SVG 图片通过浏览器解码。
+
+工程检查
+corepack pnpm verify → 格式、ESLint、类型、架构边界、生产构建、100 项应用测试、10 项 Harness 测试、文档与规格检查通过。
+Mermaid Tiny 12.3.0 的本机按需脚本为 2,852.57 kB（未压缩），主 JS gzip 由公式切片的 269.18 kB 变为 270.68 kB。构建继续提示主包超过 500 kB。
+
+首轮全量浏览器回归为 155/156。既有 LIBRARY-RENAME-006 用例在并发写入冲突后未观察到拟议标题，单独复验两次均通过。
+node_modules/.bin/playwright test --workers=4 → 第二轮全量 156/156 通过，含上述重命名用例及本切片的全部场景。
+corepack pnpm test:storage-performance → 通过。60 KiB 与 2 MiB 正文保存 p95 分别为 29.54 ms 和 221.56 ms，千篇文章库查询 p95 为 4.31 ms。

@@ -3,6 +3,7 @@ import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
 import { FormulaBlock } from './formula-block';
+import { MermaidBlock } from './mermaid-block';
 import {
   Library,
   Ellipsis,
@@ -98,6 +99,7 @@ function Workbench({
     editable: false,
     extensions: [
       FormulaBlock,
+      MermaidBlock,
       TableKit.configure({ table: { renderWrapper: true } }),
       StarterKit.configure({
         heading: { levels: [2, 3] },

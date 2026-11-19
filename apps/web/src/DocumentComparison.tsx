@@ -92,6 +92,8 @@ function renderNode(node: DocumentNode): ReactNode {
         </Cell>
       );
     }
+    case 'mermaidBlock':
+      return <pre aria-label="流程图源码">{content}</pre>;
     case 'formulaBlock':
       return <pre aria-label="公式源码">{content}</pre>;
     case 'codeBlock':

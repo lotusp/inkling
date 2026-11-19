@@ -71,6 +71,7 @@ export function nodeText(node: DocumentNode): string {
     'heading',
     'codeBlock',
     'formulaBlock',
+    'mermaidBlock',
   ].includes(node.type)
     ? ''
     : '\n';

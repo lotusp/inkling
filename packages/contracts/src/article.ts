@@ -44,8 +44,11 @@ export function validArticleHref(href: unknown): href is string {
   );
 }
 export type DocumentVersion = 1 | 2;
+function isSourceBlock(type: string | undefined) {
+  return type === 'formulaBlock' || type === 'mermaidBlock';
+}
 export function requiresDocumentV2(type: string) {
-  return type === 'table' || type === 'formulaBlock';
+  return type === 'table' || isSourceBlock(type);
 }
 const maxNodes = 50_000;
 const cellTypes = new Set(['tableHeader', 'tableCell']);
@@ -78,7 +81,7 @@ export function validDocumentNode(
     if (parent === undefined && type !== 'doc') return false;
     const isBlock =
       blocks.has(type) || (version === 2 && requiresDocumentV2(type));
-    const plainText = parent === 'codeBlock' || parent === 'formulaBlock';
+    const plainText = parent === 'codeBlock' || isSourceBlock(parent);
     if (
       parent === 'doc' ||
       parent === 'blockquote' ||
