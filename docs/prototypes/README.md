@@ -25,6 +25,12 @@
 
 交互回归入口：`node --test tests/prototypes/writing-desk.test.mjs`。测试在隔离的 Chromium 浏览器上下文中运行。本次 4 组回归通过，覆盖 1360 像素桌面和 375 像素窄屏、旧笔记迁移，以及专注模式下存储失败时下载最新正文。
 
+## Muya 编辑器试写
+
+在仓库根目录运行 `corepack pnpm trial:muya`，打开 [Muya 试写页](http://127.0.0.1:62288/)。需要 Python 3。空行输入 `/` 可插入表格或流程图。把截图粘贴到段落、拖入本地图片，或点「插入图片」选择文件。点图片后可编辑说明、更换文件或拖动两侧手柄调整大小。
+
+「保存试写稿」写入当前浏览器，图片由本机试写服务保存。独立启动的图片目录为 `~/.inkling-muya-trial/images`。验收命令为 `corepack pnpm build:muya` 和 `node --test tests/prototypes/muya-surface.test.mjs`，测试使用临时图片目录。
+
 ## 上一版 · V2
 
 - [V2 独立预览](inkling-writing-partner-v2.html)：下载仓库后在浏览器中打开，无需启动 Inkling 服务。GitHub 文件页显示源代码，不直接运行原型。

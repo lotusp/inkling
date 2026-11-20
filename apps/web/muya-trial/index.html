@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'"
+    />
+    <title>MarkText 内核试写 · Inkling</title>
+  </head>
+  <body>
+    <header>
+      <img src="../public/inkling-logo.svg" width="102" alt="Inkling" /><span
+        >MarkText 内核试写</span
+      ><button type="button" id="insert">插入图片</button
+      ><input
+        type="file"
+        id="insert-file"
+        accept="image/png,image/jpeg,image/gif,image/webp"
+        multiple
+        hidden
+      /><button type="button" id="save">保存试写稿</button>
+    </header>
+    <main>
+      <p class="note">
+        试写稿保存在此浏览器，图片保存在本机。可粘贴截图，或把图片拖到正文。
+      </p>
+      <p id="status" role="status"></p>
+      <div id="editor"></div>
+    </main>
+    <dialog id="edit-image" aria-labelledby="image-heading">
+      <form>
+        <h2 id="image-heading">编辑图片</h2>
+        <label>替代文字<input name="alt" type="text" /></label
+        ><label>图片标题<input name="title" type="text" /></label>
+        <label
+          >更换本地图片<input
+            name="replacement"
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/webp"
+        /></label>
+        <p role="status"></p>
+        <footer>
+          <button type="button" data-cancel>取消</button
+          ><button type="submit">完成</button>
+        </footer>
+      </form>
+    </dialog>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

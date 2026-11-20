@@ -1,0 +1,6 @@
+C04 2.4 · EDITOR-SURFACE-011 · macOS / Node 22.22.2 / Chromium
+Red：node --test tests/prototypes/muya-surface.test.mjs 在第一行单元格的背景断言失败，期望 rgb(238, 242, 234)，实际透明。原试写页 Mermaid 节点填色为 rgb(236, 236, 255)。
+Green：corepack pnpm build:muya；node --test tests/prototypes/muya-surface.test.mjs，1/1 通过。核对真实单元格分隔线、表头、工具图标、图示节点和边线。选图、替换、拖动手柄、ClipboardEvent 携带 PNG、在另一段落投放 PNG、保存刷新后的替代文字/尺寸/解码以及窄屏宽度通过。
+工作台：playwright test tests/e2e/technical-mermaid.spec.ts tests/e2e/technical-table.spec.ts，7/7 通过，含文章持久化、离线预览和草稿恢复。
+工程：corepack pnpm verify，格式、lint、类型、架构、构建、100 项应用测试、10 项 Harness 测试、文档和当前及归档规格通过。
+试写服务运行在回环地址，原型浏览器测试使用独立图片目录。未记录 macOS 系统截图手工验收、Linux CI 或正式稿纸的 Muya 内核替换。

@@ -1,16 +1,13 @@
+@import './paper-palette.css';
+
 :root {
   font-family:
     -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei',
     sans-serif;
-  color: #29372e;
-  background: #fffefa;
+  color: var(--ink);
+  background: var(--paper);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --paper: #fffefa;
-  --soft: #f6f7f3;
-  --line: #e3e7de;
-  --muted: #738071;
-  --green: #3e6148;
 }
 * {
   box-sizing: border-box;
@@ -309,17 +306,17 @@ svg {
 .tableWrapper th,
 .tableWrapper td {
   position: relative;
-  border: 1px solid var(--line);
+  border: 1px solid var(--table-rule);
   padding: 6px 10px;
   text-align: start;
   vertical-align: top;
   overflow-wrap: anywhere;
 }
 .tableWrapper th {
-  background: #eef2ea;
+  background: var(--table-heading);
 }
 .tableWrapper .selectedCell {
-  background: #dce8db;
+  background: var(--selection);
 }
 .tableWrapper :is(th, td) > p {
   margin: 0;

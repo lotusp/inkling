@@ -70,3 +70,5 @@
 C02 的存储故障与容量边界已有自动验收。[存储性能验证](validation/article-storage-performance.md) · [C02 验收报告](../openspec/changes/archive/2026-11-17-persist-article-revisions/verification.md)
 
 C03 增加了多稿导航、查找与整理、归档、回收站和编辑位置恢复。验收覆盖本机及 Linux 自动回归、千篇文章的查询性能和 Mac 真实中文候选窗。[文章库规格](../openspec/specs/article-library/spec.md) · [C03 验收报告](../openspec/changes/archive/2026-11-18-manage-article-library/verification.md)
+
+V1 正文内核与图片交互见 [Muya 选型决策](decisions/0005-muya-writing-surface.md)。

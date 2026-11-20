@@ -2,34 +2,38 @@ import rendererUrl from '@mermaid-js/tiny/dist/mermaid.tiny.js?url';
 import { basicFlowchart } from './basic-flowchart';
 import { createSourceBlock } from './source-block';
 
-const rendererOptions = {
-  startOnLoad: false,
-  securityLevel: 'strict',
-  htmlLabels: false,
-  suppressErrorRendering: true,
-  theme: 'base',
-  look: 'classic',
-  themeVariables: {
-    primaryColor: '#eff3ed',
-    primaryTextColor: '#29392f',
-    primaryBorderColor: '#91a38e',
-    lineColor: '#627765',
-    edgeLabelBackground: '#fffefa',
-    fontFamily: 'system-ui, sans-serif',
-    fontSize: '14px',
-  },
-  flowchart: {
+function rendererOptions() {
+  const palette = getComputedStyle(document.documentElement);
+  const color = (name: string) => palette.getPropertyValue(name).trim();
+  return {
+    startOnLoad: false,
+    securityLevel: 'strict',
     htmlLabels: false,
-    useMaxWidth: false,
-    minNodeWidth: 0,
-    padding: 5,
-    rankSpacing: 24,
-    nodeSpacing: 22,
-  },
-} as const;
+    suppressErrorRendering: true,
+    theme: 'base',
+    look: 'classic',
+    themeVariables: {
+      primaryColor: color('--paper'),
+      primaryTextColor: color('--ink'),
+      primaryBorderColor: color('--diagram-line'),
+      lineColor: color('--diagram-line'),
+      edgeLabelBackground: color('--paper'),
+      fontFamily: 'system-ui, sans-serif',
+      fontSize: '14px',
+    },
+    flowchart: {
+      htmlLabels: false,
+      useMaxWidth: false,
+      minNodeWidth: 0,
+      padding: 5,
+      rankSpacing: 24,
+      nodeSpacing: 22,
+    },
+  } as const;
+}
 
 interface Mermaid {
-  initialize(options: typeof rendererOptions): void;
+  initialize(options: ReturnType<typeof rendererOptions>): void;
   render(
     id: string,
     source: string,
@@ -48,7 +52,7 @@ function localRenderer(): Promise<Mermaid> {
       try {
         const renderer = (window as Window & { mermaid?: Mermaid }).mermaid;
         if (!renderer) throw new Error('Mermaid 未加载');
-        renderer.initialize(rendererOptions);
+        renderer.initialize(rendererOptions());
         resolve(renderer);
       } catch (error) {
         reject(error);

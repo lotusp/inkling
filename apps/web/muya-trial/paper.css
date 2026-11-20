@@ -1,0 +1,138 @@
+:root {
+  color: var(--ink);
+  background: var(--paper);
+  font-family: system-ui, 'PingFang SC', sans-serif;
+}
+body {
+  margin: 0;
+}
+header {
+  padding: 12px clamp(12px, 4vw, 52px);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid #dce1d8;
+  min-height: 34px;
+}
+header span,
+.note,
+#status {
+  font-size: 13px;
+  color: #5a6a5c;
+}
+header button {
+  margin-left: auto;
+  color: #254431;
+  background: #eff3ed;
+  border: 1px solid #ccd6cb;
+  border-radius: 6px;
+  padding: 7px 11px;
+  cursor: pointer;
+}
+main {
+  max-width: 740px;
+  margin: 32px auto;
+  padding: 0 22px 90px;
+}
+.muya {
+  min-height: 380px;
+  font-size: 17px;
+  line-height: 1.7;
+}
+header {
+  gap: 10px;
+}
+header span {
+  margin-right: auto;
+}
+header button {
+  margin-left: 0;
+  white-space: nowrap;
+}
+header #insert {
+  background: transparent;
+}
+#status:empty,
+dialog [role='status']:empty {
+  display: none;
+}
+main.dragging {
+  outline: 2px dashed #7b927f;
+  outline-offset: 4px;
+}
+.mu-image-container img {
+  max-width: 100%;
+  height: auto;
+}
+dialog {
+  border: 1px solid #ced8ce;
+  border-radius: 10px;
+  width: min(355px, 80vw);
+  padding: 20px 22px;
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: 0 12px 40px #20302525;
+}
+dialog::backdrop {
+  background: #25362a38;
+}
+dialog h2 {
+  margin: 0 0 17px;
+  font-size: 20px;
+}
+dialog label {
+  display: grid;
+  gap: 5px;
+  margin: 13px 0;
+  font-size: 14px;
+}
+dialog input {
+  min-width: 0;
+  border: 1px solid #c9d3c9;
+  border-radius: 5px;
+  background: white;
+  padding: 7px;
+  color: inherit;
+  font: inherit;
+}
+dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 17px;
+}
+dialog button {
+  border: 1px solid #bccbbd;
+  background: transparent;
+  color: #26392d;
+  border-radius: 5px;
+  padding: 6px 15px;
+  font: inherit;
+  cursor: pointer;
+}
+dialog button[type='submit'] {
+  background: #375c46;
+  color: white;
+}
+@media (max-width: 520px) {
+  header {
+    gap: 6px;
+    padding: 9px;
+  }
+  header span {
+    font-size: 11px;
+  }
+  header img {
+    width: 70px;
+  }
+  main {
+    margin-top: 19px;
+    padding: 0 12px 60px;
+  }
+}
+
+@media (max-width: 520px) {
+  .mu-container {
+    padding-inline: 8px;
+  }
+}

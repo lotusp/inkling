@@ -23,7 +23,9 @@
     "check:specs": "OPENSPEC_TELEMETRY=0 openspec validate --all --strict --no-interactive && OPENSPEC_TELEMETRY=0 openspec validate --archived --strict --no-interactive && node scripts/harness/check.mjs",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm check:architecture && pnpm build && pnpm test && pnpm test:harness && pnpm check:docs && pnpm check:specs",
     "local:access": "tsx apps/server/src/local-access.ts",
-    "test:storage-performance": "tsx tests/performance/storage-performance.ts"
+    "test:storage-performance": "tsx tests/performance/storage-performance.ts",
+    "build:muya": "vite build apps/web/muya-trial",
+    "trial:muya": "pnpm build:muya && python3 apps/web/muya-trial/serve.py 62288 apps/web/muya-trial/dist"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

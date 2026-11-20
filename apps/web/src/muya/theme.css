@@ -1,0 +1,56 @@
+@import '../paper-palette.css';
+
+/* Muya mounts its floating tools outside the editable surface. */
+:root {
+  --theme-color: var(--green);
+  --editor-color: var(--ink);
+  --editor-bg-color: var(--paper);
+  --icon-color: var(--tool-ink);
+  --selection-color: var(--selection);
+  --highlight-color: var(--selection);
+  --delete-color: var(--ink);
+  --input-bg-color: var(--soft);
+  --table-border-color: var(--table-rule);
+  --float-bg-color: var(--paper);
+  --float-hover-color: var(--table-heading);
+  --float-border-color: var(--line);
+  --button-bg-color: var(--paper);
+  --button-bg-color-hover: var(--table-heading);
+}
+.mu-table {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.mu-table-inner {
+  background: var(--paper);
+}
+.mu-table-inner tr:first-child > td {
+  background: var(--table-heading);
+  font-weight: 600;
+}
+.mu-table-cell-content {
+  min-width: 6em;
+}
+.mu-list-picker .icon-wrapper {
+  filter: grayscale(1);
+}
+.mu-diagram-preview svg .node .label-container {
+  fill: var(--paper) !important;
+  stroke: var(--diagram-line) !important;
+}
+.mu-diagram-preview svg .flowchart-link {
+  stroke: var(--diagram-line) !important;
+}
+.mu-diagram-preview svg marker path {
+  fill: var(--diagram-line) !important;
+  stroke: var(--diagram-line) !important;
+}
+.mu-diagram-preview svg :is(.nodeLabel, .edgeLabel, .edgeLabel p) {
+  color: var(--ink) !important;
+  fill: var(--ink) !important;
+}
+.mu-diagram-preview svg .edgeLabel p,
+.mu-diagram-preview svg .labelBkg {
+  background-color: var(--paper) !important;
+  fill: var(--paper) !important;
+}
