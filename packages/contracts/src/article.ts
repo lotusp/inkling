@@ -1,3 +1,4 @@
+import { validWritingBlock } from './writing-block';
 import { z } from 'zod';
 import { tableGridSize } from './table';
 export interface DocumentMark {
@@ -6,7 +7,7 @@ export interface DocumentMark {
 }
 export interface DocumentNode {
   type: string;
-  attrs?: Record<string, string | number | number[] | null>;
+  attrs?: Record<string, string | number | boolean | number[] | null>;
   content?: DocumentNode[];
   text?: string;
   marks?: DocumentMark[];
@@ -48,7 +49,7 @@ function isSourceBlock(type: string | undefined) {
   return type === 'formulaBlock' || type === 'mermaidBlock';
 }
 export function requiresDocumentV2(type: string) {
-  return type === 'table' || isSourceBlock(type);
+  return type.startsWith('md:') || type === 'table' || isSourceBlock(type);
 }
 const maxNodes = 50_000;
 const cellTypes = new Set(['tableHeader', 'tableCell']);
@@ -79,9 +80,26 @@ export function validDocumentNode(
     )
       return false;
     if (parent === undefined && type !== 'doc') return false;
+    if (type.startsWith('md:')) {
+      const children = node.content ?? [];
+      if (
+        version !== 2 ||
+        node.marks !== undefined ||
+        node.text !== undefined ||
+        !Array.isArray(children) ||
+        !validWritingBlock(type.slice(3), node.attrs ?? {}, parent, children)
+      )
+        return false;
+      for (const child of children)
+        stack.push({ node: child, depth: depth + 1, parent: type });
+      continue;
+    }
     const isBlock =
       blocks.has(type) || (version === 2 && requiresDocumentV2(type));
-    const plainText = parent === 'codeBlock' || isSourceBlock(parent);
+    const plainText =
+      parent?.startsWith('md:') ||
+      parent === 'codeBlock' ||
+      isSourceBlock(parent);
     if (
       parent === 'doc' ||
       parent === 'blockquote' ||

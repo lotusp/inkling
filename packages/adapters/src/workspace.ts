@@ -1,3 +1,4 @@
+import { WorkspaceImages } from './images';
 import Database from 'better-sqlite3';
 import { migrateArticles, SqliteArticles } from './articles';
 import { migrateLibrary } from './library';
@@ -53,11 +54,13 @@ function regular(path: string, directory = false) {
     );
 }
 export class SqliteWorkspace {
+  readonly images: WorkspaceImages;
   readonly id: string;
   private constructor(
     readonly path: string,
     private readonly db: Database.Database,
   ) {
+    this.images = new WorkspaceImages(path);
     const row = db
       .prepare('SELECT workspace_id FROM workspace WHERE singleton=1')
       .get();
@@ -184,7 +187,13 @@ export class SqliteWorkspace {
     }
   }
   articles() {
-    return new SqliteArticles(this.db, this.id);
+    return new SqliteArticles(
+      this.db,
+      this.id,
+      undefined,
+      undefined,
+      this.images,
+    );
   }
   close() {
     this.db.close();

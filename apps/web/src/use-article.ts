@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Editor } from '@tiptap/react';
+import type { WritingSurface as Editor } from './muya/surface';
 import {
   ArticleDocument,
   requiresDocumentV2,
@@ -152,7 +152,7 @@ export function useArticle(
         !conflicted.current &&
         !inFlight.current &&
         editSeq.current === savedSeq.current,
-      composing: composing.current || !!editor?.view.composing,
+      composing: composing.current || !!editor?.composing,
       navigating: navigating.current,
     }),
     snapshot?.headRevisionId,
@@ -207,7 +207,7 @@ export function useArticle(
       setSnapshot(article);
       setTitle(article.document.title);
       titleRef.current = article.document.title;
-      editor?.commands.setContent(article.document.doc, { emitUpdate: false });
+      editor?.setContent(article.document.doc);
       latest.current = ArticleDocument.parse({
         ...article.document,
         doc: editor?.getJSON() ?? article.document.doc,
@@ -319,7 +319,7 @@ export function useArticle(
         !latest.current ||
         !valid.current ||
         composing.current ||
-        editor?.view.composing
+        editor?.composing
       )
         return;
       if (editSeq.current === savedSeq.current && !inFlight.current) {
@@ -398,7 +398,7 @@ export function useArticle(
             editSeq.current === pending.seq &&
             valid.current &&
             !composing.current &&
-            !editor?.view.composing
+            !editor?.composing
           ) {
             display(next);
           } else {
@@ -423,7 +423,7 @@ export function useArticle(
             editSeq.current === pending.seq &&
             valid.current &&
             !composing.current &&
-            !editor?.view.composing
+            !editor?.composing
           ) {
             display(next);
           } else {
@@ -449,7 +449,7 @@ export function useArticle(
         } else if (
           editSeq.current === pending.seq &&
           !composing.current &&
-          !editor?.view.composing
+          !editor?.composing
         ) {
           setMessage('');
           setStatus('clean');
@@ -497,7 +497,7 @@ export function useArticle(
       !head.current ||
       !valid.current ||
       composing.current ||
-      editor?.view.composing
+      editor?.composing
     )
       throw new Error('请先完成选词、保存或冲突处理，再命名版本。');
     if (editSeq.current === savedSeq.current)
@@ -522,7 +522,7 @@ export function useArticle(
         !valid.current ||
         editSeq.current !== savedSeq.current ||
         composing.current ||
-        editor?.view.composing
+        editor?.composing
       )
         throw new Error('请先保存当前稿并完成选词或冲突处理，再查看恢复。');
       const ticket = {
@@ -556,7 +556,7 @@ export function useArticle(
           ticket.epoch !== compositionEpoch.current ||
           ticket.baseRevisionId !== head.current?.headRevisionId ||
           composing.current ||
-          editor?.view.composing
+          editor?.composing
         )
           throw new Error('草稿已变化，请重新查看并确认恢复。');
         if (
@@ -607,7 +607,7 @@ export function useArticle(
       !head.current ||
       !conflicted.current ||
       composing.current ||
-      editor?.view.composing
+      editor?.composing
     )
       return;
     busy.current = true;
@@ -654,7 +654,7 @@ export function useArticle(
       inFlight.current ||
       !valid.current ||
       composing.current ||
-      editor?.view.composing
+      editor?.composing
     )
       return;
     confirmation.current = {
@@ -677,7 +677,7 @@ export function useArticle(
       !conflicted.current ||
       inFlight.current ||
       composing.current ||
-      editor.view.composing ||
+      editor.composing ||
       !valid.current
     )
       return;
@@ -710,7 +710,7 @@ export function useArticle(
         navigating.current ||
         busy.current ||
         composing.current ||
-        editor?.view.composing ||
+        editor?.composing ||
         !identity.current
       )
         return;
@@ -786,9 +786,7 @@ export function useArticle(
           conflicted.current = current.headRevisionId !== ack.headRevisionId;
           setTitle(record.draft.document.title);
           titleRef.current = record.draft.document.title;
-          editor?.commands.setContent(record.draft.document.doc, {
-            emitUpdate: false,
-          });
+          editor?.setContent(record.draft.document.doc);
           latest.current = {
             ...record.draft.document,
             doc: editor?.getJSON() ?? record.draft.document.doc,
@@ -831,7 +829,7 @@ export function useArticle(
       !head.current ||
       !identity.current ||
       composing.current ||
-      editor?.view.composing
+      editor?.composing
     )
       return;
     busy.current = true;
@@ -957,12 +955,12 @@ export function useArticle(
   }, [editor, persist, resetConfirmation]);
   useEffect(() => {
     if (!editor) return;
-    editor.on('update', changed);
-    const element = editor.view.dom;
+    const unsubscribe = editor.subscribe(changed);
+    const element = editor.dom;
     element.addEventListener('compositionstart', compositionStart);
     element.addEventListener('compositionend', compositionEnd);
     return () => {
-      editor.off('update', changed);
+      unsubscribe();
       element.removeEventListener('compositionstart', compositionStart);
       element.removeEventListener('compositionend', compositionEnd);
     };
@@ -971,10 +969,9 @@ export function useArticle(
     changed();
   }, [title, changed]);
   const stateReadOnly = articleState !== 'active';
-  const lockEditing =
-    stateReadOnly && !composing.current && !editor?.view.composing;
+  const lockEditing = stateReadOnly && !composing.current && !editor?.composing;
   useEffect(() => {
-    editor?.view.dom.setAttribute(
+    editor?.dom.setAttribute(
       'aria-readonly',
       String(
         lockEditing ||
@@ -990,7 +987,6 @@ export function useArticle(
         recoveries.length === 0 &&
         !recovering &&
         !navigationLocked,
-      false,
     );
   }, [
     editor,
@@ -1052,7 +1048,7 @@ export function useArticle(
         !latest.current ||
         !valid.current ||
         composing.current ||
-        editor?.view.composing
+        editor?.composing
       )
         throw new Error('请先完成选词、保存核对或冲突处理，再重命名。');
       if (latest.current.title !== nextTitle) {
@@ -1073,7 +1069,7 @@ export function useArticle(
     [editor, resetConfirmation, save, setTitle, accessState],
   );
   const navigationState = useCallback(() => {
-    if (composing.current || editor?.view.composing)
+    if (composing.current || editor?.composing)
       throw new Error('请先完成中文选词，再重新切换文章。');
     if (busy.current || navigating.current)
       throw new Error('正在保存或核对，请等待结束后再切换。');
@@ -1092,7 +1088,7 @@ export function useArticle(
       navigationState();
       navigating.current = true;
       setNavigationLocked(true);
-      editor?.setEditable(false, false);
+      editor?.setEditable(false);
       clearTimeout(timer.current);
       resetConfirmation();
       const seq = editSeq.current,
@@ -1104,7 +1100,6 @@ export function useArticle(
           accessState.current === 'active' &&
             !!head.current &&
             !choosing.current,
-          false,
         );
         setEditVersion((value) => value + 1);
       };
@@ -1138,7 +1133,7 @@ export function useArticle(
           editSeq.current !== seq ||
           compositionEpoch.current !== epoch ||
           composing.current ||
-          editor?.view.composing
+          editor?.composing
         )
           throw new Error('输入已变化，请完成选词后重新切换。');
         flushPosition();
@@ -1162,7 +1157,7 @@ export function useArticle(
     if (!head.current) return;
     if (
       composing.current ||
-      editor?.view.composing ||
+      editor?.composing ||
       busy.current ||
       navigating.current
     ) {

@@ -39,10 +39,17 @@ test('REVISION-CONFLICT-004 typing or composition invalidates a restore confirma
   const { editor, panel } = await prepare(page);
   // Simulate an editor update queued before the modal took focus.
   await page
-    .locator('.tiptap p')
+    .locator('.mu-paragraph-content')
     .first()
     .evaluate((el) => {
       el.textContent = '确认后继续形成的新判断';
+      el.dispatchEvent(
+        new InputEvent('input', {
+          bubbles: true,
+          inputType: 'insertCompositionText',
+          data: el.textContent,
+        }),
+      );
     });
   await panel
     .getByRole('button', { name: '恢复为新版本', exact: true })
@@ -55,7 +62,9 @@ test('REVISION-CONFLICT-004 typing or composition invalidates a restore confirma
     .getByRole('button', { name: '查看并恢复版本 #2', exact: true })
     .click();
   await expect(panel.getByRole('region', { name: '待恢复版本' })).toBeVisible();
-  await page.locator('.tiptap').dispatchEvent('compositionstart', { data: '' });
+  await page
+    .locator('.mu-editor')
+    .dispatchEvent('compositionstart', { data: '' });
   await panel
     .getByRole('button', { name: '恢复为新版本', exact: true })
     .click();

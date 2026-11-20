@@ -1,3 +1,5 @@
+import type { WorkspaceImages } from '@inkling/adapters';
+import { registerImages } from './images';
 import Fastify from 'fastify';
 import staticFiles from '@fastify/static';
 import { HealthResponse } from '@inkling/contracts';
@@ -9,10 +11,11 @@ export function createServer(
   options: {
     webRoot?: string;
     access?: AccessOptions;
+    images?: () => WorkspaceImages | undefined;
     articles?: () => ArticleService | undefined;
   } = {},
 ) {
-  if (options.articles && !options.access)
+  if ((options.articles || options.images) && !options.access)
     throw new Error('Article routes require local access protection');
   const app = Fastify({
     logger: false,
@@ -72,6 +75,7 @@ export function createServer(
       )
       .send({ code: 'REQUEST_FAILED', message: '请求未完成。' });
   });
+  if (options.images) registerImages(app, options.images);
   if (options.articles) {
     const service = () => {
       const articles = options.articles?.();

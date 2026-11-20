@@ -64,7 +64,8 @@ for (const { label, source, attribute, preview, count } of [
     }, copy);
     await expect(blocks).toHaveCount(2);
     await expect(blocks.last().locator(preview)).toHaveCount(count);
-    await blocks.last().locator('summary').click();
+    if (!(await blocks.last().getByRole('textbox').isVisible()))
+      await blocks.last().locator('summary').click();
     expect(await blocks.last().getByRole('textbox').textContent()).toBe(source);
     await paper.press('ControlOrMeta+z');
     await expect(blocks).toHaveCount(1);

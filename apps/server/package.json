@@ -3,11 +3,12 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@inkling/contracts": "workspace:*",
-    "fastify": "5.12.8",
     "@fastify/static": "10.1.11",
     "@inkling/adapters": "workspace:*",
+    "@inkling/contracts": "workspace:*",
+    "@inkling/core": "workspace:*",
     "better-sqlite3": "13.2.0",
-    "@inkling/core": "workspace:*"
+    "fastify": "5.12.8",
+    "sharp": "0.35.5"
   }
 }

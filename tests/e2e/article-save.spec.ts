@@ -34,5 +34,5 @@ test('ARTICLE-SAVE-002 Chinese draft is saved and reopened with formatting', asy
   ).toHaveValue('可靠保存我的想法');
   await expect(
     page.getByRole('textbox', { name: '文章正文', exact: true }).locator('h2'),
-  ).toHaveText('中文正文必须保留。');
+  ).toHaveText('## 中文正文必须保留。');
 });

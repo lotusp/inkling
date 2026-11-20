@@ -52,13 +52,18 @@ async function seed(page: Page, origin: string) {
   return {
     id,
     headers,
-    key: `inkling:position:v1:${workspace.workspaceId}:${id}`,
+    key: `inkling:position:v2:${workspace.workspaceId}:${id}`,
   };
 }
 async function place(page: Page) {
   await body(page).focus();
   await body(page).evaluate((element) => {
-    const text = element.querySelectorAll('p')[14]!.firstChild!;
+    const text = document
+      .createTreeWalker(
+        element.querySelectorAll('.mu-paragraph-content')[14]!,
+        NodeFilter.SHOW_TEXT,
+      )
+      .nextNode()!;
     window.getSelection()!.setBaseAndExtent(text, 16, text, 5);
   });
   await expect
@@ -182,10 +187,10 @@ test('LIBRARY-POSITION-012 stale, invalid and cross-article positions fall back 
     }
   });
   for (const patch of [
-    { anchor: 999999 },
+    { selection: { ...JSON.parse(raw).selection, anchor: 999999 } },
     { scrollTop: -1 },
     { articleId: crypto.randomUUID() },
-    { head: 0 },
+    { selection: { ...JSON.parse(raw).selection, focus: -1 } },
   ]) {
     await page.evaluate(
       ({ key, raw, revisionId, patch }) =>

@@ -1,15 +1,15 @@
 import { useId, useRef, useState } from 'react';
-import type { Editor } from '@tiptap/react';
-import type { Node } from '@tiptap/pm/model';
+import type { WritingSurface } from './muya/surface';
+import { createBlock, type CommandTarget } from './muya/commands';
+import { flushSync } from 'react-dom';
 import { validArticleHref } from '@inkling/contracts';
 import { DeskDialog } from './DeskDialog';
 
 export interface FormatField {
   kind: 'link' | 'language';
   value: string;
-  doc: Node;
-  from: number;
-  to: number;
+  target: CommandTarget;
+  generation: number;
 }
 
 export function FormatFieldDialog({
@@ -17,7 +17,7 @@ export function FormatFieldDialog({
   field,
   close,
 }: {
-  editor: Editor;
+  editor: WritingSurface;
   field: FormatField;
   close: () => void;
 }) {
@@ -27,8 +27,13 @@ export function FormatFieldDialog({
   const composing = useRef(false);
   const link = field.kind === 'link';
   function apply(remove = false) {
-    if (composing.current || editor.view.composing) return;
-    if (!editor.isEditable || !field.doc.eq(editor.state.doc)) {
+    if (composing.current || editor.composing) return;
+    if (
+      !editor.isEditable ||
+      field.generation !== editor.generation ||
+      !field.target.block.domNode?.isConnected ||
+      field.target.block.text !== field.target.original
+    ) {
       setError('正文已变化，请关闭窗口并重新选择。');
       return;
     }
@@ -41,24 +46,50 @@ export function FormatFieldDialog({
       setError('请输入有效的网址、mailto: 地址或以 # 开头的锚点。');
       return;
     }
-    const { anchor, head } = editor.state.selection;
-    const chain = editor
-      .chain()
-      .setTextSelection({ from: field.from, to: field.to });
-    if (!link) chain.updateAttributes('codeBlock', { language: input || null });
-    else if (remove) chain.unsetLink();
-    else chain.setLink({ href: input });
-    if (!chain.setTextSelection({ from: anchor, to: head }).run()) {
-      setError('当前选区无法应用此格式。');
-      return;
+    const { block, start, end, link: token } = field.target;
+    editor.muya.editor.history.cutoff();
+    flushSync(close);
+    editor.dom.focus({ preventScroll: true });
+    if (link) {
+      const from = token?.range.start ?? start,
+        to = token?.range.end ?? end;
+      const label = token?.anchor ?? block.text.slice(start, end);
+      const replacement = remove
+        ? label
+        : '[' + (label || input) + '](' + input + ' )';
+      block.text =
+        block.text.slice(0, from) + replacement + block.text.slice(to);
+      block.setCursor(
+        from + replacement.length,
+        from + replacement.length,
+        true,
+      );
+    } else {
+      const outer = block.outMostBlock,
+        state = outer?.getState();
+      if (!outer || state?.name !== 'code-block') return;
+      const next = createBlock(editor, {
+        ...state,
+        meta: { ...state.meta, lang: input },
+      });
+      outer.replaceWith(next);
+      next.lastContentInDescendant()?.setCursor(end, end, true);
     }
-    close();
   }
   return (
     <DeskDialog
       title={link ? '编辑链接' : '代码语言'}
       close={() => {
-        if (!composing.current) close();
+        if (composing.current) return;
+        flushSync(close);
+        if (editor.isEditable && field.target.block.domNode?.isConnected) {
+          editor.dom.focus({ preventScroll: true });
+          field.target.block.setCursor(
+            field.target.start,
+            field.target.end,
+            true,
+          );
+        }
       }}
     >
       <form

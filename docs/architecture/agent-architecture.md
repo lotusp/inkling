@@ -30,7 +30,7 @@
 | --- | --- | --- |
 | 语言与项目组织 | TypeScript、pnpm workspace | 前后端共享契约，分包约束模块边界 |
 | 前端 | React、Vite、shadcn/ui、Tailwind CSS | 文章工作台、资料侧栏、任务状态和发布预览 |
-| 编辑器 | Tiptap，JSON 文档作为主内容 | 稳定节点 ID、代码块、引用节点、局部修改；审阅和冲突规则由 Inkling 实现 |
+| 编辑器 | Muya，JSON 文档作为主内容 | 稳定节点 ID、代码块、引用节点、局部修改；审阅和冲突规则由 Inkling 实现 |
 | 客户端状态 | TanStack Query 管服务端缓存；Zustand 管短期界面状态 | 不把缓存或浏览器状态当作文章的最终记录 |
 | HTTP 服务 | Node.js 24 LTS、Fastify | 身份与范围校验、业务命令、任务创建、文件访问、事件推送 |
 | 运行编排 | LangGraph.js 的 StateGraph、子图、interrupt、checkpointer | 节点、条件分支、循环、暂停和恢复 |

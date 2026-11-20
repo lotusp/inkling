@@ -1,3 +1,4 @@
+import type { WorkspaceImages } from './images';
 import type Database from 'better-sqlite3';
 import { createHash, randomUUID } from 'node:crypto';
 import {
@@ -71,6 +72,7 @@ export class SqliteArticles implements ArticleRepository {
     private readonly workspaceId: string,
     private readonly now: () => number = Date.now,
     historyPolicy: HistoryPolicy = DEFAULT_HISTORY_POLICY,
+    private readonly images?: WorkspaceImages,
   ) {
     this.historyPolicy = validateHistoryPolicy(historyPolicy);
     // Validate existing history once at startup; quarantine is derived again on reopen.
@@ -702,6 +704,7 @@ export class SqliteArticles implements ArticleRepository {
             schemaVersion: current.document.schemaVersion,
           };
         }
+        this.images?.checkReferences(document.doc);
         const contentHash = hash(document),
           changed = restoring || contentHash !== current.contentHash,
           time = this.now();

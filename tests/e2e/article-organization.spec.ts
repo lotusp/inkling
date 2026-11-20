@@ -134,7 +134,7 @@ test('LIBRARY-RENAME-006 late rename acknowledgement preserves newer title and b
     el.dispatchEvent(new Event('input', { bubbles: true }));
   });
   await page
-    .locator('.tiptap p')
+    .locator('.mu-paragraph-content')
     .first()
     .evaluate((el) => {
       el.textContent = '等待期间的新段落';

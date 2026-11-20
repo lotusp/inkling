@@ -33,6 +33,7 @@ async function main() {
   const app = createServer({
     access,
     articles: () => articles,
+    images: () => workspace?.images,
     webRoot: fileURLToPath(new URL('../../web/dist/', import.meta.url)),
   });
   app.addHook('onClose', async () => {

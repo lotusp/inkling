@@ -114,7 +114,7 @@ AI 输出保存为候选版本或修改补丁，作者可逐项接受、拒绝�
 
 | 层 | 第一版建议 | 选择原因及边界 |
 | --- | --- | --- |
-| 界面 | React、Vite、shadcn/ui、Tailwind CSS，Tiptap 编辑器 | 支持段落、代码和引用节点；建议审阅的业务逻辑自行实现，商业扩展另行评估 |
+| 界面 | React、Vite、shadcn/ui、Tailwind CSS，Muya 编辑器 | 支持段落、代码和引用节点；建议审阅的业务逻辑自行实现，商业扩展另行评估 |
 | 应用服务 | Node.js、TypeScript、Fastify；LangGraph.js 统一编排 | 前后端共享数据类型；显式工作流与有限循环由同一个运行时管理 |
 | 持久化 | SQLite、Drizzle 保存业务状态和文章版本；文件目录存附件 | 图检查点独立存储；先服务单用户，未来多实例部署再评估 PostgreSQL 与对象存储 |
 | 检索 | 标签与字段过滤、中文检索处理、全文检索 | 先做可靠查找，再按实际召回问题引入向量检索 |
@@ -122,7 +122,7 @@ AI 输出保存为候选版本或修改补丁，作者可逐项接受、拒绝�
 | 任务执行 | 持久化 Job 表、常驻 Worker、租约和取消；LangGraph 检查点 | 队列负责调度，图负责步骤；恢复时复用已提交成果，不无条件重放外部写入 |
 | 工具与方法 | 内置 Skills、原生工具、MCP Client 与平台适配器 | 方法和权限分开；所有工具经过统一参数、预算、权限和副作用校验 |
 
-编辑器以结构化 JSON 为主内容，Markdown 和 HTML 是导出格式，避免多种格式同时成为事实来源。Tiptap 官方也建议以 JSON 持久化，便于解析及外部修改。[Tiptap 文档](https://tiptap.dev/docs/editor/core-concepts/persistence)
+编辑器以结构化 JSON 为主内容，Markdown 和 HTML 是导出格式，避免多种格式同时成为事实来源。Muya 的块和行内 Markdown 由稿纸适配层写入该文档。[正文内核决策](../decisions/0005-muya-writing-surface.md)
 
 中文检索需要单独验收。SQLite FTS5 的 trigram 支持子串检索，但全文查询对不足三个 Unicode 字符的片段不匹配；因此短中文词需要中文分词后的索引或受范围限制的匹配兜底，不能把默认英文分词的结果当成中文检索质量。[SQLite FTS5 文档](https://www.sqlite.org/fts5.html#the_trigram_tokenizer)
 

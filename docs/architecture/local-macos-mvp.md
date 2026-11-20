@@ -37,7 +37,7 @@ Electron 的原生权限和 renderer 隔离需要专门设计，增加桌面外�
 ```mermaid
 flowchart TB
   subgraph Mac[单台 Mac]
-    UI[浏览器工作台 React 与 Tiptap]
+    UI[浏览器工作台 React 与 Muya]
     subgraph Service[一个本地 Node.js 服务进程]
       API[Fastify API 与事件流]
       Domain[文章 资料 观点 会话 记忆服务]
@@ -76,7 +76,7 @@ API、后台任务和存储在同一服务进程中，模块之间通过函数�
 | 语言与组织 | TypeScript、pnpm workspace | 前后端共享契约，先保持少量模块 |
 | Node | Node.js 26 LTS 候选 | 官方当前列为 LTS；SQLite 原生驱动和 Agent SDK 在目标 Mac 上验证后锁定版本 |
 | 前端 | React、Vite、Tailwind CSS、shadcn/ui | 延续工作台方向；状态和任务通过 API 获取 |
-| 编辑器 | Tiptap／ProseMirror JSON | 保留结构、节点 ID、引用和代码块；中文输入法与导出需实测 |
+| 编辑器 | Muya／Inkling 正文 JSON | 保留结构、节点 ID、引用和代码块；中文输入法与导出需实测 |
 | HTTP 与事件 | Fastify、HTTP 命令、SSE | 命令与任务生命周期分离，事件可重连 |
 | 数据 | C02 选定 SQLite、better-sqlite3、参数化 SQL | 事务、迁移、独占连接与故障恢复已实现并通过 Mac/Linux 验收；暂不引入 ORM |
 | 文件 | 应用数据目录中的不可变附件与来源快照 | 数据库保存逻辑 ID、相对路径、hash 和大小 |
@@ -89,7 +89,7 @@ API、后台任务和存储在同一服务进程中，模块之间通过函数�
 
 截至本次核验，Node 26 和 Node 24 均列在 LTS 范围。先测试 26 的依赖兼容性，遇到明确阻塞再记录选择 24 的理由。[Node 发布状态](https://nodejs.org/en/about/previous-releases)
 
-Tiptap 官方建议使用 JSON 持久化编辑器结构。Inkling 采用 JSON 主稿，Markdown 作为导入导出格式。自定义引用节点的往返转换规则由产品实现。[Tiptap 持久化说明](https://tiptap.dev/docs/editor/core-concepts/persistence)
+Inkling 采用 JSON 主稿，Muya 块和行内 Markdown 通过编辑器适配层读写。工作空间图片以内容摘要引用。[正文内核决策](../decisions/0005-muya-writing-surface.md)
 
 ## 数据目录与保存边界
 

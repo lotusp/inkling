@@ -1,0 +1,8 @@
+C04 2.5、3.1、3.2 · macOS / Node 22.22.2 / Playwright Chromium
+Red：正式文章入口找不到 Muya 段落；接入正文后，图片用例因缺少正式插图入口失败。
+真实工作空间：tests/e2e/muya-workbench.spec.ts 验证中文自动保存、全选替换、选图、编辑与缩放、同图粘贴、拖图、服务重启，以及已删图片从历史修订恢复。
+插图边界：浏览器在图片后的偏移是 DOM 子节点索引。曾在缩放后粘贴第二张图时切开首图标签，现以原始标记长度映射选区，并用两张图片保存重开验证。
+故障与并发：伪装格式保留原稿；迟到上传遇到撤销、切稿或归档不插图。tests/api/article-persistence.test.ts 验证附件认证、CSRF、10 MiB 限制、解码、响应字节、目录不可写和缺失引用；失败后文章修订不变。
+技术编辑：复验链接与代码语言、表格、公式、Mermaid、本地离线预览、技术块复制与撤销、大纲、反向选区、草稿、恢复与归档。系统截图工具和 Mac 候选窗实测留在 5.2。
+全量浏览器回归：pnpm exec playwright test，162/162 通过，使用隔离工作空间。pnpm test:storage-performance 通过，含 1000 篇文章的库检索、打开与工作空间重启校验。
+pnpm verify 通过。格式、ESLint、TypeScript、依赖架构、生产构建、101 项应用测试、10 项 Harness 测试、文档及当前与归档 OpenSpec 均通过。构建报告主 JS 约 586 kB gzip，Vite 提示分块大小。

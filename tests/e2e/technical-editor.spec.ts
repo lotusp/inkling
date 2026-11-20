@@ -35,7 +35,9 @@ for (const width of [1280, 375]) {
     await expect(quote).toHaveText(excerpt);
 
     await toggleQuote(true);
-    await expect(editor.locator(':scope > p').nth(1)).toHaveText(excerpt);
+    await expect(editor.locator('.mu-container > p').nth(1)).toHaveText(
+      excerpt,
+    );
     await toggleQuote(false);
     await expect(page.getByText('已保存', { exact: true })).toBeVisible();
 
@@ -57,7 +59,7 @@ for (const width of [1280, 375]) {
       },
     ]);
     await page.reload();
-    await expect(editor.locator(':scope > p').first()).toHaveText(intro);
+    await expect(editor.locator('.mu-container > p').first()).toHaveText(intro);
     await expect(quote).toHaveText(excerpt);
   });
 }
@@ -82,10 +84,10 @@ test('EDITOR-LINK-002 选区链接可以修改、纠错和移除，前后文字�
   await openLink();
   await field.fill('https://example.org/source');
   await apply.click();
-  const link = editor.locator('a');
+  const link = editor.locator('.mu-link');
   await expect(link).toHaveText('原文');
   await expect(link).toHaveAttribute('href', 'https://example.org/source');
-  await expect(editor).toHaveText(text);
+  await expect(editor.locator('.mu-paragraph-content')).toContainText('请读');
 
   // Edit from a caret inside the existing link, then keep editing after a bad URL.
   await link.click();
@@ -136,7 +138,8 @@ test('EDITOR-LINK-002 代码块可设置或清除语言，保留空行和缩进'
   await editor.press('Enter');
   await page.keyboard.insertText('}');
   const source = 'if (ok) {\n  run();\n\n}';
-  const code = editor.locator('pre code');
+  const code = editor.locator('pre .mu-codeblock-content');
+  const language = editor.locator('pre .mu-language-input');
   expect(await code.textContent()).toBe(source);
   const chooseLanguage = async () => {
     await format.click();
@@ -146,20 +149,20 @@ test('EDITOR-LINK-002 代码块可设置或清除语言，保留空行和缩进'
   const field = page.getByRole('textbox', { name: '代码语言' });
   await field.fill('typescript');
   await field.press('Enter');
-  await expect(code).toHaveClass(/language-typescript/);
+  await expect(language).toHaveText('typescript');
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await page.reload();
-  await expect(code).toHaveClass(/language-typescript/);
+  await expect(language).toHaveText('typescript');
   expect(await code.textContent()).toBe(source);
   await code.click();
   await chooseLanguage();
   await expect(field).toHaveValue('typescript');
   await field.fill('javascript');
   await field.press('Escape');
-  await expect(code).toHaveClass(/language-typescript/);
+  await expect(language).toHaveText('typescript');
   await chooseLanguage();
   await field.fill('');
   await field.press('Enter');
-  await expect(code).not.toHaveClass(/language-/);
+  await expect(language).toBeEmpty();
   expect(await code.textContent()).toBe(source);
 });

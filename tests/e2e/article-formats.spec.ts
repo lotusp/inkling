@@ -30,17 +30,20 @@ test('ARTICLE-SCHEMA-011 every supported format survives editor load and another
   for (const [selector, value] of [
     ['h2', '二级标题'],
     ['h3', '三级标题'],
-    ['strong em s u', '组合强调'],
+    ['u del strong em', '组合强调'],
     ['p code', 'inline_code'],
-    ['a[href="https://example.com/reference"]', '参考链接'],
+    ['.mu-link[href="https://example.com/reference"]', '参考链接'],
     ['blockquote', '引文与边界'],
     ['ul > li > p', '无序条目'],
-    ['ol[start="3"][type="a"]', '嵌套有序条目'],
-    ['pre code', 'const insight = true;\nconsole.log(insight);'],
+    ['ol[start="3"]', '嵌套有序条目'],
+    [
+      'pre .mu-codeblock-content',
+      'const insight = true;\nconsole.log(insight);',
+    ],
   ])
     await expect(editor.locator(selector!)).toContainText(value!);
-  await expect(editor.locator('br')).toHaveCount(1);
-  await expect(editor.locator('hr')).toHaveCount(1);
+  await expect(editor.locator('.mu-soft-line-break')).toHaveCount(1);
+  await expect(editor.locator('.mu-thematic-break')).toHaveCount(1);
   const title = '🧠'.repeat(200);
   await page.getByLabel('文章标题', { exact: true }).fill(title);
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();

@@ -5,8 +5,10 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Editor } from '@tiptap/react';
-import { Selection, TextSelection } from '@tiptap/pm/state';
+import type {
+  WritingSurface as Editor,
+  WritingSelection,
+} from './muya/surface';
 import type { ArticleSnapshot } from '@inkling/contracts';
 import { stableJson } from './draft-store';
 interface PositionContext {
@@ -17,16 +19,15 @@ interface PositionContext {
   navigating: boolean;
 }
 interface Position {
-  version: 1;
+  version: 2;
   workspaceId: string;
   articleId: string;
   revisionId: string;
-  anchor: number;
-  head: number;
+  selection: WritingSelection;
   scrollTop: number;
 }
 function positionKey(workspaceId: string, articleId: string) {
-  return `inkling:position:v1:${workspaceId}:${articleId}`;
+  return `inkling:position:v2:${workspaceId}:${articleId}`;
 }
 function readPosition(
   raw: string | null,
@@ -40,37 +41,48 @@ function readPosition(
     if (!value || typeof value !== 'object') return null;
     const r = Object.fromEntries(Object.entries(value));
     if (
-      r.version !== 1 ||
+      r.version !== 2 ||
       r.workspaceId !== workspaceId ||
       r.articleId !== article.articleId ||
       r.revisionId !== article.headRevisionId
     )
       return null;
-    const { anchor, head, scrollTop } = r;
+    const { selection, scrollTop } = r;
+    if (!selection || typeof selection !== 'object') return null;
+    const { anchor, focus, anchorPath, focusPath } = Object.fromEntries(
+      Object.entries(selection),
+    );
+    const validPath = (p: unknown): p is (string | number)[] =>
+      Array.isArray(p) &&
+      p.length > 0 &&
+      p.length <= 80 &&
+      p.every(
+        (v) =>
+          v === 'children' ||
+          v === 'text' ||
+          (Number.isSafeInteger(v) && v >= 0),
+      );
     if (
       typeof anchor !== 'number' ||
-      typeof head !== 'number' ||
+      typeof focus !== 'number' ||
       typeof scrollTop !== 'number' ||
       !Number.isSafeInteger(anchor) ||
-      !Number.isSafeInteger(head) ||
-      anchor < 1 ||
-      head < 1 ||
-      anchor > editor.state.doc.content.size ||
-      head > editor.state.doc.content.size ||
-      !editor.state.doc.resolve(anchor).parent.inlineContent ||
-      !editor.state.doc.resolve(head).parent.inlineContent ||
+      !Number.isSafeInteger(focus) ||
+      anchor < 0 ||
+      focus < 0 ||
+      !validPath(anchorPath) ||
+      !validPath(focusPath) ||
       !Number.isFinite(scrollTop) ||
       scrollTop < 0 ||
-      scrollTop > editor.view.dom.getBoundingClientRect().height
+      scrollTop > editor.dom.getBoundingClientRect().height
     )
       return null;
     return {
-      version: 1,
+      version: 2,
       workspaceId,
       articleId: article.articleId,
       revisionId: article.headRevisionId,
-      anchor,
-      head,
+      selection: { anchor, focus, anchorPath, focusPath },
       scrollTop,
     };
   } catch {
@@ -89,6 +101,7 @@ export function useArticlePosition(
   const interacted = useRef(false),
     restoring = useRef(false),
     scrollTop = useRef(0);
+  const lastSelection = useRef<WritingSelection | null>(null);
   const frame = useRef<number | undefined>(undefined),
     timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const cancelRestore = useCallback(() => {
@@ -113,18 +126,18 @@ export function useArticlePosition(
       stableJson(editor.getJSON()) !== stableJson(current.article.document.doc)
     )
       return;
-    const selection = editor.state.selection;
-    if (!(selection instanceof TextSelection)) return;
-    const bounds = editor.view.dom.getBoundingClientRect();
+    const selection = editor.selection() ?? lastSelection.current;
+    if (!selection) return;
+    lastSelection.current = selection;
+    const bounds = editor.dom.getBoundingClientRect();
     const offset = -bounds.top;
     if (offset >= 0 && offset <= bounds.height) scrollTop.current = offset;
     const value: Position = {
-      version: 1,
+      version: 2,
       workspaceId: current.workspaceId,
       articleId: current.article.articleId,
       revisionId: current.article.headRevisionId,
-      anchor: selection.anchor,
-      head: selection.head,
+      selection,
       scrollTop: scrollTop.current,
     };
     try {
@@ -154,6 +167,7 @@ export function useArticlePosition(
     cancelRestore();
     clearTimeout(timer.current);
     interacted.current = false;
+    lastSelection.current = null;
     scrollTop.current = 0;
     if (!editor || !allowRestore) return;
     let saved: Position | null = null;
@@ -181,16 +195,14 @@ export function useArticlePosition(
         cancelRestore();
         return;
       }
-      const selection = saved
-        ? TextSelection.create(editor.state.doc, saved.anchor, saved.head)
-        : Selection.atStart(editor.state.doc);
-      editor.view.dispatch(editor.state.tr.setSelection(selection));
+      if (saved && !editor.restoreSelection(saved.selection)) saved = null;
+      lastSelection.current = saved?.selection ?? null;
       scrollTop.current = saved?.scrollTop ?? 0;
       window.scrollTo({
         top:
           scrollTop.current > 0
             ? window.scrollY +
-              editor.view.dom.getBoundingClientRect().top +
+              editor.dom.getBoundingClientRect().top +
               scrollTop.current
             : 0,
         behavior: 'instant',
@@ -212,22 +224,19 @@ export function useArticlePosition(
       timer.current = setTimeout(flush, 150);
     };
     const scroll = () => {
-      const bounds = editor.view.dom.getBoundingClientRect();
+      const bounds = editor.dom.getBoundingClientRect();
       if (bounds.top <= 0 && bounds.bottom >= 0) schedule();
     };
     const input = () => {
       cancelRestore();
       interacted.current = true;
     };
-    const selection = ({
-      transaction,
-    }: {
-      transaction: { docChanged: boolean };
-    }) => {
-      if (!transaction.docChanged) schedule();
+    const selection = () => {
+      if (editor.dom.contains(window.getSelection()?.focusNode ?? null))
+        schedule();
     };
-    editor.on('selectionUpdate', selection);
-    editor.on('update', input);
+    document.addEventListener('selectionchange', selection);
+    const unsubscribe = editor.subscribe(input);
     window.addEventListener('scroll', scroll, { passive: true });
     window.addEventListener('pagehide', flush);
     window.addEventListener('beforeunload', flush);
@@ -239,8 +248,8 @@ export function useArticlePosition(
       cancelRestore();
       clearTimeout(timer.current);
       history.scrollRestoration = previous;
-      editor.off('selectionUpdate', selection);
-      editor.off('update', input);
+      document.removeEventListener('selectionchange', selection);
+      unsubscribe();
       window.removeEventListener('scroll', scroll);
       window.removeEventListener('pagehide', flush);
       window.removeEventListener('beforeunload', flush);

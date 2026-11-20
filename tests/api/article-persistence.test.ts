@@ -3,7 +3,7 @@ import { SqliteWorkspace } from '@inkling/adapters';
 import { ArticleService } from '@inkling/core';
 import { ArticleSnapshot, SaveResult } from '@inkling/contracts';
 import { createServer } from '../../apps/server/src/server';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, renameSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -22,6 +22,7 @@ async function setup() {
       localSecret: 's'.repeat(64),
     },
     articles: () => service,
+    images: () => workspace.images,
   });
   cleanup.push(async () => {
     await app.close();
@@ -48,7 +49,7 @@ async function setup() {
     payload: { mutationId: randomUUID() },
   });
   expect(result.statusCode).toBe(200);
-  return { app, headers, article: ArticleSnapshot.parse(result.json()) };
+  return { app, headers, dir, article: ArticleSnapshot.parse(result.json()) };
 }
 afterEach(async () => {
   for (const close of cleanup.splice(0)) await close();
@@ -272,4 +273,114 @@ it('EDITOR-TABLE-003 / EDITOR-ROUNDTRIP-010 validates table structure and preser
     current: false,
   });
   expect((await revision(tableId)).document).toEqual(v2);
+});
+
+it('EDITOR-IMAGE-006 authenticates local attachments and leaves the revision intact after invalid or failed writes', async () => {
+  const { app, headers, article, dir } = await setup();
+  const binary = { ...headers, 'content-type': 'application/octet-stream' };
+  const url = '/api/images',
+    method = 'POST' as const;
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4VSEHAAQAAZHUcVaRAAAAAElFTkSuQmCC',
+    'base64',
+  );
+  const denied = await app.inject({
+    url,
+    method,
+    headers: { ...binary, cookie: '' },
+    payload: png,
+  });
+  expect(denied.statusCode).toBe(401);
+  expect(
+    (
+      await app.inject({
+        url,
+        method,
+        headers: { ...binary, 'x-csrf-token': '' },
+        payload: png,
+      })
+    ).statusCode,
+  ).toBe(403);
+  expect(
+    (
+      await app.inject({
+        url,
+        method,
+        headers: binary,
+        payload: Buffer.from('bad'),
+      })
+    ).statusCode,
+  ).toBe(415);
+  expect(
+    (
+      await app.inject({
+        url,
+        method,
+        headers: binary,
+        payload: Buffer.alloc(10 * 1024 * 1024 + 1),
+      })
+    ).statusCode,
+  ).toBe(413);
+  const stored = await app.inject({
+    url,
+    method,
+    headers: binary,
+    payload: png,
+  });
+  expect(stored.statusCode).toBe(201);
+  const name = stored.json<{ name: string }>().name;
+  const image = await app.inject({ url: url + '/' + name, headers });
+  expect(image.rawPayload).toEqual(png);
+  expect(
+    (
+      await app.inject({
+        url: url + '/' + name,
+        headers: { host: headers.host },
+      })
+    ).statusCode,
+  ).toBe(401);
+  renameSync(join(dir, 'images'), join(dir, 'saved-images'));
+  writeFileSync(join(dir, 'images'), 'unavailable');
+  expect(
+    (await app.inject({ url, method, headers: binary, payload: png }))
+      .statusCode,
+  ).toBe(503);
+  rmSync(join(dir, 'images'));
+  renameSync(join(dir, 'saved-images'), join(dir, 'images'));
+  rmSync(join(dir, 'images', name));
+  expect(
+    (await app.inject({ url: url + '/' + name, headers })).statusCode,
+  ).toBe(404);
+  const path = '/api/articles/' + article.articleId;
+  const write = await app.inject({
+    url: path + '/content',
+    method: 'PUT',
+    headers,
+    payload: {
+      baseRevisionId: article.headRevisionId,
+      mutationId: randomUUID(),
+      document: {
+        schemaVersion: 2,
+        title: '正文',
+        doc: {
+          type: 'doc',
+          content: [
+            {
+              type: 'md:paragraph',
+              content: [
+                {
+                  type: 'text',
+                  text: '<img src="inkling-image:' + name + '" alt="校样">',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  });
+  expect(write.statusCode).toBe(422);
+  expect((await app.inject({ url: path, headers })).json().headRevisionId).toBe(
+    article.headRevisionId,
+  );
 });

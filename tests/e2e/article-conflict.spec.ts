@@ -12,7 +12,7 @@ test('ARTICLE-CONFLICT-006 choosing the server version retains the conflicted lo
     .click();
   await expect(
     other.getByRole('textbox', { name: '文章正文', exact: true }),
-  ).toHaveText('先提交的实践依据');
+  ).toHaveText('**先提交的实践依据**');
   await other.reload();
   await expect(other.getByRole('region', { name: '待恢复草稿' })).toContainText(
     '本页尚未保存的判断',
@@ -301,6 +301,6 @@ test('ARTICLE-CONFLICT-006 compares two real tab versions without replacing the 
   ).toContainText('比较时仍能继续思考');
   await expect(
     page.getByRole('textbox', { name: '文章正文', exact: true }),
-  ).toHaveText('先提交的实践依据');
+  ).toHaveText('**先提交的实践依据**');
   await other.close();
 });

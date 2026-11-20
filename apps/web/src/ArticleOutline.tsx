@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { ListTree } from 'lucide-react';
-import type { Editor } from '@tiptap/react';
+import type { WritingSurface as Editor } from './muya/surface';
 import { DeskMenu } from './DeskMenu';
 import { DeskDialog } from './DeskDialog';
 
@@ -26,7 +27,7 @@ export function ArticleOutline({
           </>
         }
         onOpen={() =>
-          setHeadings(Array.from(editor.view.dom.querySelectorAll('h2,h3')))
+          setHeadings(Array.from(editor.dom.querySelectorAll('h2,h3')))
         }
       >
         {headings.map((heading, i) => (
@@ -43,7 +44,7 @@ export function ArticleOutline({
               );
             }}
           >
-            {heading.textContent || '未命名章节'}
+            {heading.textContent?.replace(/^#+\s*/, '') || '未命名章节'}
           </button>
         ))}
         {!headings.length && <small>还没有章节</small>}
@@ -82,19 +83,15 @@ export function ArticleOutline({
                 !editor.isEditable
               )
                 return;
-              editor
-                .chain()
-                .insertContentAt(editor.state.doc.content.size, [
-                  {
-                    type: 'heading',
-                    attrs: { level: 2 },
-                    content: [{ type: 'text', text: title }],
-                  },
-                  { type: 'paragraph' },
-                ])
-                .run();
-              setAdding(false);
-              editor.commands.focus('end');
+              flushSync(() => setAdding(false));
+              editor.append([
+                {
+                  name: 'atx-heading',
+                  meta: { level: 2 },
+                  text: '## ' + title,
+                },
+                { name: 'paragraph', text: '' },
+              ]);
             }}
           >
             <label>

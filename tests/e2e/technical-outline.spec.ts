@@ -56,10 +56,18 @@ test('EDITOR-OUTLINE-009 重名章节分别定位，保留原选区与保存版�
   const baseline = await read();
   await page.reload();
   const editor = page.getByRole('textbox', { name: '文章正文' });
-  await expect(editor.locator('h2,h3')).toHaveText([sectionName, sectionName]);
+  await expect(editor.locator('h2,h3')).toHaveText([
+    '## ' + sectionName,
+    '### ' + sectionName,
+  ]);
   await editor.focus();
   await editor.evaluate((el) => {
-    const text = el.querySelector('p')!.firstChild!;
+    const text = document
+      .createTreeWalker(
+        el.querySelector('.mu-paragraph-content')!,
+        NodeFilter.SHOW_TEXT,
+      )
+      .nextNode()!;
     window.getSelection()!.setBaseAndExtent(text, 4, text, 2);
   });
   const selected = () =>
@@ -107,6 +115,6 @@ test('EDITOR-OUTLINE-009 章节标题回车先选词，确认后只追加一次�
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await page.reload();
   await expect(editor.locator('p').first()).toHaveText('原稿首段');
-  await expect(editor.locator('h2')).toHaveText(['技术判断']);
+  await expect(editor.locator('h2')).toHaveText(['## 技术判断']);
   await expect(editor.locator('h2 + p')).toHaveText('这是新增章节的正文。');
 });

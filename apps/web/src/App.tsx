@@ -1,9 +1,11 @@
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { TableKit } from '@tiptap/extension-table';
-import { FormulaBlock } from './formula-block';
-import { MermaidBlock } from './mermaid-block';
+import {
+  useEffect,
+  useLayoutEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from 'react';
+import { WritingSurface } from './muya/surface';
 import {
   Library,
   Ellipsis,
@@ -20,7 +22,7 @@ import { ArticleSaveFeedback } from './ArticleSaveFeedback';
 import { ArticleNavigation } from './ArticleNavigation';
 import { RecoveryPanel } from './RecoveryPanel';
 import { ConflictPanel } from './ConflictPanel';
-import { ParagraphFormat } from './ParagraphFormat';
+import { WritingTools } from './muya/WritingTools';
 import { ArticleOutline } from './ArticleOutline';
 import { DeskMenu } from './DeskMenu';
 import { VersionPanel } from './VersionPanel';
@@ -95,28 +97,52 @@ function Workbench({
   }
   const health = useHealth();
   const access = useAccess();
-  const editor = useEditor({
-    editable: false,
-    extensions: [
-      FormulaBlock,
-      MermaidBlock,
-      TableKit.configure({ table: { renderWrapper: true } }),
-      StarterKit.configure({
-        heading: { levels: [2, 3] },
-        link: { openOnClick: false },
-      }),
-    ],
-    content: '',
-    shouldRerenderOnTransaction: false,
-    editorProps: {
-      attributes: {
-        role: 'textbox',
-        'aria-label': '文章正文',
-        'aria-multiline': 'true',
-        spellcheck: 'false',
-      },
-    },
-  });
+  const host = useRef<HTMLDivElement>(null);
+  const [editor, setEditor] = useState<WritingSurface | null>(null);
+  const [length, setLength] = useState(0);
+  const [empty, setEmpty] = useState(true);
+  useLayoutEffect(() => {
+    if (!host.current) return;
+    const surface = new WritingSurface(host.current);
+    setEditor(surface);
+    const count = () => {
+      const container = surface.dom.querySelector('.mu-container');
+      if (!container) return;
+      const fields = container.querySelectorAll(
+        '.mu-content:not(.mu-language-input)',
+      );
+      let characters = 0;
+      for (const field of fields) {
+        const walker = document.createTreeWalker(field, NodeFilter.SHOW_TEXT);
+        while (walker.nextNode()) {
+          if (
+            !walker.currentNode.parentElement?.closest(
+              '.mu-remove,.mu-output-remove,.mu-inline-image',
+            )
+          ) {
+            characters += (walker.currentNode.textContent ?? '').replace(
+              /[\s\u200b]/g,
+              '',
+            ).length;
+          }
+        }
+      }
+      setLength(characters);
+      setEmpty(
+        container.childElementCount === 1 &&
+          !!container.firstElementChild?.matches('p.mu-paragraph') &&
+          !container.textContent?.replace(/[\s\u200b]/g, '') &&
+          !container.querySelector('img'),
+      );
+    };
+    surface.dom.addEventListener('inkling-load', count);
+    const unsubscribe = surface.subscribe(count);
+    return () => {
+      surface.dom.removeEventListener('inkling-load', count);
+      unsubscribe();
+      surface.destroy();
+    };
+  }, []);
   const article = useArticle(
     editor,
     title,
@@ -128,14 +154,8 @@ function Workbench({
   useEffect(() => {
     if (!focusNewArticle.current || !article.editable || !editor) return;
     focusNewArticle.current = false;
-    editor.commands.focus('start');
+    editor.focus();
   }, [article.editable, editor]);
-  const format = useEditorState({
-    editor,
-    selector: ({ editor }) => ({
-      length: editor?.getText().replace(/\s/g, '').length ?? 0,
-    }),
-  });
   const hasText = article.dirty;
   useEffect(() => {
     if (!hasText) return;
@@ -284,7 +304,9 @@ function Workbench({
                 <ArticleOutline editor={editor} editable={article.editable} />
               )}
             </div>
-            {article.editable && editor && <ParagraphFormat editor={editor} />}
+            {editor && (
+              <WritingTools editor={editor} editable={article.editable} />
+            )}
             {article.snapshot && article.stateReadOnly && (
               <section className="article-state" aria-label="文章状态">
                 <p role="status">
@@ -324,9 +346,9 @@ function Workbench({
               discard={article.discard}
               clientId={article.clientId}
             />
-            <div className={`editor-wrap ${format?.length ? '' : 'is-empty'}`}>
-              <EditorContent editor={editor} />
-              {!format?.length && (
+            <div className={`editor-wrap ${empty ? 'is-empty' : ''}`}>
+              <div ref={host} className="writing-body" />
+              {empty && (
                 <div className="editor-placeholder" aria-hidden="true">
                   记下一段经历、一个疑问，或一个还没想清楚的判断……
                 </div>
@@ -362,7 +384,7 @@ function Workbench({
               />
             )}
             <div className="document-meta">
-              <span>{format?.length ?? 0} 字</span>
+              <span>{length ?? 0} 字</span>
             </div>
           </article>
         </main>

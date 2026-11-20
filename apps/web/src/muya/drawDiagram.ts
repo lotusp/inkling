@@ -1,6 +1,5 @@
 import rendererUrl from '@mermaid-js/tiny/dist/mermaid.tiny.js?url';
-import { basicFlowchart } from './basic-flowchart';
-import { createSourceBlock } from './source-block';
+import { basicFlowchart } from '../basic-flowchart';
 
 function rendererOptions() {
   const palette = getComputedStyle(document.documentElement);
@@ -70,36 +69,34 @@ function localRenderer(): Promise<Mermaid> {
   return loading;
 }
 
-export const MermaidBlock = createSourceBlock({
-  name: 'mermaidBlock',
-  label: '流程图',
-  attribute: 'data-inkling-mermaid',
-  example: '例如 flowchart TD; A[开始] --> B[结束]',
-  async draw(source, output, isCurrent) {
-    const diagram = basicFlowchart(source);
-    // Coalesce typing before queueing an SVG layout with the renderer.
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    if (!isCurrent()) return;
-    const renderer = await localRenderer();
-    if (!isCurrent()) return;
-    const scratch = document.createElement('div');
-    scratch.className = 'mermaid-measure';
-    scratch.inert = true;
-    document.body.append(scratch);
-    try {
-      const { svg } = await renderer.render(
-        'inkling-' + crypto.randomUUID(),
-        diagram,
-        scratch,
-      );
-      const image = document.createElement('img');
-      image.alt = '流程图预览';
-      image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-      output.append(image);
-    } catch {
-      throw new Error('流程图有误，请检查节点名称和连线。');
-    } finally {
-      scratch.remove();
-    }
-  },
-});
+export async function drawDiagram(
+  source: string,
+  output: HTMLElement,
+  isCurrent: () => boolean,
+) {
+  const diagram = basicFlowchart(source);
+  // Coalesce typing before queueing an SVG layout with the renderer.
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  if (!isCurrent()) return;
+  const renderer = await localRenderer();
+  if (!isCurrent()) return;
+  const scratch = document.createElement('div');
+  scratch.className = 'mermaid-measure';
+  scratch.inert = true;
+  document.body.append(scratch);
+  try {
+    const { svg } = await renderer.render(
+      'inkling-' + crypto.randomUUID(),
+      diagram,
+      scratch,
+    );
+    const image = document.createElement('img');
+    image.alt = '流程图预览';
+    image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    output.append(image);
+  } catch {
+    throw new Error('流程图有误，请检查节点名称和连线。');
+  } finally {
+    scratch.remove();
+  }
+}

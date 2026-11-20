@@ -261,72 +261,6 @@ svg {
   font-size: 16px;
   line-height: 2;
 }
-.tiptap {
-  font-family: 'Songti SC', 'Noto Serif CJK SC', Georgia, serif;
-  min-height: 380px;
-  font-size: 17px;
-  line-height: 1.95;
-  overflow-wrap: anywhere;
-}
-.tiptap p {
-  margin: 0 0 18px;
-}
-.tiptap h2 {
-  margin: 20px 0 12px;
-  font-size: 23px;
-  line-height: 1.6;
-}
-.tiptap h3 {
-  font-size: 20px;
-}
-.tiptap pre {
-  background: #f0f3ec;
-  padding: 16px;
-  border-radius: 7px;
-  white-space: pre-wrap;
-}
-.tiptap code {
-  font-family: ui-monospace, monospace;
-  font-size: 0.85em;
-}
-.tiptap ul,
-.tiptap ol {
-  padding-left: 24px;
-}
-.tableWrapper {
-  max-width: 100%;
-  overflow-x: auto;
-  margin: 1em 0;
-}
-.tableWrapper table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-.tableWrapper th,
-.tableWrapper td {
-  position: relative;
-  border: 1px solid var(--table-rule);
-  padding: 6px 10px;
-  text-align: start;
-  vertical-align: top;
-  overflow-wrap: anywhere;
-}
-.tableWrapper th {
-  background: var(--table-heading);
-}
-.tableWrapper .selectedCell {
-  background: var(--selection);
-}
-.tableWrapper :is(th, td) > p {
-  margin: 0;
-}
-.source-block {
-  margin: 1em 0;
-  padding: 0.55em 0.85em;
-  border-left: 2px solid var(--line);
-  min-width: 0;
-}
 .source-preview {
   overflow-x: auto;
   padding: 3px 0;
@@ -345,33 +279,16 @@ svg {
 .source-preview:empty {
   display: none;
 }
-.source-block summary,
-.source-block [role='status'] {
-  color: var(--muted);
-  font-size: 13px;
+.tableWrapper {
+  max-width: 100%;
+  overflow-x: auto;
 }
-.source-block summary {
-  cursor: pointer;
-  width: fit-content;
+.tableWrapper table {
+  border-collapse: collapse;
 }
-.tiptap .source-block pre {
-  min-height: 1.8em;
-  margin: 0.4em 0 0;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.source-block pre[aria-placeholder][data-empty]::before {
-  content: attr(aria-placeholder);
-  color: var(--muted);
-  float: left;
-  height: 0;
-  pointer-events: none;
-}
-.tiptap blockquote {
-  margin-left: 0;
-  border-left: 3px solid #b8c6ad;
-  padding-left: 18px;
-  color: #687660;
+.tableWrapper :is(th, td) {
+  border: 1px solid var(--table-rule);
+  padding: 5px 8px;
 }
 .document-meta {
   display: flex;
@@ -1149,4 +1066,78 @@ svg {
   gap: 4px;
   align-items: center;
   height: 44px;
+}
+
+.writing-body .mu-container {
+  max-width: 100%;
+  min-height: 380px;
+  padding: 0 0 70px;
+  font:
+    17px/1.85 'Songti SC',
+    'Noto Serif CJK SC',
+    Georgia,
+    serif;
+  overflow-wrap: anywhere;
+}
+.writing-body .mu-container:focus-visible,
+.writing-body [contenteditable]:focus-visible {
+  outline: none;
+}
+.writing-body .mu-container p {
+  margin: 0;
+}
+.writing-body :is(.mu-code-block, .mu-table-inner, .mu-diagram-block) {
+  font-family: system-ui, sans-serif;
+}
+.writing-body .mu-image-container img {
+  max-width: 100%;
+  height: auto;
+}
+.writing-body .mu-editor[aria-readonly='true'] {
+  cursor: default;
+}
+.writing-body figure:is(.mu-math-block, .mu-diagram-block) {
+  min-width: 0;
+  margin: 1em 0;
+}
+.writing-body figure[role='group'] > details {
+  font:
+    13px/1.5 system-ui,
+    sans-serif;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.writing-body figure[role='group'] > details summary {
+  width: fit-content;
+  cursor: pointer;
+}
+.writing-body
+  figure[role='group']:has(details:not([open]))
+  > :is(.mu-math-container, .mu-diagram-container) {
+  display: none;
+}
+.writing-body
+  figure[role='group']:has(details[open])
+  > :is(.mu-math-container, .mu-diagram-container) {
+  position: relative;
+  display: block;
+  opacity: 1;
+  width: 100%;
+  height: auto;
+  z-index: 1;
+  overflow: auto;
+}
+.writing-body
+  figure[role='group']
+  > :is(.mu-math-preview, .mu-diagram-preview) {
+  position: static;
+  transform: none;
+  width: 100%;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.writing-body .mu-diagram-preview img {
+  max-width: 100%;
+  height: auto;
 }

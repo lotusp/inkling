@@ -37,7 +37,7 @@ for (const target of ['V3', '工作台'] as const) {
       const button = (name: string) =>
         page.getByRole('button', { name, exact: true });
       const body = page
-        .locator(target === 'V3' ? '#blocks [contenteditable]' : '.tiptap')
+        .locator(target === 'V3' ? '#blocks [contenteditable]' : '.mu-editor')
         .first();
       await body.fill('针对一段文字');
       await body.press('Home');
@@ -132,7 +132,7 @@ for (const target of ['V3', '工作台'] as const) {
       const button = (name: string) =>
         page.getByRole('button', { name, exact: true });
       const paper = page
-        .locator(target === 'V3' ? '#blocks [contenteditable]' : '.tiptap')
+        .locator(target === 'V3' ? '#blocks [contenteditable]' : '.mu-editor')
         .first();
       const title = page.getByLabel('文章标题', { exact: true });
       await title.fill('核对比较方向');

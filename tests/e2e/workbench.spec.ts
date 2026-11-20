@@ -27,10 +27,14 @@ test('WORKBENCH-EDIT-004 edits Chinese text and basic formatting and preserves i
   await page
     .getByRole('button', { name: '从一次具体的技术选择开始。', exact: true })
     .click();
-  await editor.click();
+  await editor.locator('h2 .mu-content').click();
   await page.getByRole('button', { name: '段落格式…', exact: true }).click();
   await page.getByRole('button', { name: '小标题', exact: true }).click();
-  await editor.press('ControlOrMeta+A');
+  await editor
+    .locator('.mu-paragraph-content')
+    .filter({ hasText: '技术选择' })
+    .click();
+  await page.keyboard.press('ControlOrMeta+A');
   await page.getByRole('button', { name: '段落格式…', exact: true }).click();
   await page.getByRole('button', { name: '整段加粗', exact: true }).click();
   await expect(editor.locator('strong')).toContainText('技术选择');

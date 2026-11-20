@@ -95,7 +95,7 @@ GitHub Actions 复用 verify 和 E2E，不调用模型、不发布应用。CI �
 
 当前有 `apps/web`、`apps/server`、`packages/contracts` 和 `packages/adapters`。contracts 导出健康响应 schema，web 校验真实响应，server 提供它；工作空间存储已放入 packages/adapters，正文用例已进入 packages/core。
 
-React 19 与 Tiptap 3 提供编辑，Vite 8 构建 Web，Fastify 5 提供本机服务，esbuild 打包服务入口，Zod 4 负责契约。完整精确版本见各 package.json 和 pnpm-lock.yaml。TypeScript 使用 6.0.3：当前 typescript-eslint 的支持范围小于 6.1，因此没有机械采用 TypeScript 7。
+React 19 与 Muya 0.2.0 提供编辑，Vite 8 构建 Web，Fastify 5 提供本机服务，esbuild 打包服务入口，Zod 4 负责契约。完整精确版本见各 package.json 和 pnpm-lock.yaml。TypeScript 使用 6.0.3：当前 typescript-eslint 的支持范围小于 6.1，因此没有机械采用 TypeScript 7。
 
 dependency-cruiser 使用 package.json 的 workspaces 识别公开包导入；pnpm 使用 pnpm-workspace.yaml 安装。增减包分组时同步两处，架构正例会读取真实 workspaces 配置。内部包必须通过 exports 的公开入口访问；禁止相对路径跨包钻入 src。
 

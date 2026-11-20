@@ -86,7 +86,14 @@ export function registerAccess(app: FastifyInstance, options: AccessOptions) {
         return reply.code(403).send({ code: 'ORIGIN_REJECTED' });
       if (!equal(request.headers['x-csrf-token'], identity.csrf))
         return reply.code(403).send({ code: 'CSRF_REJECTED' });
-      if (!request.headers['content-type']?.startsWith('application/json'))
+      if (
+        !(
+          path === '/api/images' &&
+          request.method === 'POST' &&
+          request.headers['content-type'] === 'application/octet-stream'
+        ) &&
+        !request.headers['content-type']?.startsWith('application/json')
+      )
         return reply.code(415).send({ code: 'JSON_REQUIRED' });
     }
   });
