@@ -4,3 +4,6 @@ Green：corepack pnpm build:muya；node --test tests/prototypes/muya-surface.tes
 工作台：playwright test tests/e2e/technical-mermaid.spec.ts tests/e2e/technical-table.spec.ts，7/7 通过，含文章持久化、离线预览和草稿恢复。
 工程：corepack pnpm verify，格式、lint、类型、架构、构建、100 项应用测试、10 项 Harness 测试、文档和当前及归档规格通过。
 试写服务运行在回环地址，原型浏览器测试使用独立图片目录。未记录 macOS 系统截图手工验收、Linux CI 或正式稿纸的 Muya 内核替换。
+
+5.2 复验发现，快速选图时，最后一段的光标偶尔被上一次 selectionchange 记录的标题选区覆盖。复现命令为 node --test tests/prototypes/muya-surface.test.mjs，退出码 1，最终段落缺少 alt 为「本地图」的图片。检查 DOM 发现标题内有该图，图片 PUT 返回 201。
+试写页在打开选图器时记住选区，接收文件时优先读取仍有效的正文选区。pnpm build:muya 通过，同一未改动的浏览器测试连续运行 12 次均通过，覆盖选图、编辑替代文字、替换、缩放、粘贴、拖入、保存重开和窄屏。

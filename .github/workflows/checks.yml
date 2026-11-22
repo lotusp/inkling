@@ -27,3 +27,7 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm verify
       - run: pnpm test:e2e
+      - name: Verify Muya trial image editing
+        run: |
+          pnpm build:muya
+          node --test tests/prototypes/muya-surface.test.mjs

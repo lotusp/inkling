@@ -92,14 +92,17 @@ export function installImages(editor) {
   desk.addEventListener('compositionend', () => {
     composing = false;
   });
-  document.addEventListener('selectionchange', () => {
+  function currentRange() {
     const selection = window.getSelection();
     if (
       selection.rangeCount &&
       nearestContent(selection.focusNode) &&
       desk.contains(selection.focusNode)
     )
-      lastRange = selection.getRangeAt(0).cloneRange();
+      return selection.getRangeAt(0).cloneRange();
+  }
+  document.addEventListener('selectionchange', () => {
+    lastRange = currentRange() ?? lastRange;
   });
   function add(files) {
     if (!files.length || composing) return;
@@ -167,13 +170,17 @@ export function installImages(editor) {
     .getElementById('insert')
     .addEventListener('mousedown', (e) => e.preventDefault());
   document.getElementById('insert').addEventListener('click', () => {
-    if (!composing) picker.click();
+    if (composing) return;
+    lastRange = currentRange() ?? lastRange;
+    picker.click();
   });
   picker.addEventListener('change', () => {
     const files = [...picker.files];
     picker.value = '';
-    const content = nearestContent(lastRange?.endContainer);
-    if (content?.isConnected) setRange(content, lastRange);
+    // A file can be selected before the queued selectionchange event arrives.
+    const range = currentRange() ?? lastRange;
+    const content = nearestContent(range?.endContainer);
+    if (content?.isConnected) setRange(content, range);
     else {
       const fallback =
         desk.querySelector(
