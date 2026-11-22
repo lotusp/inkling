@@ -1141,3 +1141,18 @@ svg {
   max-width: 100%;
   height: auto;
 }
+
+.import-file {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 8px;
+}
+.import-preview {
+  max-height: 48vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+}

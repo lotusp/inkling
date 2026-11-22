@@ -1401,3 +1401,54 @@ it('LIBRARY-FAILURE-013 lifecycle authenticates and validates before any mutatio
   });
   expect(() => f.service.mutation(payload.mutationId)).toThrow();
 });
+
+it('EDITOR-IMPORT-007 stores the supplied document in revision one atomically and rejects changed replays', async () => {
+  const f = await setup();
+  const command = {
+    mutationId: randomUUID(),
+    document: {
+      schemaVersion: 1,
+      title: '原稿导入',
+      doc: {
+        type: 'doc',
+        content: [
+          { type: 'paragraph', content: [{ type: 'text', text: '首版正文' }] },
+        ],
+      },
+    },
+  };
+  const post = (payload: unknown) =>
+    f.app.inject({
+      url: '/api/articles',
+      method: 'POST',
+      payload: JSON.stringify(payload),
+      headers: { ...f.headers, 'content-type': 'application/json' },
+    });
+  const first = await post(command);
+  expect(first.statusCode).toBe(200);
+  const snapshot = ArticleSnapshot.parse(first.json());
+  expect(snapshot.headSeq).toBe(1);
+  expect(snapshot.document).toEqual(command.document);
+  expect((await post(command)).json()).toEqual(snapshot);
+  expect(
+    (
+      await post({
+        ...command,
+        document: { ...command.document, title: '更改' },
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect(
+    (
+      await post({
+        ...command,
+        mutationId: randomUUID(),
+        document: { ...command.document, doc: { type: 'doc', content: [] } },
+      })
+    ).statusCode,
+  ).toBe(422);
+  expect(
+    f.db.prepare('SELECT COUNT(*) n FROM article_revisions').get(),
+  ).toEqual({ n: 1 });
+  expect(f.service.workspace().currentArticleId).toBe(snapshot.articleId);
+});

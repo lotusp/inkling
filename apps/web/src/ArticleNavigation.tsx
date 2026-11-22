@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   ArticleSnapshot,
+  type ArticleDocument,
   WorkspaceInfo,
   type ArticleListItem,
 } from '@inkling/contracts';
@@ -14,6 +15,7 @@ import type { ArticleSession, LibraryView, useArticle } from './use-article';
 type Intent = {
   mutationId: string;
   articleId?: string;
+  document?: ArticleDocument;
 };
 export function ArticleNavigation({
   article,
@@ -69,9 +71,10 @@ export function ArticleNavigation({
             ? '/api/articles/' + target.articleId + '/open'
             : '/api/articles',
           'POST',
-          target.articleId
-            ? { mutationId: target.mutationId }
-            : { mutationId: target.mutationId, title: '' },
+          {
+            mutationId: target.mutationId,
+            ...(target.document && { document: target.document }),
+          },
         ),
       );
       writeReturned = true;
@@ -102,7 +105,7 @@ export function ArticleNavigation({
         !writeReturned &&
         !previouslyUnconfirmed &&
         error instanceof ApiError &&
-        [400, 401, 403, 404, 409].includes(error.status)
+        [400, 401, 403, 404, 409, 413, 422].includes(error.status)
       )
         sent.current = false;
       setMessage(error instanceof Error ? error.message : '切换失败，请重试。');
@@ -194,6 +197,9 @@ export function ArticleNavigation({
             openArticle={(articleId) =>
               request({ mutationId: crypto.randomUUID(), articleId })
             }
+            importArticle={(document) =>
+              request({ mutationId: crypto.randomUUID(), document })
+            }
             createArticle={() => request({ mutationId: crypto.randomUUID() })}
             close={close}
           />
@@ -230,7 +236,13 @@ export function ArticleNavigation({
           role="region"
           aria-label="切换文章确认"
         >
-          <h2>{intent.articleId ? '打开另一篇文章' : '创建新文章'}</h2>
+          <h2>
+            {intent.articleId
+              ? '打开另一篇文章'
+              : intent.document
+                ? '导入新文章'
+                : '创建新文章'}
+          </h2>
           <p>切换前请确认当前输入已保存，或保留恢复副本供返回后继续写作。</p>
           {choice && (
             <>

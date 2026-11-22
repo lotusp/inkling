@@ -1,0 +1,5 @@
+C04 4.1 / EDITOR-IMPORT-007
+Red：原有 POST /api/articles 对合法全文创建请求返回 422；文章库缺少「从文件导入」入口。纯文本中的加粗标记最初被解释成格式。
+Green：pnpm exec vitest run tests/api/article-library.test.ts -t EDITOR-IMPORT-007，验证第一版包含标题与正文、幂等重试、复用命令号但修改稿件被拒、非法稿件不改变当前文章或版本数。
+浏览器：pnpm exec playwright test tests/e2e/article-import.spec.ts tests/e2e/article-navigation.spec.ts，13 项通过。375px 下选择文件和取消保留原稿，确认回包丢失后重试仅创建一次。UTF-8 BOM、CRLF、空段和缩进通过真实 API 验证。模拟原稿提交失败，可保留浏览器草稿，切回原稿恢复。纯文本 MarkDown 示例重开仍按文字显示。
+pnpm verify 通过，包含格式、ESLint、类型、依赖边界、构建、应用与 Harness 测试、文档和 OpenSpec。

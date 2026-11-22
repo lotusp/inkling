@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   ArticleListPage,
   type ArticleSnapshot,
+  type ArticleDocument,
   type ArticleListItem,
   type ArticleSearchFilters,
   ArticleShelf,
@@ -11,6 +12,7 @@ import { api } from './api';
 import { DeskMenu } from './DeskMenu';
 import type { OrganizerMode } from './ArticleOrganizer';
 import type { LifecycleTarget } from './ArticleLifecycle';
+import { ArticleImport } from './ArticleImport';
 import { ArticleSearchForm } from './ArticleSearchForm';
 import type { LibraryView } from './use-article';
 export function ArticleLibrary({
@@ -26,6 +28,7 @@ export function ArticleLibrary({
   organizeArticle,
   confirmedMetadata,
   createArticle,
+  importArticle,
   close,
 }: {
   current: ArticleSnapshot | null;
@@ -40,6 +43,7 @@ export function ArticleLibrary({
   disabled: boolean;
   openArticle: (id: string) => void;
   createArticle: () => void;
+  importArticle: (document: ArticleDocument) => void;
   close: () => void;
 }) {
   const [page, setPage] = useState<ArticleListPage>({
@@ -373,6 +377,7 @@ export function ArticleLibrary({
           加载更多文章
         </button>
       )}
+      <ArticleImport disabled={disabled} confirm={importArticle} />
     </section>
   );
 }

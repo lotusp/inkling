@@ -1,12 +1,13 @@
 import { z } from 'zod';
-import { Id, ArticleTitle } from './article';
+import { Id, ArticleTitle, ArticleDocument } from './article';
 export const ArticleState = z.enum(['active', 'archived', 'trashed']);
 export const ArticleShelf = z.enum([...ArticleState.options, 'all']);
 export type ArticleShelf = z.infer<typeof ArticleShelf>;
 export type ArticleState = z.infer<typeof ArticleState>;
-export const CreateArticleCommand = z
-  .object({ mutationId: Id, title: ArticleTitle.default('') })
-  .strict();
+export const CreateArticleCommand = z.union([
+  z.strictObject({ mutationId: Id, title: ArticleTitle.default('') }),
+  z.strictObject({ mutationId: Id, document: ArticleDocument }),
+]);
 export type CreateArticleCommand = z.infer<typeof CreateArticleCommand>;
 export const ArticleTag = z
   .string()

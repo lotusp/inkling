@@ -260,15 +260,18 @@ export class SqliteArticles implements ArticleRepository {
       })
       .immediate();
   }
-  private insertArticle(title: string): ArticleSnapshot {
-    const articleId = randomUUID(),
-      revisionId = randomUUID(),
-      time = this.now();
-    const document: ArticleDocument = {
+  private insertArticle(
+    title: string,
+    document: ArticleDocument = {
       schemaVersion: 1,
       title,
       doc: { type: 'doc', content: [{ type: 'paragraph' }] },
-    };
+    },
+  ): ArticleSnapshot {
+    const articleId = randomUUID(),
+      revisionId = randomUUID(),
+      time = this.now();
+    this.images?.checkReferences(document.doc);
     const json = canonical(document),
       bytes = Buffer.byteLength(json),
       contentHash = hash(document);
@@ -297,7 +300,10 @@ export class SqliteArticles implements ArticleRepository {
         const requestHash = hash({ operation: 'create-article', ...command });
         const old = this.replay(command.mutationId, requestHash);
         if (old !== undefined) return ArticleSnapshot.parse(old);
-        const result = this.insertArticle(command.title);
+        const result =
+          'document' in command
+            ? this.insertArticle(command.document.title, command.document)
+            : this.insertArticle(command.title);
         this.remember(
           command.mutationId,
           result.articleId,
