@@ -4,3 +4,6 @@ Red（退出 1）：1280px 和 375px 均成功输入、保存两段中文，已�
 Green（退出 0）：同一组 2 个用例通过。已验证引用开关、撤销、重做、SQLite 快照的节点及文本、刷新后显示结果。
 corepack pnpm verify → exit 0，91 项应用测试、10 项 Harness 测试，格式、lint、类型、依赖边界、构建、文档和规格通过。
 node_modules/.bin/playwright test --workers=4 → exit 0，141 项 Chromium 用例通过。
+
+5.2 同帧撤销回归。aee00d2 在 1280px 普通操作中出现一次撤销引用后正文变空，整套为 170/171。补充同一浏览器任务内按引用、立即发撤销键的独立用例。修复前退出 1，期望「撤销引用后仍然保留这段话。」，实际为空串。
+Muya 在 requestAnimationFrame 内才把待处理编辑写入撤销历史。针对固定版本的 ESM 入口，在划分撤销步骤及执行撤销／重做前结清本帧编辑，沿用同一份历史。pnpm exec playwright test --grep EDITOR-QUOTE-001 --repeat-each=3 --workers=3，9/9 通过，包含桌面与窄屏实际点击、撤销重做、重开，以及固定同帧时序。

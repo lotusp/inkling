@@ -1,0 +1,48 @@
+diff --git a/lib/es/index.js b/lib/es/index.js
+index 54f9a7bbd93e9e71198433dd95a889fa8582a35a..71ac8ec2a47863b1bf1b0341a516e0459869dc4c 100644
+--- a/lib/es/index.js
++++ b/lib/es/index.js
+@@ -74599,6 +74599,7 @@ var Zv = class e {
+ 		});
+ 	}
+ 	_change(e, t) {
++		this.muya.editor.jsonState.flushPendingChanges();
+ 		if (this._stack[e].length === 0) return;
+ 		let { operation: n, selection: r } = this._stack[e].pop(), i = ry.type.invert(n);
+ 		this._stack[t].push({
+@@ -74613,6 +74614,7 @@ var Zv = class e {
+ 		};
+ 	}
+ 	cutoff() {
++		this.muya.editor.jsonState.flushPendingChanges();
+ 		this._lastRecorded = 0;
+ 	}
+ 	getLastSelection() {
+@@ -75478,17 +75480,16 @@ var Qy = class {
+ 		return new Hv().generate(e);
+ 	}
+ 	_emitStateChange() {
+-		this._isGoing || (this._isGoing = !0, requestAnimationFrame(() => {
+-			let e = this._operationCache.reduce(ry.type.compose), t = this.getState();
+-			this.apply(e);
+-			let n = this.getState();
+-			this.muya.eventCenter.emit("json-change", {
+-				op: e,
+-				source: "user",
+-				prevDoc: t,
+-				doc: n
+-			}), this._operationCache = [], this._isGoing = !1;
+-		}));
++		if (this._isGoing) return;
++		this._isGoing = true;
++		requestAnimationFrame(() => this.flushPendingChanges());
++	}
++	flushPendingChanges() {
++		if (!this._isGoing) return;
++		const operation = this._operationCache.reduce(ry.type.compose);
++		this._operationCache = [];
++		this._isGoing = false;
++		this.dispatch(operation);
+ 	}
+ };
+ //#endregion

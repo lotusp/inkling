@@ -1,6 +1,33 @@
 import { ArticleSnapshot, WorkspaceInfo } from '@inkling/contracts';
 import { test, expect } from './fixtures';
 
+test('EDITOR-QUOTE-001 引用后在同一帧撤销只还原段落格式', async ({ page }) => {
+  const editor = page.getByRole('textbox', { name: '文章正文' });
+  const paragraph = '撤销引用后仍然保留这段话。';
+  await editor.fill(paragraph);
+  await expect(page.getByText('已保存', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '段落格式…' }).click();
+  const quote = page
+    .getByRole('dialog')
+    .getByRole('button', { name: '引用', exact: true });
+  await quote.evaluate((button) => {
+    (button as HTMLButtonElement).click();
+    const desk = document.querySelector('[aria-label="文章正文"]')!;
+    desk.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'z',
+        ctrlKey: true,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  });
+  await expect(editor.locator('blockquote')).toHaveCount(0);
+  await expect(editor.locator('p')).toHaveText(paragraph);
+  await editor.press('ControlOrMeta+Shift+z');
+  await expect(editor.locator('blockquote p')).toHaveText(paragraph);
+});
+
 for (const width of [1280, 375]) {
   test(`EDITOR-QUOTE-001 段落引用可撤销、重做并保存重开（${width}px）`, async ({
     page,
