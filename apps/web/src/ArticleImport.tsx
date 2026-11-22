@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ArticleDocument } from '@inkling/contracts';
+import { DocumentPart } from './DocumentComparison';
 import { DeskDialog } from './DeskDialog';
 import { readArticleFile, type ArticleImportPreview } from './article-import';
 
@@ -43,7 +44,7 @@ export function ArticleImport({
         hidden
         ref={picker}
         type="file"
-        accept=".txt"
+        accept=".txt,.md"
         onChange={(event) => {
           const next = event.target.files?.[0];
           event.target.value = '';
@@ -58,9 +59,27 @@ export function ArticleImport({
           {preview ? (
             <>
               <h3>{preview.document.title}</h3>
-              <pre className="import-preview" aria-label="正文预览">
-                {preview.text}
-              </pre>
+              {preview.notices.length > 0 && (
+                <ul className="import-notices" aria-label="转换提示">
+                  {preview.notices.map((n, i) => (
+                    <li key={i}>
+                      第 {n.line} 行 · {n.message}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {preview.text !== undefined ? (
+                <pre className="import-preview" aria-label="正文预览">
+                  {preview.text}
+                </pre>
+              ) : (
+                <div
+                  className="import-preview markdown-preview"
+                  aria-label="正文预览"
+                >
+                  <DocumentPart node={preview.document.doc} />
+                </div>
+              )}
             </>
           ) : error ? (
             <p role="alert">{error}</p>
@@ -71,7 +90,7 @@ export function ArticleImport({
             <button type="button" onClick={() => setFile(null)}>
               取消
             </button>
-            {error && (
+            {(error || preview) && (
               <button type="button" onClick={choose}>
                 重新选择文件
               </button>

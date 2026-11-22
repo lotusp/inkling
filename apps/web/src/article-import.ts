@@ -1,8 +1,15 @@
-import { ArticleDocument, type DocumentNode } from '@inkling/contracts';
+import {
+  ArticleDocument,
+  requiresDocumentV2,
+  type DocumentNode,
+} from '@inkling/contracts';
+
+import type { ImportNotice } from './markdown-import';
 
 export interface ArticleImportPreview {
   document: ArticleDocument;
-  text: string;
+  text?: string;
+  notices: ImportNotice[];
 }
 // Muya paragraphs use inline Markdown. Escape its delimiters for literal files
 // so editing or reopening cannot turn the author's example into links or media.
@@ -17,10 +24,13 @@ function literalParagraph(line: string): DocumentNode {
 export async function readArticleFile(
   file: File,
 ): Promise<ArticleImportPreview> {
-  if (!/\.txt$/i.test(file.name)) throw new Error('请选择 .txt 文本文件。');
+  const extension = /\.(txt|md)$/i.exec(file.name);
+  if (!extension) throw new Error('请选择 .txt 或 .md 文件。');
   if (file.size > 2 * 1024 * 1024)
     throw new Error('文件超过 2 MiB，请拆分后再导入。');
-  const bytes = await file.arrayBuffer();
+  const bytes = await file.arrayBuffer().catch((cause: unknown) => {
+    throw new Error('读取文件失败，请重新选择文件。', { cause });
+  });
   let text: string;
   try {
     text = new TextDecoder('utf-8', { fatal: true })
@@ -33,13 +43,27 @@ export async function readArticleFile(
     throw new Error('文件含有二进制内容，请选择文本文件。');
   const lines = text.split('\n', 50000);
   if (lines.length >= 50000) throw new Error('正文段落过多，请拆分后再导入。');
-  const content = lines.map(literalParagraph);
+  const filename = file.name.slice(0, -extension[0].length);
+  const isMarkdown = extension[1]!.toLowerCase() === 'md';
+  const result = isMarkdown
+    ? (await import('./markdown-import')).convertMarkdown(text, filename)
+    : {
+        title: filename,
+        doc: { type: 'doc', content: lines.map(literalParagraph) },
+        notices: [],
+      };
   const document = ArticleDocument.safeParse({
-    schemaVersion: content.some((p) => p.type === 'md:paragraph') ? 2 : 1,
-    title: file.name.slice(0, -4),
-    doc: { type: 'doc', content },
+    schemaVersion: result.doc.content?.some((n) => requiresDocumentV2(n.type))
+      ? 2
+      : 1,
+    title: result.title,
+    doc: result.doc,
   });
   if (!document.success)
     throw new Error('标题或正文超出稿件容量，请缩短文件名或拆分正文。');
-  return { document: document.data, text };
+  return {
+    document: document.data,
+    text: isMarkdown ? undefined : text,
+    notices: result.notices,
+  };
 }

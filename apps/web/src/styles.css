@@ -1156,3 +1156,16 @@ svg {
   overflow-wrap: anywhere;
   font: inherit;
 }
+.markdown-preview {
+  white-space: normal;
+}
+.markdown-preview pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.import-notices {
+  padding-inline-start: 1.3em;
+  max-height: 8em;
+  overflow: auto;
+  color: var(--muted);
+}

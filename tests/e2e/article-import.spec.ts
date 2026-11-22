@@ -113,3 +113,86 @@ test('EDITOR-IMPORT-007 导入纯文本时 Markdown 标记和图片链接保持�
   await expect(body.locator('.mu-paragraph-content')).toContainText('照录');
   await expect(body.locator('strong,img')).toHaveCount(0);
 });
+
+test('EDITOR-IMPORT-007/008 Markdown 预览位置提示，确认后技术块可编辑且不加载外部图片', async ({
+  page,
+}) => {
+  const lines = [
+    '# 工程复盘',
+    '',
+    '## 对照',
+    '',
+    '| 观测 | 结果 |',
+    '| --- | --- |',
+    '| 耗时 | 减半 |',
+    '',
+    '$$',
+    'x^{2}',
+    '$$',
+    '',
+    '```mermaid',
+    'flowchart LR',
+    'A --> B',
+    '```',
+    '',
+    ':::tip',
+    '保留指令',
+    ':::',
+    '',
+    '![示意](https://example.invalid/diagram.png)',
+  ];
+  const fetched: string[] = [];
+  page.on('request', (r) => {
+    if (r.url().includes('example.invalid')) fetched.push(r.url());
+  });
+  await button(page, '文章库').click();
+  const dialog = await pick(page, '日志.md', Buffer.from(lines.join('\n')));
+  await expect(
+    dialog.getByRole('heading', { name: '工程复盘', exact: true }),
+  ).toBeVisible({ timeout: 2500 });
+  await expect(dialog.getByRole('table')).toContainText('减半');
+  await expect(dialog).toContainText('第 18 行');
+  await expect(dialog).toContainText('第 22 行');
+  await dialog.getByRole('button', { name: '确认导入' }).click();
+  await expect(page.getByLabel('文章标题', { exact: true })).toHaveValue(
+    '工程复盘',
+  );
+  const body = page.getByRole('textbox', { name: '文章正文', exact: true });
+  await expect(body.getByRole('table')).toContainText('减半');
+  await expect(
+    body.getByRole('group', { name: '公式', exact: true }).locator('math'),
+  ).toBeVisible();
+  await expect(
+    body.getByRole('group', { name: '流程图', exact: true }).locator('img'),
+  ).toBeVisible();
+  await expect(body).toContainText(':::tip');
+  await expect(body).toContainText(lines[21]!);
+  await page.reload();
+  await expect(
+    body.getByRole('group', { name: '流程图', exact: true }).locator('img'),
+  ).toBeVisible();
+  expect(fetched).toEqual([]);
+});
+
+test('EDITOR-IMPORT-008 非法编码和超限文件可重新选择，取消保留原稿与文章数', async ({
+  page,
+}) => {
+  await button(page, '文章库').click();
+  const dialog = await pick(page, '坏稿.md', Buffer.from([0xc3, 0x28]));
+  await expect(dialog.getByRole('alert')).toContainText('UTF-8');
+  for (const [name, bytes] of [
+    ['过大.md', Buffer.alloc(2 * 1024 * 1024 + 1)],
+    ['重选.md', Buffer.from('# 重选成功')],
+  ] as const) {
+    const chooser = page.waitForEvent('filechooser');
+    await dialog.getByRole('button', { name: '重新选择文件' }).click();
+    await (
+      await chooser
+    ).setFiles({ name, mimeType: 'text/markdown', buffer: bytes });
+    if (name === '过大.md')
+      await expect(dialog.getByRole('alert')).toContainText('2 MiB');
+  }
+  await expect(dialog.getByRole('heading', { name: '重选成功' })).toBeVisible();
+  await dialog.getByRole('button', { name: '取消', exact: true }).click();
+  expect((await library(page)).total).toBe(1);
+});

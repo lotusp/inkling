@@ -1,0 +1,5 @@
+C04 4.2 / EDITOR-IMPORT-007、EDITOR-IMPORT-008
+Red：原有文本导入对 .md 文件提示选择 .txt，找不到预览标题，也无法在同一入口重新选择合法 Markdown。补充转换用例复现了跨段未知指令被拆开，以及正文示例中的图片语法被误当附件。
+Green：pnpm exec vitest run tests/unit/article-import.test.ts，6 项通过。涉及跨段指令与行号、额外表格单元格、代码围栏、引用和列表、真实文件读取失败、代码示例中的图片语法。
+浏览器用例在隔离的工作空间预览 UTF-8 中文稿，核对表格与第 18、22 行的提示。确认并重开后表格可见，公式显示 MathML，Mermaid 显示本机生成的图，外部图片请求为零。非法字节或超过 2 MiB 可重选；取消后核对原文章数。
+本地全量回归：pnpm test:e2e 在 Chromium 上通过 167 项；pnpm verify 通过，含 108 项应用测试、10 项 Harness 测试、构建、格式、ESLint、类型、依赖边界、文档与 OpenSpec 校验。

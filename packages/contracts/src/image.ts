@@ -7,14 +7,18 @@ export const imageMime = {
 } as const;
 export const imageByteLimit = 10 * 1024 * 1024;
 
-// Only image destinations are rewritten. A URL quoted in prose or a code block stays literal.
+// Match escaped delimiters and complete inline code spans before image tokens.
+// A Markdown example in a technical article must never become an attachment.
 export function mapWritingImages(
   text: string,
   map: (src: string) => string,
 ): string {
   return text.replace(
-    /(!\[(?:\\.|[^\]\\])*\]\()([^\s)]+)|(<img\b[^<>]*?\bsrc=["'])([^"']+)/gi,
-    (_whole, markdown, url, html, src) =>
-      markdown ? markdown + map(url) : html + map(src),
+    /\\[\\!<`]|(?<!`)(`+)(?!`)[\s\S]*?(?<!`)\1(?!`)|(!\[(?:\\.|[^\]\\])*\]\()([^\s)]+)|(<img\b[^<>]*?\bsrc=["'])([^"']+)/gi,
+    (whole, _ticks, markdown, url, html, src) => {
+      if (markdown) return markdown + map(url);
+      if (html) return html + map(src);
+      return whole;
+    },
   );
 }

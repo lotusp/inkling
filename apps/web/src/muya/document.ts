@@ -23,9 +23,9 @@ function assetText(kind: string, text: string, storing: boolean) {
     !['paragraph', 'atx-heading', 'setext-heading', 'table.cell'].includes(kind)
   )
     return text;
-  const prefix = location.origin + '/api/images/',
-    scheme = 'inkling-image:';
   return mapWritingImages(text, (src) => {
+    const prefix = location.origin + '/api/images/',
+      scheme = 'inkling-image:';
     const from = storing ? prefix : scheme,
       to = storing ? scheme : prefix;
     return src.startsWith(from) && imageNamePattern.test(src.slice(from.length))
