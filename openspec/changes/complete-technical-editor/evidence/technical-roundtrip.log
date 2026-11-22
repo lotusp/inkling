@@ -1,0 +1,8 @@
+C04 5.1 / EDITOR-ROUNDTRIP-010
+入口：tests/e2e/technical-roundtrip.spec.ts。每项启动独立的本机服务、SQLite、浏览器和工作空间附件目录，使用合成的中文表格、带缩进与换行的 LaTeX / Mermaid 和真实 PNG。
+基线：为首版命名，按选定方向比较两份已保存修订并恢复，历史稿、来源、父修订及正文指纹保持正确；离线副本的确认基线和编辑后的全文可从 IndexedDB 救援并正常重开。
+Red：pnpm exec playwright test tests/e2e/technical-roundtrip.spec.ts。4 项中 2 项通过、2 项失败。冲突比较中的原生表格没有表头角色，含未知技术节点的浏览器副本没有原始下载入口。
+Green：修正技术内容预览；同一文章的副本逐份读取，保留未知副本及其原始键值。工作台提供原始 JSON 下载，可识别的副本可独立恢复。pnpm exec playwright test tests/e2e/technical-roundtrip.spec.ts tests/e2e/article-recovery-failures.spec.ts，9 项通过。
+完整浏览器回归：pnpm test:e2e，171 项通过，退出 0。新用例核对了两页分别编辑的公式、流程图在明确确认后同时保存；直接读取停止服务后的 SQLite 并按实际字节重算三次修订的 SHA-256，恢复稿与初稿的正文逐字节相同。重启后只读稿可渲染公式和图示，原图可解码且附件字节相同。同篇可识别的草稿恢复后，含未知节点的副本仍能原样下载。
+本地工程：pnpm verify，退出 0，包含格式、ESLint、类型、架构、构建、108 项应用测试、10 项 Harness 测试、文档和 OpenSpec。
+存储性能：pnpm test:storage-performance，退出 0。60 KiB 和 2 MiB 稿件保存 P95 分别为 10.75 ms 和 129.45 ms，文章库查找 P95 为 2.62 ms。

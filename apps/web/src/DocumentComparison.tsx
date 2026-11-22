@@ -30,12 +30,24 @@ function inlinePreview(text: string): ReactNode {
         src={'/api/images/' + name}
         alt={image?.getAttribute('alt') ?? '图片'}
         title={image?.getAttribute('title') ?? undefined}
+        width={imageDimension(image, 'width')}
+        height={imageDimension(image, 'height')}
         style={{ maxWidth: '100%' }}
       />,
     );
     end = match.index + match[0].length;
   }
   return end ? [...parts, text.slice(end)] : text;
+}
+function imageDimension(image: Element | null, name: string) {
+  const value = image?.getAttribute(name);
+  return value && /^\d+$/.test(value) ? value : undefined;
+}
+function alignment(node: DocumentNode) {
+  const value = node.attrs?.align;
+  return value === 'left' || value === 'center' || value === 'right'
+    ? value
+    : undefined;
 }
 function orderedType(value: unknown) {
   return value === '1' ||
@@ -87,8 +99,6 @@ function renderNode(node: DocumentNode): ReactNode {
     case 'md:atx-heading':
     case 'md:setext-heading':
       return <h4>{inlinePreview(textOf(node).replace(/^#{1,6}\s+/, ''))}</h4>;
-    case 'md:table.cell':
-      return <td>{inlinePreview(textOf(node))}</td>;
     case 'md:footnote':
     case 'md:block-quote':
       return <blockquote>{content}</blockquote>;
@@ -121,11 +131,25 @@ function renderNode(node: DocumentNode): ReactNode {
       return (
         <div className="tableWrapper">
           <table>
-            <tbody>{content}</tbody>
+            <tbody>
+              {node.type === 'table'
+                ? content
+                : node.content?.map((row, i) => {
+                    const Cell = i === 0 ? 'th' : 'td';
+                    return (
+                      <tr key={i}>
+                        {row.content?.map((cell, j) => (
+                          <Cell key={j} style={{ textAlign: alignment(cell) }}>
+                            {inlinePreview(textOf(cell))}
+                          </Cell>
+                        ))}
+                      </tr>
+                    );
+                  })}
+            </tbody>
           </table>
         </div>
       );
-    case 'md:table.row':
     case 'tableRow':
       return <tr>{content}</tr>;
     case 'tableCell':
@@ -135,6 +159,7 @@ function renderNode(node: DocumentNode): ReactNode {
         <Cell
           colSpan={Number(node.attrs?.colspan ?? 1)}
           rowSpan={Number(node.attrs?.rowspan ?? 1)}
+          style={{ textAlign: alignment(node) }}
         >
           {content}
         </Cell>

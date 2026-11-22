@@ -20,6 +20,15 @@ export function downloadRescue(content: RescueContent) {
     draft: content.draft,
     pending: content.pending,
   };
+  downloadJson(payload, 'inkling-recovery-' + content.ack.articleId + '.json');
+}
+export function downloadRawDrafts(articleId: string, records: unknown[]) {
+  downloadJson(
+    { format: 'inkling-raw-drafts', articleId, records },
+    'inkling-raw-drafts-' + articleId + '.json',
+  );
+}
+function downloadJson(payload: unknown, filename: string) {
   const url = URL.createObjectURL(
     new Blob([JSON.stringify(payload, null, 2)], {
       type: 'application/json;charset=utf-8',
@@ -27,7 +36,7 @@ export function downloadRescue(content: RescueContent) {
   );
   const link = document.createElement('a');
   link.href = url;
-  link.download = `inkling-recovery-${content.ack.articleId}.json`;
+  link.download = filename;
   document.body.append(link);
   link.click();
   link.remove();

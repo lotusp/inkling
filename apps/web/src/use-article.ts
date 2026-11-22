@@ -92,6 +92,7 @@ export function useArticle(
     'idle' | 'pending' | 'durable' | 'unavailable'
   >('idle');
   const [recoveries, setRecoveries] = useState<RecoveryChoice[]>([]);
+  const [unreadableDrafts, setUnreadableDrafts] = useState<unknown[]>([]);
   const [recovering, setRecovering] = useState(false);
   const [comparison, setComparison] = useState<ArticleSnapshot | null>(null);
   const [conflictBusy, setConflictBusy] = useState(false);
@@ -246,12 +247,38 @@ export function useArticle(
           await checkState(article.articleId);
           let choices: RecoveryChoice[] = [];
           try {
-            choices = await listDrafts(
+            const drafts = await listDrafts(
               workspace.workspaceId,
               article.articleId,
             );
+            if (!active) return;
+            choices = drafts.choices;
+            setUnreadableDrafts(drafts.unreadable);
+            const owner = identity.current;
+            if (
+              owner &&
+              drafts.unreadable.some(
+                (value) =>
+                  value !== null &&
+                  typeof value === 'object' &&
+                  'clientId' in value &&
+                  value.clientId === owner.clientId,
+              )
+            ) {
+              // Keep this key intact. A readable sibling needs its own destination on recovery.
+              if (choices.length)
+                identity.current = {
+                  ...owner,
+                  clientId: await ownDraftClient(true),
+                };
+              else {
+                identity.current = null;
+                setBackup('unavailable');
+              }
+            }
           } catch {
-            // Preserve unreadable/blocked records; never overwrite their client key.
+            // A storage or lock failure prevents safe local writes.
+            choices = [];
             identity.current = null;
             setBackup('unavailable');
           }
@@ -895,8 +922,9 @@ export function useArticle(
             choice.record.workspaceId,
             choice.record.articleId,
           );
-          choosing.current = refreshed.length > 0;
-          setRecoveries(refreshed);
+          choosing.current = refreshed.choices.length > 0;
+          setRecoveries(refreshed.choices);
+          setUnreadableDrafts(refreshed.unreadable);
         } catch {
           /* Keep the visible snapshot and error until the next successful read. */
         }
@@ -1193,6 +1221,7 @@ export function useArticle(
     compositionEnd,
     backup,
     recoveries,
+    unreadableDrafts,
     recovering,
     recover,
     keepServer,

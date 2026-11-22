@@ -240,24 +240,29 @@ async function transaction<T>(
     db.close();
   }
 }
-export async function listDrafts(
-  workspaceId: string,
-  articleId: string,
-): Promise<RecoveryChoice[]> {
+export async function listDrafts(workspaceId: string, articleId: string) {
   const values = await transaction<unknown[]>('readonly', (store, done) => {
     const request = store.index('article').getAll([workspaceId, articleId]);
     request.onsuccess = () => done(request.result as unknown[]);
   });
   const locks = await navigator.locks.query();
-  return values
-    .map(parseRecord)
-    .map((record) => ({
-      record,
-      active:
-        locks.held?.some((lock) => lock.name === lockName(record.clientId)) ??
-        false,
-    }))
-    .sort((a, b) => b.record.updatedAt - a.record.updatedAt);
+  const choices: RecoveryChoice[] = [];
+  const unreadable: unknown[] = [];
+  for (const value of values) {
+    try {
+      const record = parseRecord(value);
+      choices.push({
+        record,
+        active:
+          locks.held?.some((lock) => lock.name === lockName(record.clientId)) ??
+          false,
+      });
+    } catch {
+      unreadable.push(value);
+    }
+  }
+  choices.sort((a, b) => b.record.updatedAt - a.record.updatedAt);
+  return { choices, unreadable };
 }
 export async function putDraft(record: DraftRecord, clean: boolean) {
   await transaction<void>('readwrite', (store, done) => {

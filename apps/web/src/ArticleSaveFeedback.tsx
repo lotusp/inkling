@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CircleAlert, CircleCheck } from 'lucide-react';
 import type { useArticle } from './use-article';
+import { downloadRawDrafts } from './draft-rescue';
 
 export function ArticleSaveFeedback({
   article,
@@ -8,6 +9,7 @@ export function ArticleSaveFeedback({
   article: ReturnType<typeof useArticle>;
 }) {
   const [showSaved, setShowSaved] = useState(true);
+  const articleId = article.snapshot?.articleId;
   const saveProblem =
     article.status === 'error' ||
     article.hasConflict ||
@@ -70,6 +72,18 @@ export function ArticleSaveFeedback({
         <div className="rescue-actions">
           <button onClick={article.download}>下载备份</button>
           <span>包含正文与恢复信息的 JSON，不含访问凭证。</span>
+        </div>
+      )}
+      {articleId && article.unreadableDrafts.length > 0 && (
+        <div className="rescue-actions">
+          <span>有浏览器副本的格式无法识别，原始内容已保留。</span>
+          <button
+            onClick={() =>
+              downloadRawDrafts(articleId, article.unreadableDrafts)
+            }
+          >
+            下载原始副本
+          </button>
         </div>
       )}
     </div>
