@@ -32,7 +32,7 @@
 ## 5. 整体验收
 
 - [x] 5.1 EDITOR-ROUNDTRIP-010 用当前正文格式的多修订与待恢复副本验证比较、恢复、救援、并发和归档，核对技术块的内容与格式。
-- [ ] 5.2 EDITOR-OUTLINE-009 / EDITOR-IMAGE-005 在 Mac 记录实际候选窗与剪贴板结果。全量工程、浏览器、存储性能与 Linux 检查通过后，整理证据与审阅记录并验证 G2。
+- [x] 5.2 EDITOR-OUTLINE-009 / EDITOR-IMAGE-005 在 Mac 记录实际候选窗与剪贴板结果。全量工程、浏览器、存储性能与 Linux 检查通过后，整理证据与审阅记录并验证 G2。
 
 ## Workflow follow-up
 

@@ -1,0 +1,16 @@
+C04 5.2 · 最终检查，macOS arm64 / ubuntu-latest
+正式稿纸 761ab2e，试写页修复 aee00d2，最终被测提交 e5175e79190ae4d75b29eac83451003b7a949278。
+运行环境：Node 22.22.2，pnpm 10.34.9，Playwright 1.65.1，OpenSpec 1.16.1。
+
+工程 · pnpm verify · 退出码 0。格式、ESLint、TypeScript、架构依赖、构建、19 个应用测试文件共 108 项、10 项 Harness 测试、文档路径、OpenSpec 全部及归档 strict 校验通过。构建提示部分 JS 分块较大。
+浏览器 · pnpm test:e2e --workers=4（独立临时输出目录）· 见末尾结果。5.1 首次本机运行缺锁定 Chromium 程序，安装 pnpm exec playwright install chromium 后全量 171/171 通过。
+存储 · pnpm test:storage-performance · 退出码 0。60 KiB 保存 P95 9.36 ms（门槛 250 ms），2 MiB 保存 P95 98.72 ms（门槛 1000 ms），千篇库查询 P95 2.18 ms（门槛 250 ms）。临时 SQLite 重开及摘要扫描 856.81 ms。此组数字在 761ab2e 测量，最终提交复跑值见下方。
+独立试写页 · pnpm build:muya、node --test tests/prototypes/muya-surface.test.mjs · 修复后构建成功，在 aee00d2 的代码上同一浏览器测试连续 12 次退出码 0。最终补丁安装后再次构建并执行，退出码 0。
+Mac 真机 · 章节、链接的候选回车和截图粘贴与刷新见 mac-input-clipboard.log。
+Linux 基线 · 761ab2e · gh run watch 45040633197 --exit-status --interval 15 · 退出码 0。https://github.com/lotusp/inkling/actions/runs/45040633197
+Linux 试写页修复 · aee00d2 · gh run watch 45085505851 --exit-status --interval 15 · 退出码 0，含独立试写页检查。https://github.com/lotusp/inkling/actions/runs/45085505851
+Mac 补丁前复跑 · aee00d2 · 全量 170/171，已添加同帧回归复现引用撤销导致正文变空。修复后的专项重复验证 9/9，见 quote.log。
+e5175e7 本地全量 · pnpm test:e2e --workers=4 · 172/172 通过，无跳过，退出码 0。
+e5175e7 性能复跑 · pnpm test:storage-performance · 60 KiB 保存 P95 10.68 ms，2 MiB 保存 P95 95.21 ms，千篇库查询 P95 2.14 ms，重开及摘要扫描 865.75 ms，退出码 0。
+Linux 最终实现 · e5175e7 · gh run watch 45086037247 --exit-status --interval 15 · 退出码 0。锁定依赖安装、工程、全量 Chromium 回归以及独立 Muya 试写页回归均通过。https://github.com/lotusp/inkling/actions/runs/45086037247
+G2 · node scripts/harness/check.mjs complete-technical-editor --stage verify 与 OPENSPEC_TELEMETRY=0 pnpm exec openspec validate complete-technical-editor --strict --no-interactive · 退出码 0。
