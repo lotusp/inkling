@@ -1,6 +1,6 @@
 # Inkling 产品知识库
 
-更新日期为 2026-11-18。Inkling 已在单台 Mac 上接通多文章写作、自动保存、草稿恢复和版本历史。闻一的真实模型调用仍待开发。此目录记录产品目标、方案和验收结果。
+更新日期为 2026-11-23。Inkling 已在单台 Mac 上接通多文章技术写作、自动保存、草稿恢复和版本历史。闻一的真实模型调用安排在后续阶段。
 
 ## 从这里开始
 
@@ -31,7 +31,7 @@
 | 框架选择 | [框架复评](research/framework-evaluation.md) | 需同任务 POC 验证；不是依赖清单 |
 | 本地工程 | [运行与检查](engineering/local-development.md) | 本机服务、持久编辑、草稿恢复、真实工程检查；AI 待接入 |
 | 开发方法 | [Harness](engineering/harness.md)、[DEC-0003](decisions/0003-openspec-atdd-harness.md) | OpenSpec、ATDD 与首批应用检查已建立 |
-| V1 Change 路线图 | [Change 拆分与依赖](engineering/v1-change-roadmap.md) | 建议 17 条，C01–C03 完成，C04 技术编辑器进行中 |
+| V1 Change 路线图 | [Change 拆分与依赖](engineering/v1-change-roadmap.md) | 建议 17 条，C01–C04 已归档，下一项为 C05 模型运行基础 |
 | 代码规范 | [架构边界](engineering/code-architecture.md)、[日常规范](engineering/development-rules.md) | 新代码应遵循；模块随实现建立 |
 | 验收与证据 | [ATDD 约定](engineering/atdd-and-evidence.md)、[Harness 验证](validation/harness-bootstrap.md) | 已验证流程工具，不代表应用通过验收 |
 | 未决事项 | [开放问题](product/open-questions.md) | 进入对应阶段时验证，不要求一次回答所有问题 |
@@ -71,4 +71,4 @@ C02 的存储故障与容量边界已有自动验收。[存储性能验证](vali
 
 C03 增加了多稿导航、查找与整理、归档、回收站和编辑位置恢复。验收覆盖本机及 Linux 自动回归、千篇文章的查询性能和 Mac 真实中文候选窗。[文章库规格](../openspec/specs/article-library/spec.md) · [C03 验收报告](../openspec/changes/archive/2026-11-18-manage-article-library/verification.md)
 
-V1 正文内核与图片交互见 [Muya 选型决策](decisions/0005-muya-writing-surface.md)。
+C04 增加了技术内容编辑、本地图片和整篇文件导入，已核对混排稿的版本比较、恢复与并发合并。[技术编辑器规格](../openspec/specs/technical-editor/spec.md) · [C04 验收报告](../openspec/changes/archive/2026-11-23-complete-technical-editor/verification.md) · [Muya 选型决策](decisions/0005-muya-writing-surface.md)

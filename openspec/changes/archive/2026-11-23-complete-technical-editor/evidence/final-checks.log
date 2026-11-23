@@ -14,3 +14,6 @@ e5175e7 本地全量 · pnpm test:e2e --workers=4 · 172/172 通过，无跳过�
 e5175e7 性能复跑 · pnpm test:storage-performance · 60 KiB 保存 P95 10.68 ms，2 MiB 保存 P95 95.21 ms，千篇库查询 P95 2.14 ms，重开及摘要扫描 865.75 ms，退出码 0。
 Linux 最终实现 · e5175e7 · gh run watch 45086037247 --exit-status --interval 15 · 退出码 0。锁定依赖安装、工程、全量 Chromium 回归以及独立 Muya 试写页回归均通过。https://github.com/lotusp/inkling/actions/runs/45086037247
 G2 · node scripts/harness/check.mjs complete-technical-editor --stage verify 与 OPENSPEC_TELEMETRY=0 pnpm exec openspec validate complete-technical-editor --strict --no-interactive · 退出码 0。
+改写后分支 · 3e0e0fc40cde2ae54f2a70b7ea4d110301f59be3 · gh run watch 45099997461 --exit-status --interval 15 · 退出码 0。Ubuntu 工程、全量 Chromium 与独立 Muya 试写页检查通过。https://github.com/lotusp/inkling/actions/runs/45099997461
+归档 · pnpm exec openspec archive complete-technical-editor --yes · 退出码 0，新增 technical-editor，4 条 ADDED 需求。逐条对照了归档前后的用途、4 条需求和 11 个场景及其验收、测试映射；其他 6 份正式规格内容相同。
+归档复核 · node scripts/harness/check.mjs 2026-11-23-complete-technical-editor --stage archived、OpenSpec validate --specs / --archived --strict --no-interactive、pnpm check:docs 均退出 0。7 份正式规格、4 个归档通过，94 份 Markdown 文档无路径错误，活动变更为 0。

@@ -8,7 +8,7 @@ C03 在同一个 SQLite 工作空间中新增文章库元数据及索引。每�
 
 范围与存储更新：当前功能以[V1 完整范围](../product/v1-scope.md)为准，首版已包含作者风格、跨文章记忆与一个真实博客的发布和更新。文件与 SQLite 对照后，C02 选定 JSON 正文与 SQLite；下文表结构和备份仍是 V1 整体提案，具体已实现范围以 DEC-0004 和 Living Spec 为准。
 
-工程基础更新：bootstrap-local-workbench 采用 Node 22.22.2、React/Tiptap、Fastify 与共享健康契约，实际入口见[本地运行](../engineering/local-development.md)。这只实现临时编辑和工程基础，不表示下文的存储、Agent、恢复与发布提案已实现。
+C04 的 React 稿纸使用 Muya 编辑技术内容。浏览器在本地预览公式与基础 Mermaid 流程图，正文修订保存可编辑源码。图片由 Fastify 写入工作空间，修订通过内容摘要引用附件。[技术编辑器规格](../../openspec/specs/technical-editor/spec.md) · [编辑器决策](../decisions/0005-muya-writing-surface.md) · [本地运行](../engineering/local-development.md)
 
 ## 部署目标和工作假设
 

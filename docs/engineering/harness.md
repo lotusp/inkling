@@ -139,7 +139,7 @@ Harness 自身的回归命令为 `node --test scripts/harness/check.test.mjs` �
 
 ## 建议的首批 change
 
-[V1 Change 路线图](v1-change-roadmap.md)列出 17 条候选。C01 本地工作台、C02 正文持久化和 C03 文章库均已归档。接下来依次规划技术编辑器、模型运行基础、文章对话与候选修改。
+[V1 Change 路线图](v1-change-roadmap.md)列出 17 条候选。C01 本地工作台、C02 正文持久化、C03 文章库和 C04 技术编辑器均已归档。接下来依次规划模型运行基础、文章对话与候选修改。
 
 路线图不是已创建的 changes。每条形成可运行且可验收的切片，完成后再细化下一项；范围覆盖仍以 [V1 功能清单](../product/v1-scope.md)为准。
 

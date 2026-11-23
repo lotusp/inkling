@@ -2,9 +2,9 @@
 
 ## Context and boundaries
 
-作者从现有稿纸完成编辑。「段落格式」承载正文命令，表格操作随表格出现，公式和图示在对应块内编辑或预览。文章库沿用一键新建，文件导入另设次级入口。使用键盘和 375px 窄屏时也能到达这些操作。已有大纲按正文 h2/h3 生成，跳转只滚动，添加章节走编辑器事务。[正式稿纸](../../../apps/web/src/App.tsx) · [文章库规格](../../../openspec/specs/article-library/spec.md)
+作者从现有稿纸完成编辑。「段落格式」承载正文命令，表格操作随表格出现，公式和图示在对应块内编辑或预览。文章库沿用一键新建，文件导入另设次级入口。使用键盘和 375px 窄屏时也能到达这些操作。已有大纲按正文 h2/h3 生成，跳转只滚动，添加章节走编辑器事务。[正式稿纸](../../../../apps/web/src/App.tsx) · [文章库规格](../../../../openspec/specs/article-library/spec.md)
 
-Web 负责编辑、预览和文件转换。contracts 声明允许的文档、引用及命令。core 校验操作条件，adapters 管理工作空间文件及 SQLite，server 沿用本机认证、同源写保护和响应映射。[架构规范](../../../docs/engineering/code-architecture.md) · [DEC-0004](../../../docs/decisions/0004-article-storage-and-revisions.md)
+Web 负责编辑、预览和文件转换。contracts 声明允许的文档、引用及命令。core 校验操作条件，adapters 管理工作空间文件及 SQLite，server 沿用本机认证、同源写保护和响应映射。[架构规范](../../../../docs/engineering/code-architecture.md) · [DEC-0004](../../../../docs/decisions/0004-article-storage-and-revisions.md)
 
 ## 编辑器选型更新
 

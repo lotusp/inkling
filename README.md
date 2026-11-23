@@ -25,7 +25,7 @@
 
 在 macOS 上准备 [`.node-version`](.node-version) 指定的 Node.js（22.22.2）和 Corepack。如果安装时需要编译 SQLite 驱动，可用 `xcode-select --install` 安装 Xcode 命令行工具。运行工作台无需注册账号、配置模型密钥或启动独立数据库。
 
-在当前开发分支的源码目录中运行：
+在项目源码目录中运行：
 
 ```bash
 corepack pnpm install --frozen-lockfile
@@ -42,7 +42,7 @@ corepack pnpm start
 
 ## 项目状态与文档
 
-当前开发分支已接通多篇稿件、版本与草稿恢复。右上角星芒图标打开「闻一」，面板会提示 AI 尚未接入。可在[写作台交互原型](docs/prototypes/inkling-writing-desk-v3.html)中体验示例对话。模型接入与发布属于后续计划。
+正式稿纸支持多文章管理、技术内容编辑、版本比较和草稿恢复。可以粘贴截图、拖入本地图片，或从文章库导入文本与 Markdown 稿件。闻一与发布属于后续计划，示例对话见写作台原型。[技术编辑器规格](openspec/specs/technical-editor/spec.md) · [写作台交互原型](docs/prototypes/inkling-writing-desk-v3.html)
 
 - [产品知识库](docs/README.md)汇总产品设计、架构、调研和验证记录。
 - [V1 功能范围](docs/product/v1-scope.md)介绍首版计划与实施顺序。

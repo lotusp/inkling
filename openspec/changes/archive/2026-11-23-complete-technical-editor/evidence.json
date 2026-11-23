@@ -307,7 +307,7 @@
     },
     {
       "path": "docs/decisions/0005-muya-writing-surface.md",
-      "sha256": "e87725d9caf45605851d618d96acce37ff5129b05f5ab534f8ca989521dea6a1"
+      "sha256": "0b57a7119eb7c2c74512e306fb5a6f9a0f8b7c5ec5482bf9d5d8f8263ed86951"
     },
     {
       "path": "docs/engineering/atdd-and-evidence.md",
@@ -343,11 +343,11 @@
     },
     {
       "path": "@change/design.md",
-      "sha256": "8f5ea2ab0423d4f5c221c1976b459435773512b1d436b11a54d4a38a8251b239"
+      "sha256": "6f95e996aa562cf253007fbe0b3904d16d17e8df1b0779fb4694a8c97766075e"
     },
     {
       "path": "@change/proposal.md",
-      "sha256": "0889193d613e20258efdbc7667b37a5e56c83e92f5088de109b55a28890d0612"
+      "sha256": "a216a43d8b2d3ba0ea9c44091d660881dcf23516c34ba323e36b7b06c54f7e76"
     },
     {
       "path": "@change/specs/technical-editor/spec.md",
@@ -796,6 +796,10 @@
     {
       "path": "vitest.config.ts",
       "sha256": "cfd48ed5f531f0ef17c07e2ae8fe7ae4621269b99a3a488122583612d7073d01"
+    },
+    {
+      "path": "openspec/specs/technical-editor/spec.md",
+      "sha256": "d4d67366ab4561d2e11f578fbed357638c81d95919965c9f268f78a8d909b891"
     }
   ],
   "checks": [

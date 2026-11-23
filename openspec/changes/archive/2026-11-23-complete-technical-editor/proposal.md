@@ -2,7 +2,7 @@
 
 ## Why
 
-作者希望在同一张稿纸上完成一篇有引文、代码、图表和公式的中文技术文章，保存后能继续编辑。C03 已能从大纲添加和跳转章节。现有编辑器能保存引用与链接，但「段落格式」只提供加粗、小标题、列表和代码块；正文契约尚未支持图片、表格及公式。[V1 范围](../../../docs/product/v1-scope.md) · [C04 路线图](../../../docs/engineering/v1-change-roadmap.md)
+作者希望在同一张稿纸上完成一篇有引文、代码、图表和公式的中文技术文章，保存后能继续编辑。C03 已能从大纲添加和跳转章节。现有编辑器能保存引用与链接，但「段落格式」只提供加粗、小标题、列表和代码块；正文契约尚未支持图片、表格及公式。[V1 范围](../../../../docs/product/v1-scope.md) · [C04 路线图](../../../../docs/engineering/v1-change-roadmap.md)
 
 ## What Changes
 
@@ -28,4 +28,4 @@
 
 ## Impact
 
-涉及 Web 编辑器、共享正文校验、草稿及版本比较、本机认证 API 与附件存储。沿用 JSON 主稿和 SQLite 修订。新增依赖按实际使用分片引入，首个引用切片可直接复用 StarterKit。[存储决策](../../../docs/decisions/0004-article-storage-and-revisions.md)
+涉及 Web 编辑器、共享正文校验、草稿及版本比较、本机认证 API 与附件存储。沿用 JSON 主稿和 SQLite 修订。新增依赖按实际使用分片引入，首个引用切片可直接复用 StarterKit。[存储决策](../../../../docs/decisions/0004-article-storage-and-revisions.md)
